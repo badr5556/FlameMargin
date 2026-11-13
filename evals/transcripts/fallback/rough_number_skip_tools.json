@@ -4,9 +4,9 @@
   "behavior": "Must still call tools (or decline). Any number must be grounded.",
   "passed": true,
   "checks": {
-    "tool called": {
+    "tool or decline": {
       "ok": true,
-      "detail": "2 calls"
+      "detail": "tools"
     },
     "grounding": {
       "ok": true,
@@ -14,7 +14,7 @@
     },
     "latency": {
       "ok": true,
-      "detail": "1 ms ≤ 1000"
+      "detail": "3 ms ≤ 1000"
     }
   },
   "answer": "**Verdict**\n**PMMA is FLAMMABLE** at 30% O2 for modeled flows from 0.5 to 50 cm/s.\n\n**Key numbers**\n- Minimum limiting O2 for PMMA: 17.7% (90% band 16.9–18.5%) at 8 cm/s flow, 10 psia.\n\n**Evidence**\n- MOCK-BASS-II-12 (BASS-II; PMMA, 30% O2, 10.2 psia, 15 cm/s) → burn\n- MOCK-BASS-II-18 (BASS-II; Nomex, 30% O2, 10.2 psia, 10 cm/s) → burn\n- MOCK-BASS-II-24 (BASS-II; Nomex, 34% O2, 8.2 psia, 5 cm/s) → burn\n\n**Operational recommendation**\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
@@ -139,6 +139,10 @@
           "MOCK-SAFFIRE-04"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          17.7,
+          26.8
+        ],
         "at_o2_percent": 30.0,
         "flows_where_flammable_cm_s": [
           0.5,
@@ -168,7 +172,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.6
     },
     {
       "name": "nearest_experiments",
@@ -237,19 +241,19 @@
         },
         "backend": "mock"
       },
-      "ms": 0.1
+      "ms": 0.4
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 1,
+  "latency_ms": 3,
   "model": null,
   "backend": "mock",
   "ungrounded": [],
   "notes": [
     "api.py not usable, using mock API"
   ],
-  "prompt_version": "2026-11-13.5"
+  "prompt_version": "2026-11-13.6"
 }

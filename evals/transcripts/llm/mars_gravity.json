@@ -18,23 +18,23 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2649 ms ≤ 25000"
+      "detail": "2330 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: no training data at this gravity level (FM2 not yet flown)\n\n**Verdict**\nThe prediction engine indicates a high likelihood of burning for Delrin under these conditions (burn probability 0.99, 90% interval [0.74, 1]). However, because Mars gravity is outside the training data range (which is based on microgravity combustion experiments), this specific gravity condition is out of distribution and cannot be trusted as an operational safety guarantee.\n\n**Key numbers**\n- **Material:** Delrin\n- **Atmosphere:** 34% $\\text{O}_2$, 8.2 psia (56.5 kPa)\n- **Gravity:** Mars gravity (0.38 g)\n- **Flow velocity:** 10 cm/s\n- **Burn probability:** 0.99 (90% interval: [0.74, 1])\n- **Flame spread rate:** 1.67 mm/s (90% interval: 0.33–3 mm/s)\n- **Limiting $\\text{O}_2$:** 16.8% ($\\text{O}_2$ margin: 17.2 percentage points)\n\n**Evidence**\nNearest supporting experiments in the database:\n- `MOCK-BASS-II-24`\n- `MOCK-BASS-II-18`\n- `MOCK-BASS-II-12`\n\n**Operational recommendation**\nSince Mars gravity introduces out-of-distribution risks where flame spread and quenching behavior may differ from microgravity, apply conservative controls: restrict exposed combustible materials, isolate ignition sources, and ensure active fire detection and suppression systems are ready. Never rely on margins near the edge of modeled parameters.\n\n*Note: This is decision support, not a replacement for NASA-STD-6001 material testing.*\n\n**Limits**\n- **Gravity OOD:** The model has no training data for Mars gravity (FM2 not yet flown). Gravity levels other than microgravity are strictly out of distribution.\n- **Synthetic source:** The numbers come from a mock_api (synthetic placeholder, NOT NASA data).",
+  "answer": "⚠️ Out of distribution: no training data at this gravity level (FM2 not yet flown)\n\n**Verdict**\nBurn (modeled; gravity is out of distribution). This is decision support, not a replacement for NASA-STD-6001 material testing.\n\n**Key numbers**\n- Burn probability: 0.99 (90% interval 0.74–1)\n- Flame spread rate: 1.67 mm/s (90% interval 0.33–3 mm/s)\n- Conditions: Delrin, 34% O2, 8.2 psia, Mars gravity, 10 cm/s flow\n\n**Evidence**\nNearest experiments: MOCK-BASS-II-24, MOCK-BASS-II-18, MOCK-BASS-II-12\n\n**Operational recommendation**\nSince gravity is out of distribution and the model predicts a high burn probability, treat Delrin as flammable under these conditions. Limit the amount of exposed Delrin, isolate ignition sources, and ensure fire detection and suppression systems are ready.\n\n**Limits**\nBecause gravity is set to Mars (non-microgravity), the prediction is out of distribution and cannot be trusted for flight safety without dedicated ground or flight testing. Furthermore, the numbers come from a placeholder model, not NASA data.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "pressure_psia": 8.2,
-        "flow_velocity_cm_s": 10,
-        "gravity": "mars",
         "o2_percent": 34,
-        "material": "Delrin"
+        "gravity": "mars",
+        "material": "Delrin",
+        "flow_velocity_cm_s": 10,
+        "pressure_psia": 8.2
       },
       "result": {
         "label": "burn",
@@ -76,7 +76,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.4
+      "ms": 0.3
     }
   ],
   "ood": true,
@@ -85,7 +85,7 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2649,
+  "latency_ms": 2330,
   "model": "gemini-3.5-flash-lite",
   "backend": "mock",
   "ungrounded": [],

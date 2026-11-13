@@ -14,19 +14,19 @@
     },
     "latency": {
       "ok": true,
-      "detail": "1947 ms ≤ 25000"
+      "detail": "2201 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "To evaluate whether it is safe, I need to know which material you are asking about and what ventilation flow velocity is present. \n\nPlease specify the material (known materials include PMMA, Nomex, Cotton-fiberglass, and Delrin) and the flow velocity (or state that you want to check all flow conditions using the flammability boundary for the ISS cabin).",
+  "answer": "Please specify the material (e.g., PMMA, Nomex, Cotton-fiberglass, Delrin) and the ventilation flow velocity (or ask for the flammability boundary across all flows) so I can evaluate the fire safety of your scenario.",
   "tool_calls": [
     {
       "name": "get_mission_preset",
       "args": {
-        "name": "ISS"
+        "name": "ISS cabin"
       },
       "result": {
         "name": "ISS cabin",
@@ -48,7 +48,7 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 1947,
+  "latency_ms": 2201,
   "model": "gemini-3.5-flash-lite",
   "backend": "mock",
   "ungrounded": [],

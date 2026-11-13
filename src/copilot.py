@@ -206,6 +206,11 @@ def _matches(tok: NumberToken, allowed: list[float]) -> bool:
     return False
 
 
+def _contains_token(haystack: str, token: str) -> bool:
+    """Whole-token match, so MOCK-BASS-II-2 does not match MOCK-BASS-II-24."""
+    return re.search(rf"(?<![\w-]){re.escape(token)}(?![\w-])", haystack) is not None
+
+
 def verify_grounding(answer: str, tool_results: list[Any], question: str = "") -> GroundingReport:
     """Every number in ``answer`` must match a tool-result value (or the user's question) within rounding.
 
@@ -221,7 +226,8 @@ def verify_grounding(answer: str, tool_results: list[Any], question: str = "") -
     bad = [t.text for t in toks if not _matches(t, allowed)]
     blob = "\n".join(texts) + "\n" + json.dumps(tool_results, ensure_ascii=False, default=str)
     unknown_ids = [
-        i for i in dict.fromkeys(_EXPERIMENT_ID_RE.findall(answer)) if i not in ID_WHITELIST and i not in blob and i not in question
+        i for i in dict.fromkeys(_EXPERIMENT_ID_RE.findall(answer))
+        if i not in ID_WHITELIST and not _contains_token(blob, i) and not _contains_token(question, i)
     ]
     return GroundingReport(ok=not bad and not unknown_ids, ungrounded=list(dict.fromkeys(bad)), checked=len(toks), unknown_ids=unknown_ids)
 
@@ -337,7 +343,9 @@ def check_input_grounding(name: str, args: dict[str, Any], operator_text: str) -
     """
     if name not in _FLOW_TOOLS:
         return None
-    allowed = [t.value for t in extract_numbers(operator_text)]
+    # Numbers the operator attached to O2 or pressure cannot justify a flow ("10 psia" is not "10 cm/s").
+    flow_text = _P_RE.sub(" ", _O2_RE.sub(" ", operator_text))
+    allowed = [t.value for t in extract_numbers(flow_text)]
     for m in _FLOW_RE.finditer(operator_text):  # operator flows converted to cm/s (e.g. "5 mm/s" -> 0.5)
         try:
             allowed.append(tools.parse_flow_cm_s(f"{m.group(1)} {m.group(2)}")[0])
@@ -455,7 +463,7 @@ _FLOW_RE = re.compile(r"(\d+(?:[.٫]\d+)?)\s*(cm/s|mm/s|m/s)", re.IGNORECASE)
 _GRAV_WORDS = [
     (r"\b(mars|martian)\b|المريخ|مريخ", "mars"),
     (r"\b(lunar|moon)\b|1/6\s*g|القمر|قمر", "lunar"),
-    (r"\b(earth|1\s*g|ground)\b|الأرض|الارض", "earth"),
+    (r"\b(earth|1\s*g|terrestrial)\b|الأرض|الارض", "earth"),
 ]
 
 

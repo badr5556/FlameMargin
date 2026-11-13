@@ -139,6 +139,10 @@
           "MOCK-BASS-II-07"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          16.6,
+          25.6
+        ],
         "at_o2_percent": 21.0,
         "flows_where_flammable_cm_s": [
           2.0,
@@ -170,7 +174,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.3
+      "ms": 0.2
     },
     {
       "name": "flammability_boundary",
@@ -292,6 +296,10 @@
           "MOCK-BASS-II-18"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          24.1,
+          33.1
+        ],
         "at_o2_percent": 21.0,
         "flows_where_flammable_cm_s": [],
         "flows_where_not_flammable_cm_s": [
@@ -322,7 +330,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.1
     },
     {
       "name": "flammability_boundary",
@@ -444,6 +452,10 @@
           "MOCK-SAFFIRE-01"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          15.6,
+          24.6
+        ],
         "at_o2_percent": 21.0,
         "flows_where_flammable_cm_s": [
           1.0,
@@ -475,7 +487,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.1
     },
     {
       "name": "flammability_boundary",
@@ -597,6 +609,10 @@
           "MOCK-BASS-II-03"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          15.1,
+          24.1
+        ],
         "at_o2_percent": 21.0,
         "flows_where_flammable_cm_s": [
           1.0,
@@ -711,5 +727,5 @@
   "notes": [
     "api.py not usable, using mock API"
   ],
-  "prompt_version": "2026-11-13.5"
+  "prompt_version": "2026-11-13.6"
 }

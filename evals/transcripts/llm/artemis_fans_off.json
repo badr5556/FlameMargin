@@ -26,21 +26,21 @@
     },
     "latency": {
       "ok": true,
-      "detail": "6257 ms ≤ 25000"
+      "detail": "6555 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nNomex is **not safe** (flammable) in the Artemis Exploration Atmosphere (34% $\\text{O}_2$, 8.2 psia) under ventilation shutdown (\"fans off\") conditions, as the agreed fans-off flow is undefined, and the flammability boundary shows that Nomex burns at low ventilation speeds (flammable at flows from 1 to 40 cm/s, with a minimum $\\text{O}_2$ limit of 25.8% at 8 cm/s). \n\nThis is decision support, not a replacement for NASA-STD-6001 material testing.\n\n**Key numbers**\n- Atmosphere: 34% $\\text{O}_2$, 8.2 psia, microgravity.\n- Minimum $\\text{O}_2$ flammability limit: 25.8% (90% interval 24.2%–27.4%) at 8 cm/s.\n- Flammable flow range: 1 cm/s to 40 cm/s.\n\n**Evidence**\nSupported by nearest experiments: MOCK-BASS-II-24, MOCK-BASS-II-18, MOCK-SIBAL-09.\n\n**Operational recommendation**\nDo not rely on ventilation shutdown to prevent combustion. Limit the amount of exposed Nomex, isolate ignition sources, and ensure fire detection and suppression systems are active.\n\n**Limits**\n- The agreed fans-off flow is not defined yet; evaluation is based on the low-flow end of the Flammability Map.\n- Numbers come from a placeholder model (mock_api), not NASA data.",
+  "answer": "**Verdict**\nNomex is **not safe** in the Artemis Exploration Atmosphere (34% $\\text{O}_2$, 8.2 psia) across low ventilation flows. The agreed fans-off flow is not defined yet, but the flammability boundary map shows that at low ventilation flows (0.5 cm/s to 40 cm/s), the limiting oxygen concentration drops as low as 25.8% $\\text{O}_2$ (90% interval 24.6%–27.8% at 8 cm/s). Because the Artemis atmosphere is 34% $\\text{O}_2$, it sits above the flammability limit and will burn.\n\n**Key numbers**\n- Atmosphere: 34% $\\text{O}_2$, 8.2 psia (56.5 kPa)\n- Minimum $\\text{O}_2$ limit: 25.8% $\\text{O}_2$ (90% interval range 25.8%–34.9% across the flammable flow range 1 cm/s to 40 cm/s)\n- Flammable flow range: 1 cm/s to 40 cm/s\n\n**Evidence**\n- Supporting experiment IDs: `MOCK-BASS-II-24`, `MOCK-BASS-II-18`, `MOCK-BASS-II-12`\n\n**Operational recommendation**\nLimit the amount of exposed material, isolate ignition sources, lower oxygen where the mission allows, and keep fire detection and suppression ready. Never rely on extreme low-flow quenching to prevent fires.\n\n**Limits**\n- The numbers come from a placeholder model (`mock_api`), not NASA data.\n- This is decision support, not a replacement for NASA material testing.",
   "tool_calls": [
     {
       "name": "flammability_boundary",
       "args": {
-        "material": "Nomex",
+        "flow_velocity_cm_s": "fans off",
         "preset": "Artemis Exploration Atmosphere",
-        "flow_velocity_cm_s": "fans off"
+        "material": "Nomex"
       },
       "result": {
         "error": {
@@ -49,235 +49,7 @@
           "hint": "Do not guess a flow. Call flammability_boundary to show the limit across low flows, or ask the operator for the residual flow in cm/s."
         }
       },
-      "ms": 31.7
-    },
-    {
-      "name": "nearest_experiments",
-      "args": {
-        "flow_velocity_cm_s": "fans off",
-        "preset": "Artemis Exploration Atmosphere",
-        "material": "Nomex"
-      },
-      "result": {
-        "value": [
-          {
-            "id": "MOCK-BASS-II-24",
-            "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 34.0,
-            "pressure_psia": 8.2,
-            "flow_velocity_cm_s": 5.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 0.6,
-            "distance": 0.0,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-18",
-            "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 10.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 0.3,
-            "distance": 1.04,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-12",
-            "campaign": "BASS-II",
-            "material": "PMMA",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 15.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 2.6,
-            "distance": 2.25,
-            "synthetic": true
-          }
-        ],
-        "interval": null,
-        "ood_flag": false,
-        "ood_reason": null,
-        "evidence": [
-          "MOCK-BASS-II-24",
-          "MOCK-BASS-II-18",
-          "MOCK-BASS-II-12"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
-        "ood_reasons": [],
-        "inputs_normalized": {
-          "material": "Nomex",
-          "o2_percent": 34.0,
-          "pressure_psia": 8.2,
-          "pressure_kpa": 56.5,
-          "gravity": "micro",
-          "gravity_g": 0.0,
-          "preset": "Artemis Exploration Atmosphere"
-        },
-        "unit_conversions": [
-          "'fans off' flow undefined: neighbours searched without a flow constraint"
-        ],
-        "backend": "mock"
-      },
-      "ms": 21.8
-    },
-    {
-      "name": "flammability_boundary",
-      "args": {
-        "preset": "Artemis Exploration Atmosphere",
-        "material": "Nomex"
-      },
-      "result": {
-        "value": [
-          {
-            "flow_velocity_cm_s": 0.5,
-            "o2_percent_limit": 34.9
-          },
-          {
-            "flow_velocity_cm_s": 1.0,
-            "o2_percent_limit": 30.5
-          },
-          {
-            "flow_velocity_cm_s": 2.0,
-            "o2_percent_limit": 27.9
-          },
-          {
-            "flow_velocity_cm_s": 3.0,
-            "o2_percent_limit": 27.0
-          },
-          {
-            "flow_velocity_cm_s": 5.0,
-            "o2_percent_limit": 26.2
-          },
-          {
-            "flow_velocity_cm_s": 8.0,
-            "o2_percent_limit": 25.8
-          },
-          {
-            "flow_velocity_cm_s": 10.0,
-            "o2_percent_limit": 25.8
-          },
-          {
-            "flow_velocity_cm_s": 15.0,
-            "o2_percent_limit": 26.0
-          },
-          {
-            "flow_velocity_cm_s": 20.0,
-            "o2_percent_limit": 26.6
-          },
-          {
-            "flow_velocity_cm_s": 30.0,
-            "o2_percent_limit": 28.4
-          },
-          {
-            "flow_velocity_cm_s": 40.0,
-            "o2_percent_limit": 31.2
-          },
-          {
-            "flow_velocity_cm_s": 50.0,
-            "o2_percent_limit": 34.7
-          }
-        ],
-        "interval": [
-          [
-            33.3,
-            36.5
-          ],
-          [
-            28.9,
-            32.1
-          ],
-          [
-            26.3,
-            29.5
-          ],
-          [
-            25.4,
-            28.6
-          ],
-          [
-            24.6,
-            27.8
-          ],
-          [
-            24.2,
-            27.4
-          ],
-          [
-            24.2,
-            27.4
-          ],
-          [
-            24.4,
-            27.6
-          ],
-          [
-            25.0,
-            28.2
-          ],
-          [
-            26.8,
-            30.0
-          ],
-          [
-            29.6,
-            32.8
-          ],
-          [
-            33.1,
-            36.3
-          ]
-        ],
-        "interval_level": 0.9,
-        "min_o2_percent_limit": 25.8,
-        "flow_at_min_limit_cm_s": 8.0,
-        "coverage": "partial",
-        "ood_flag": false,
-        "ood_reason": null,
-        "evidence": [
-          "MOCK-BASS-II-18",
-          "MOCK-BASS-II-24",
-          "MOCK-SIBAL-09"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
-        "o2_limit_range_percent": [
-          25.8,
-          34.9
-        ],
-        "at_o2_percent": 34.0,
-        "flows_where_flammable_cm_s": [
-          1.0,
-          2.0,
-          3.0,
-          5.0,
-          8.0,
-          10.0,
-          15.0,
-          20.0,
-          30.0,
-          40.0
-        ],
-        "flows_where_not_flammable_cm_s": [
-          0.5,
-          50.0
-        ],
-        "flammable_at_some_flow": true,
-        "comparison_note": "At 34% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
-        "ood_reasons": [],
-        "inputs_normalized": {
-          "material": "Nomex",
-          "o2_percent": 34.0,
-          "pressure_psia": 8.2,
-          "pressure_kpa": 56.5,
-          "gravity": "micro",
-          "gravity_g": 0.0,
-          "preset": "Artemis Exploration Atmosphere"
-        },
-        "backend": "mock"
-      },
-      "ms": 0.4
+      "ms": 15.7
     },
     {
       "name": "flammability_boundary",
@@ -434,19 +206,159 @@
         "backend": "mock"
       },
       "ms": 0.3
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "material": "Nomex",
+        "preset": "Artemis Exploration Atmosphere",
+        "flow_velocity_cm_s": 8
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-24",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 34.0,
+            "pressure_psia": 8.2,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.6,
+            "distance": 0.41,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-18",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.3,
+            "distance": 1.06,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-12",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 15.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 2.6,
+            "distance": 2.33,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-12"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 8.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "flow_velocity_cm_s": 8,
+        "preset": "Artemis Exploration Atmosphere",
+        "material": "Nomex"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-24",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 34.0,
+            "pressure_psia": 8.2,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.6,
+            "distance": 0.41,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-18",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.3,
+            "distance": 1.06,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-12",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 15.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 2.6,
+            "distance": 2.33,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-12"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 8.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 6257,
+  "latency_ms": 6555,
   "model": "gemini-3.5-flash-lite",
   "backend": "mock",
   "ungrounded": [],
   "notes": [
     "api.py not usable, using mock API",
-    "grounding failed on first draft: 5.65",
+    "grounding failed on first draft: experiment ID NASA-TSD-6001",
     "answer regenerated after grounding feedback"
   ],
   "prompt_version": "2026-11-13.6"

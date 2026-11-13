@@ -22,14 +22,14 @@
     },
     "latency": {
       "ok": true,
-      "detail": "4489 ms ≤ 25000"
+      "detail": "6738 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Answer**\n\nFire behavior in microgravity differs significantly from Earth due to the absence of buoyancy-driven convection. On Earth, hot combustion gases rise because they are less dense than the surrounding air, which pulls fresh oxygen into the flame and gives it a characteristic teardrop shape. In microgravity, this buoyancy force is absent, causing flames to become spherical and rely primarily on diffusion to transport oxygen to the reaction zone.\n\n**Sources**\n\n*   NASA SVS 31394 (source pending team verification)",
+  "answer": "**Answer**\n\nFire behavior in microgravity differs significantly from Earth due to the absence of buoyancy-driven convection. On Earth, hot combustion gases are less dense than the surrounding air, causing them to rise and creating the familiar teardrop-shaped flame. In microgravity, this buoyancy force is absent, which causes flames to adopt a spherical shape and rely on diffusion to transport oxygen to the flame and heat away from it.\n\n(source pending team verification)\n\n**Sources**\n\n*   NASA SVS 31394",
   "tool_calls": [
     {
       "name": "get_background_fact",
@@ -55,7 +55,7 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 4489,
+  "latency_ms": 6738,
   "model": "gemini-3.1-flash-lite",
   "backend": "mock",
   "ungrounded": [],

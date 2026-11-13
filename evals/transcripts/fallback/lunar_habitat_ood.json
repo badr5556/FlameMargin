@@ -76,7 +76,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.3
+      "ms": 0.2
     },
     {
       "name": "nearest_experiments",
@@ -166,5 +166,5 @@
   "notes": [
     "api.py not usable, using mock API"
   ],
-  "prompt_version": "2026-11-13.5"
+  "prompt_version": "2026-11-13.6"
 }

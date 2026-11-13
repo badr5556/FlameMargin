@@ -72,7 +72,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.1
     },
     {
       "name": "nearest_experiments",
@@ -146,7 +146,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.1
     }
   ],
   "ood": true,
@@ -162,5 +162,5 @@
   "notes": [
     "api.py not usable, using mock API"
   ],
-  "prompt_version": "2026-11-13.5"
+  "prompt_version": "2026-11-13.6"
 }

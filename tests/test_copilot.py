@@ -410,3 +410,16 @@ def test_boundary_reports_limit_range():
     r = dispatch("flammability_boundary", {"material": "Nomex", "preset": "ISS"})
     lims = [p["o2_percent_limit"] for p in r["value"]]
     assert r["o2_limit_range_percent"] == [min(lims), max(lims)]
+
+
+def test_flow_cannot_be_justified_by_pressure_or_o2_numbers():
+    q = "Rough number for PMMA at 30% O2 and 10 psia?"
+    assert copilot.check_input_grounding("predict", {"flow_velocity_cm_s": 10}, q)["error"]["type"] == "unsupported_assumption"
+    assert copilot.check_input_grounding("predict", {"flow_velocity_cm_s": 30}, q)["error"]["type"] == "unsupported_assumption"
+    assert copilot.check_input_grounding("predict", {"flow_velocity_cm_s": 10}, q + " Flow is 10 cm/s.") is None
+
+
+def test_experiment_id_prefix_is_not_accepted():
+    r = dispatch("nearest_experiments", ARTEMIS_NEAR)
+    assert "MOCK-BASS-II-24" in r["evidence"]
+    assert copilot.verify_grounding("See MOCK-BASS-II-2.", [r]).unknown_ids == ["MOCK-BASS-II-2"]

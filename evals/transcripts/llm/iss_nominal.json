@@ -30,20 +30,20 @@
     },
     "latency": {
       "ok": true,
-      "detail": "3080 ms ≤ 25000"
+      "detail": "3775 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nNomex is predicted to **extinguish** (not burn) in the ISS cabin atmosphere (21% $\\text{O}_2$, 14.7 psia, microgravity) across all evaluated ventilation flow velocities.\n\n**Key numbers**\n- Cabin condition: 21% $\\text{O}_2$, 14.7 psia (101.4 kPa), microgravity.\n- Minimum oxygen concentration limit ($\\text{O}_2$ limit range): 24.1% to 33.1% depending on flow velocity.\n- The lowest oxygen limit is 24.1% at 8 cm/s and 10 cm/s flow velocity. Since the ISS cabin $\\text{O}_2$ level is 21%, it sits safely below the flammability boundary for Nomex at all flows.\n\n**Evidence**\nSupporting nearest experiments: `MOCK-SAFFIRE-06`, `MOCK-BASS-II-21`, `MOCK-BASS-II-03`.\n\n**Operational recommendation**\nStandard operational protocols apply. Maintain good housekeeping, isolate potential ignition sources, and ensure fire detection and suppression systems remain active.\n\n**Limits**\n- This is decision support, not a replacement for NASA-STD-6001 material testing.\n- The numbers come from a placeholder model (`mock_api`), not official NASA flight data.",
+  "answer": "**Verdict**\nNomex is predicted to **extinguish** (not burn) in the ISS cabin atmosphere (21% $\\text{O}_2$, 14.7 psia / 101.4 kPa, microgravity) across all flow velocities.\n\n**Key numbers**\n- **ISS cabin conditions:** 21% $\\text{O}_2$, 14.7 psia (101.4 kPa), microgravity ($\\text{gravity\\_g} = 0$).\n- **Limiting $\\text{O}_2$ range:** The minimum oxygen percentage required for Nomex to burn in microgravity ranges from **24.1% to 33.1%** (90% interval, depending on flow velocity).\n- **ISS operating point:** At 21% $\\text{O}_2$, the lowest oxygen limit required for combustion is **24.1%** (at 8 cm/s flow). Because 21% is below this limiting boundary, Nomex is non-flammable at all ventilation flow rates.\n\n**Evidence**\n- Nearest experiments: **MOCK-SAFFIRE-06**, **MOCK-BASS-II-21**, **MOCK-BASS-II-03**.\n\n**Operational recommendation**\n- Standard operational controls apply. Always maintain fire detection and suppression systems ready, isolate ignition sources, and limit the total amount of exposed combustible materials.\n\n**Limits**\n- This response is decision support. It is not a replacement for official NASA-STD-6001 material testing.\n- The numbers in this evaluation come from a placeholder model, not NASA data.\n\n*(Note: This is decision support, not a replacement for NASA-STD-6001 material testing.)*",
   "tool_calls": [
     {
       "name": "flammability_boundary",
       "args": {
-        "material": "Nomex",
-        "preset": "ISS cabin"
+        "preset": "ISS cabin",
+        "material": "Nomex"
       },
       "result": {
         "value": [
@@ -192,7 +192,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.7
+      "ms": 0.5
     },
     {
       "name": "nearest_experiments",
@@ -267,7 +267,7 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 3080,
+  "latency_ms": 3775,
   "model": "gemini-3.5-flash-lite",
   "backend": "mock",
   "ungrounded": [],

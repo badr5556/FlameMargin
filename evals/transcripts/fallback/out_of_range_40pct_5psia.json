@@ -143,6 +143,10 @@
           "MOCK-BASS-II-18"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          19.8,
+          28.9
+        ],
         "at_o2_percent": 40.0,
         "flows_where_flammable_cm_s": [
           0.5,
@@ -296,6 +300,10 @@
           "MOCK-SIBAL-09"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          27.3,
+          36.4
+        ],
         "at_o2_percent": 40.0,
         "flows_where_flammable_cm_s": [
           0.5,
@@ -449,6 +457,10 @@
           "MOCK-BASS-II-18"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          18.8,
+          27.9
+        ],
         "at_o2_percent": 40.0,
         "flows_where_flammable_cm_s": [
           0.5,
@@ -602,6 +614,10 @@
           "MOCK-BASS-II-18"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          18.3,
+          27.4
+        ],
         "at_o2_percent": 40.0,
         "flows_where_flammable_cm_s": [
           0.5,
@@ -720,5 +736,5 @@
   "notes": [
     "api.py not usable, using mock API"
   ],
-  "prompt_version": "2026-11-13.5"
+  "prompt_version": "2026-11-13.6"
 }

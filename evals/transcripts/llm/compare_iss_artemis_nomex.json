@@ -26,14 +26,14 @@
     },
     "latency": {
       "ok": true,
-      "detail": "5027 ms ≤ 25000"
+      "detail": "5480 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nFor Nomex in microgravity, the **ISS cabin preset** (14.7 psia, 21% O₂) is non-flammable across all modeled ventilation flows (minimum O₂ limit range is 24.1%–33.1%). By contrast, the **Artemis Exploration Atmosphere preset** (8.2 psia, 34% O₂) is flammable across a broad range of ventilation flows (minimum O₂ limit range is 25.8%–34.9%, with a minimum limit of 25.8% at 8 cm/s). \n\n**Key numbers**\n- **ISS cabin preset (21% O₂, 14.7 psia):** Minimum O₂ limit range is 24.1%–33.1%. At 21% O₂, the material does not burn at any tested flow velocity (0.5–50 cm/s).\n- **Artemis Exploration Atmosphere preset (34% O₂, 8.2 psia):** Minimum O₂ limit range is 25.8%–34.9%. At 34% O₂, the material burns at flow velocities from 1 cm/s to 40 cm/s (e.g., limit is 25.8% at 8 cm/s), and self-extinguishes only at very low (0.5 cm/s) or high (50 cm/s) ventilation extremes.\n\n**Evidence**\n- **ISS supporting experiments:** `MOCK-SAFFIRE-06`, `MOCK-BASS-II-21`, `MOCK-BASS-II-03`\n- **Artemis supporting experiments:** `MOCK-BASS-II-24`, `MOCK-BASS-II-18`, `MOCK-BASS-II-12`\n\n**Operational recommendation**\nBecause the Artemis atmosphere features an elevated oxygen concentration (34%) that makes Nomex flammable across normal ventilation conditions, stricter controls are required during Artemis operations. Limit the amount of exposed Nomex material, isolate ignition sources, and maintain active fire detection and suppression readiness. Do not rely on ventilation extremes (such as very low or very high airflow) to prevent combustion, as those regimes have the least data and are less robust.\n\n**Limits**\n- This is decision support, not a replacement for NASA-STD-6001 material testing.\n- The numbers and predictions come from a mock / synthetic placeholder model (`mock_api`), not NASA flight data.",
+  "answer": "**Verdict**\nFor Nomex in microgravity:\n- **ISS cabin** preset (14.7 psia, 21% O₂): Nomex is non-flammable at 21% O₂ across all evaluated ventilation flows (minimum O₂ limit is 24.1%).\n- **Artemis Exploration Atmosphere** preset (8.2 psia, 34% O₂): Nomex is flammable at 34% O₂ across a wide range of flow velocities (1–40 cm/s), with a minimum O₂ limit of 25.8%.\n\n**Key numbers**\n- **ISS cabin**: 21% O₂ at 14.7 psia (101.4 kPa). Minimum O₂ limit for burning ranges from 24.1% (at 8 cm/s flow) to 33.1% (at 0.5 cm/s flow). At 21% O₂, the material is below the flammability boundary at all flows.\n- **Artemis Exploration Atmosphere**: 34% O₂ at 8.2 psia (56.5 kPa). Minimum O₂ limit ranges from 25.8% (at 8–10 cm/s flow) to 34.9% (at 0.5 cm/s flow). Because 34% O₂ is above the minimum limit, Nomex burns at flows from 1 to 40 cm/s.\n\n**Evidence**\n- ISS cabin nearest experiments: `MOCK-SAFFIRE-06`, `MOCK-BASS-II-21`, `MOCK-BASS-II-03`.\n- Artemis atmosphere nearest experiments: `MOCK-BASS-II-24`, `MOCK-BASS-II-18`, `MOCK-BASS-II-12`.\n\n**Operational recommendation**\nWhen transitioning to the higher-oxygen Artemis atmosphere (8.2 psia, 34% O₂), treat Nomex as flammable. Implement strict controls: limit exposed material amounts, isolate potential ignition sources, ensure fire detection and suppression systems are ready, and consider lower O₂ operational limits where mission parameters allow.\n\n**Limits**\n- This is decision support, not a replacement for NASA-STD-6001 material testing.\n- The numbers come from a placeholder model (`mock_api`), not NASA data.",
   "tool_calls": [
     {
       "name": "compare_scenarios",
@@ -41,12 +41,12 @@
         "material": "Nomex",
         "scenarios": [
           {
-            "preset": "ISS cabin",
-            "label": "ISS"
+            "label": "ISS",
+            "preset": "ISS cabin"
           },
           {
-            "label": "Artemis",
-            "preset": "Artemis Exploration Atmosphere"
+            "preset": "Artemis Exploration Atmosphere",
+            "label": "Artemis"
           }
         ]
       },
@@ -62,8 +62,8 @@
     {
       "name": "flammability_boundary",
       "args": {
-        "preset": "ISS cabin",
-        "material": "Nomex"
+        "material": "Nomex",
+        "preset": "ISS cabin"
       },
       "result": {
         "value": [
@@ -212,13 +212,13 @@
         },
         "backend": "mock"
       },
-      "ms": 0.3
+      "ms": 0.2
     },
     {
       "name": "flammability_boundary",
       "args": {
-        "material": "Nomex",
-        "preset": "Artemis Exploration Atmosphere"
+        "preset": "Artemis Exploration Atmosphere",
+        "material": "Nomex"
       },
       "result": {
         "value": [
@@ -373,8 +373,8 @@
     {
       "name": "nearest_experiments",
       "args": {
-        "material": "Nomex",
-        "preset": "ISS cabin"
+        "preset": "ISS cabin",
+        "material": "Nomex"
       },
       "result": {
         "value": [
@@ -436,7 +436,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.3
+      "ms": 0.2
     },
     {
       "name": "nearest_experiments",
@@ -504,14 +504,14 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.1
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 5027,
+  "latency_ms": 5480,
   "model": "gemini-3.5-flash-lite",
   "backend": "mock",
   "ungrounded": [],

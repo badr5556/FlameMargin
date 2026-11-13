@@ -22,21 +22,21 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2753 ms ≤ 25000"
+      "detail": "2904 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nالنومكس ليس آمناً في جو أرتميس (Artemis Exploration Atmosphere) عند سرعة هواء 5 cm/s، حيث تشير التوقعات إلى احتمالية احتراق عالية جداً. \n*(ملاحظة: هذا القرار هو أداة لدعم القرار وليس بديلاً عن اختبارات المواد حسب معيار NASA-STD-6001).*\n\n**Key numbers**\n- احتمالية الاحتراق (Burn probability): 0.98\n- معدل انتشار اللهب (Flame spread rate): 0.41 mm/s (مع فترة ثقة 90% تتراوح بين 0.22 إلى 0.59 mm/s)\n- خصائص الجو: تركيز الأكسجين 34%، الضغط 56.5 kPa (أو 8.2 psia)، والجاذبية صغرى (micro).\n- الحد الأدنى للأكسجين للاحتراق (Limiting O2): 26.2%، مع هامش أكسجين يبلغ 7.8 نقطة مئوية فوق الحد.\n\n**Evidence**\nالتجارب الأقرب في البيانات التدريبية التي تدعم هذا الاستنتاج:\n- MOCK-BASS-II-24\n- MOCK-BASS-II-18\n- MOCK-BASS-II-12\n\n**Operational recommendation**\nبما أن الظروف الحالية تقع في نطاق قابل للاشتعال بوضوح، يجب عدم الاعتماد على حواف السرعة أو الانطفاء. يوصى بإضافة عوامل أمان إضافية مثل: تقليل كمية المواد المعرضة للاشتعال، عزل مصادر الاشتعال بشكل محكم، خفض نسبة الأكسجين إذا سمحت مهمة أرتميس بذلك، والتأكد من جاهزية أنظمة الكشف عن الحرائق وإخمادها.\n\n**Limits**\nالأرقام الواردة مأخوذة من نموذج تجريبي تمثيلي (synthetic placeholder) وليست بيانات حقيقية من وكالة ناسا (NASA).",
+  "answer": "**Verdict**\nالنومكس غير آمن (قابل للاحتراق) في جو أرتميس عند سرعة هواء 5 cm/s.\n\n**Key numbers**\n- احتمال الاحتراق: 0.98 (بفاصل ثقة 0.86 إلى 1).\n- معدل انتشار اللهب: 0.41 mm/s (بفاصل ثقة 90% يتراوح بين 0.22 و 0.59 mm/s).\n- تركيز الأكسجين في جو أرتميس: 34% (الضغط: 8.2 psia أو 56.5 kPa).\n- الحد الأدنى للأكسجين لاحتراق النومكس عند هذه الظروف (Limiting O2): 26.2%.\n- هامش الأكسجين: 7.8 نقطة مئوية فوق الحد الأدنى.\n\n**Evidence**\nتستند هذه النتيجة إلى أقرب التجارب في البيانات: MOCK-BASS-II-24، MOCK-BASS-II-18، MOCK-BASS-II-12.\n\n**Operational recommendation**\nبما أن المادة قابلة للاحتراق في هذه الظروف، يُنصح بالحد من كمية المواد المكشوفة، عزل مصادر الإشعال، وتقليل مستويات الأكسجين حيثما تسمح المهمة، مع الحفاظ على جاهزية أنظمة الكشف عن الحريق وإطفائه. ملاحظة: هذه أداة دعم قرار وليست بديلاً عن اختبارات المواد الرسمية حسب معيار NASA-STD-6001.\n\n**Limits**\nتأتي هذه الأرقام من نموذج تجريبي (mock/synthetic placeholder)، وليست بيانات ناسا حقيقية.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
+        "flow_velocity_cm_s": "5 cm/s",
         "preset": "Artemis Exploration Atmosphere",
-        "material": "Nomex",
-        "flow_velocity_cm_s": "5 cm/s"
+        "material": "Nomex"
       },
       "result": {
         "label": "burn",
@@ -83,8 +83,8 @@
       "name": "nearest_experiments",
       "args": {
         "flow_velocity_cm_s": "5 cm/s",
-        "preset": "Artemis Exploration Atmosphere",
-        "material": "Nomex"
+        "material": "Nomex",
+        "preset": "Artemis Exploration Atmosphere"
       },
       "result": {
         "value": [
@@ -154,7 +154,7 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2753,
+  "latency_ms": 2904,
   "model": "gemini-3.5-flash-lite",
   "backend": "mock",
   "ungrounded": [],

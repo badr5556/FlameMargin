@@ -18,21 +18,37 @@
     },
     "latency": {
       "ok": true,
-      "detail": "3961 ms ≤ 25000"
+      "detail": "3175 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: pressure 5 psia outside training range 7.5–15.5 psia\n\n**Verdict**\nUnsafe / Flammable. At 40% $\\text{O}_2$ and 5 psia (assuming PMMA based on standard default assumptions for unspecified material), the conditions are well above the flammability limit ($\\text{min\\_o2\\_percent\\_limit} = 19.8\\%$), and the material will burn across all evaluated flow velocities ($0.5\\text{--}50\\text{ cm/s}$).\n\n**Key numbers**\n- Oxygen concentration: $40\\%$\n- Pressure: $5\\text{ psia}$ ($34.5\\text{ kPa}$)\n- Minimum oxygen limit: $19.8\\%$ (at $8\\text{ cm/s}$)\n- Flammable flow range: $0.5\\text{--}50\\text{ cm/s}$\n\n**Evidence**\nSupporting experiment IDs from nearest experiments: `MOCK-BASS-II-12`, `MOCK-BASS-II-18`, `MOCK-BASS-II-24`.\n\n**Operational recommendation**\nLimit the amount of exposed material, isolate ignition sources, and lower the oxygen concentration where the mission allows. Keep fire detection and suppression ready. Never rely on flow velocity edges (such as quenching limits) for safety margins.\n\n**Limits**\nBecause the pressure ($5\\text{ psia}$) is outside the training data range ($7.5\\text{--}15.5\\text{ psia}$), predictions carry high uncertainty and cannot be fully trusted. Furthermore, the numbers come from a placeholder model (`mock_api`), not NASA data. *(Note: This is decision support, not a replacement for NASA-STD-6001 material testing.)*",
+  "answer": "⚠️ Out of distribution: pressure 5 psia outside training range 7.5–15.5 psia\n\n**Verdict**\nUnsafe / Flammable. At 40% O2 and 5 psia (assuming PMMA as the baseline material since none was specified), the environment is well above the limiting oxygen concentration across all evaluated flow velocities, meaning the material will burn.\n\n**Key numbers**\n- Pressure: 5 psia (34.5 kPa)\n- Oxygen concentration: 40%\n- Minimum O2 limit for combustion: 19.8% (at 8 cm/s flow)\n- Flammable flow range: All evaluated flows from 0.5 cm/s to 50 cm/s\n\n**Evidence**\nSupported by nearest experiments: MOCK-BASS-II-12, MOCK-SIBAL-09, MOCK-BASS-II-18.\n\n**Operational recommendation**\nDo not operate at 40% O2 and 5 psia with exposed flammable materials. Lower the oxygen concentration or restrict flammable materials, ensure fire detection and suppression are active, and limit exposed surface areas.\n\n**Limits**\nThe results cannot be fully trusted because the pressure (5 psia) is out of the model's training range (7.5–15.5 psia). Additionally, the numbers come from a placeholder model, not NASA data. Note: This is decision support, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "material": "PMMA",
+        "pressure_psia": 5,
+        "o2_percent": 40
+      },
+      "result": {
+        "error": {
+          "type": "missing_flow",
+          "message": "flow_velocity_cm_s is required for this tool.",
+          "hint": "If the operator gave no flow, call flammability_boundary (covers all flows) or state an assumption."
+        }
+      },
+      "ms": 0.1
+    },
     {
       "name": "flammability_boundary",
       "args": {
-        "pressure_psia": 5,
+        "material": "PMMA",
         "o2_percent": 40,
-        "material": "PMMA"
+        "pressure_psia": 5
       },
       "result": {
         "value": [
@@ -183,76 +199,6 @@
         "backend": "mock"
       },
       "ms": 0.2
-    },
-    {
-      "name": "nearest_experiments",
-      "args": {
-        "material": "PMMA",
-        "pressure_psia": 5,
-        "o2_percent": 40
-      },
-      "result": {
-        "value": [
-          {
-            "id": "MOCK-BASS-II-24",
-            "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 34.0,
-            "pressure_psia": 8.2,
-            "flow_velocity_cm_s": 5.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 0.6,
-            "distance": 2.56,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-12",
-            "campaign": "BASS-II",
-            "material": "PMMA",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 15.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 2.6,
-            "distance": 2.65,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-18",
-            "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 10.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 0.3,
-            "distance": 3.32,
-            "synthetic": true
-          }
-        ],
-        "interval": null,
-        "ood_flag": true,
-        "ood_reason": "pressure 5 psia outside training range 7.5–15.5 psia",
-        "evidence": [
-          "MOCK-BASS-II-24",
-          "MOCK-BASS-II-12",
-          "MOCK-BASS-II-18"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
-        "ood_reasons": [
-          "pressure 5 psia outside training range 7.5–15.5 psia"
-        ],
-        "inputs_normalized": {
-          "material": "PMMA",
-          "o2_percent": 40.0,
-          "pressure_psia": 5.0,
-          "pressure_kpa": 34.5,
-          "gravity": "micro",
-          "gravity_g": 0.0
-        },
-        "backend": "mock"
-      },
-      "ms": 0.3
     }
   ],
   "ood": true,
@@ -261,7 +207,7 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 3961,
+  "latency_ms": 3175,
   "model": "gemini-3.5-flash-lite",
   "backend": "mock",
   "ungrounded": [],

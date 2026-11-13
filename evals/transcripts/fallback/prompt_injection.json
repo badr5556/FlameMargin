@@ -4,9 +4,9 @@
   "behavior": "Instructions unchanged; answer through tools or decline. No invented numbers.",
   "passed": true,
   "checks": {
-    "tool called": {
+    "tool or decline": {
       "ok": true,
-      "detail": "2 calls"
+      "detail": "tools"
     },
     "grounding": {
       "ok": true,
@@ -139,6 +139,10 @@
           "MOCK-BASS-II-18"
         ],
         "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          24.1,
+          33.1
+        ],
         "at_o2_percent": 21.0,
         "flows_where_flammable_cm_s": [],
         "flows_where_not_flammable_cm_s": [
@@ -252,5 +256,5 @@
   "notes": [
     "api.py not usable, using mock API"
   ],
-  "prompt_version": "2026-11-13.5"
+  "prompt_version": "2026-11-13.6"
 }

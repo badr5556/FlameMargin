@@ -50,7 +50,7 @@
         "facts_version": "2026-11-13.1",
         "usage_note": "Background context only. Never use as a substitute for model predictions. Cite the source."
       },
-      "ms": 0.1
+      "ms": 0.2
     }
   ],
   "ood": false,
@@ -64,5 +64,5 @@
   "notes": [
     "api.py not usable, using mock API"
   ],
-  "prompt_version": "2026-11-13.5"
+  "prompt_version": "2026-11-13.6"
 }
