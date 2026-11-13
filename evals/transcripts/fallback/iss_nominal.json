@@ -1,0 +1,276 @@
+{
+  "id": "iss_nominal",
+  "question": "Is Nomex safe in the ISS cabin atmosphere?",
+  "behavior": "In-distribution verdict from the flammability boundary at 21% O2, with interval and cited experiments.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "2 calls"
+    },
+    "right tool": {
+      "ok": true,
+      "detail": "flammability_boundary/predict/compare_scenarios"
+    },
+    "evidence tool": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "not OOD": {
+      "ok": true,
+      "detail": "in-distribution"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "content": {
+      "ok": true,
+      "detail": "NASA-STD-6001"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "2 ms ≤ 1000"
+    }
+  },
+  "answer": "**Verdict**\n**Nomex is not flammable at any modeled flow**: 21% O2 is below its minimum limiting O2 of 24.1%.\n\n**Key numbers**\n- Minimum limiting O2 for Nomex: 24.1% (90% band 23.3–24.9%) at 8 cm/s flow, 14.7 psia.\n\n**Evidence**\n- MOCK-SAFFIRE-06 (Saffire; Nomex, 21% O2, 14.7 psia, 20 cm/s) → extinguish\n- MOCK-BASS-II-21 (BASS-II; Nomex, 24% O2, 14.7 psia, 10 cm/s) → extinguish\n- MOCK-BASS-II-03 (BASS-II; PMMA, 21% O2, 14.7 psia, 10 cm/s) → burn\n\n**Operational recommendation**\n- Predicted to self-extinguish under these conditions; margin shrinks if O2 rises or pressure drops, so re-check after any atmosphere change.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "material": "Nomex",
+        "preset": "ISS cabin",
+        "o2_percent": 21.0
+      },
+      "result": {
+        "value": [
+          {
+            "flow_velocity_cm_s": 0.5,
+            "o2_percent_limit": 33.1
+          },
+          {
+            "flow_velocity_cm_s": 1.0,
+            "o2_percent_limit": 28.7
+          },
+          {
+            "flow_velocity_cm_s": 2.0,
+            "o2_percent_limit": 26.2
+          },
+          {
+            "flow_velocity_cm_s": 3.0,
+            "o2_percent_limit": 25.2
+          },
+          {
+            "flow_velocity_cm_s": 5.0,
+            "o2_percent_limit": 24.5
+          },
+          {
+            "flow_velocity_cm_s": 8.0,
+            "o2_percent_limit": 24.1
+          },
+          {
+            "flow_velocity_cm_s": 10.0,
+            "o2_percent_limit": 24.1
+          },
+          {
+            "flow_velocity_cm_s": 15.0,
+            "o2_percent_limit": 24.3
+          },
+          {
+            "flow_velocity_cm_s": 20.0,
+            "o2_percent_limit": 24.8
+          },
+          {
+            "flow_velocity_cm_s": 30.0,
+            "o2_percent_limit": 26.7
+          },
+          {
+            "flow_velocity_cm_s": 40.0,
+            "o2_percent_limit": 29.4
+          },
+          {
+            "flow_velocity_cm_s": 50.0,
+            "o2_percent_limit": 33.0
+          }
+        ],
+        "interval": [
+          [
+            32.3,
+            33.9
+          ],
+          [
+            27.9,
+            29.5
+          ],
+          [
+            25.4,
+            27.0
+          ],
+          [
+            24.4,
+            26.0
+          ],
+          [
+            23.7,
+            25.3
+          ],
+          [
+            23.3,
+            24.9
+          ],
+          [
+            23.3,
+            24.9
+          ],
+          [
+            23.5,
+            25.1
+          ],
+          [
+            24.0,
+            25.6
+          ],
+          [
+            25.9,
+            27.5
+          ],
+          [
+            28.6,
+            30.2
+          ],
+          [
+            32.2,
+            33.8
+          ]
+        ],
+        "interval_level": 0.9,
+        "min_o2_percent_limit": 24.1,
+        "flow_at_min_limit_cm_s": 8.0,
+        "coverage": "in_distribution",
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-21",
+          "MOCK-SAFFIRE-06",
+          "MOCK-BASS-II-18"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          24.1,
+          33.1
+        ],
+        "at_o2_percent": 21.0,
+        "flows_where_flammable_cm_s": [],
+        "flows_where_not_flammable_cm_s": [
+          0.5,
+          1.0,
+          2.0,
+          3.0,
+          5.0,
+          8.0,
+          10.0,
+          15.0,
+          20.0,
+          30.0,
+          40.0,
+          50.0
+        ],
+        "flammable_at_some_flow": false,
+        "comparison_note": "At 21% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "material": "Nomex",
+        "k": 3,
+        "preset": "ISS cabin"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-SAFFIRE-06",
+            "campaign": "Saffire",
+            "material": "Nomex",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 20.0,
+            "outcome": "extinguish",
+            "spread_rate_mm_s": 0.0,
+            "distance": 0.0,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-21",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 24.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "extinguish",
+            "spread_rate_mm_s": 0.0,
+            "distance": 0.6,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-03",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.9,
+            "distance": 2.0,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-SAFFIRE-06",
+          "MOCK-BASS-II-21",
+          "MOCK-BASS-II-03"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.1
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "fallback",
+  "latency_ms": 2,
+  "model": null,
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API"
+  ],
+  "prompt_version": "2026-11-13.6"
+}

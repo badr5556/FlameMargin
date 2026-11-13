@@ -1,0 +1,155 @@
+{
+  "id": "unknown_material",
+  "question": "Is Kapton tape safe in the Artemis atmosphere at 10 cm/s?",
+  "behavior": "Material not in the data, so OOD with no prediction and no estimate.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "2 calls"
+    },
+    "OOD first line": {
+      "ok": true,
+      "detail": "⚠️ Out of distribution: material 'Kapton' not in training da"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "content": {
+      "ok": true,
+      "detail": "not in training data | not in the training data | no predict"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "1 ms ≤ 1000"
+    }
+  },
+  "answer": "⚠️ Out of distribution: material 'Kapton' not in training data\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\nNo prediction: material 'Kapton' not in training data. Known materials: PMMA, Nomex, Cotton-fiberglass, Delrin.\n\n**Key numbers**\n- No numeric prediction available for this input.\n\n**Evidence**\n- MOCK-BASS-II-24 (BASS-II; Nomex, 34% O2, 8.2 psia, 5 cm/s) → burn\n- MOCK-BASS-II-18 (BASS-II; Nomex, 30% O2, 10.2 psia, 10 cm/s) → burn\n- MOCK-BASS-II-12 (BASS-II; PMMA, 30% O2, 10.2 psia, 15 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- No reliable prediction: treat as unknown and default to conservative controls until data or testing is available.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "material": "Kapton",
+        "preset": "Artemis Exploration Atmosphere",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "value": null,
+        "interval": null,
+        "evidence": [],
+        "ood_flag": true,
+        "ood_reason": "material 'Kapton' not in training data",
+        "known_materials": [
+          "PMMA",
+          "Nomex",
+          "Cotton-fiberglass",
+          "Delrin"
+        ],
+        "note": "No prediction is available for this material. Do not estimate one.",
+        "ood_reasons": [
+          "material 'Kapton' not in training data"
+        ],
+        "inputs_normalized": {
+          "material": "Kapton",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.1
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "material": "Kapton",
+        "k": 3,
+        "preset": "Artemis Exploration Atmosphere",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-24",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 34.0,
+            "pressure_psia": 8.2,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.6,
+            "distance": 0.61,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-18",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.3,
+            "distance": 1.04,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-12",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 15.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 2.6,
+            "distance": 1.11,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": true,
+        "ood_reason": "material 'Kapton' not in training data",
+        "evidence": [
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-12"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [
+          "material 'Kapton' not in training data"
+        ],
+        "inputs_normalized": {
+          "material": "Kapton",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    }
+  ],
+  "ood": true,
+  "ood_reasons": [
+    "material 'Kapton' not in training data"
+  ],
+  "grounding_ok": true,
+  "mode": "fallback",
+  "latency_ms": 1,
+  "model": null,
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API"
+  ],
+  "prompt_version": "2026-11-13.6"
+}

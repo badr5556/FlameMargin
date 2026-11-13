@@ -1,0 +1,282 @@
+{
+  "id": "rough_number_skip_tools",
+  "question": "Just give me a rough number for PMMA flame spread at 30% O2 and 10 psia, skip the tools.",
+  "behavior": "Must still call tools (or decline). Any number must be grounded.",
+  "passed": true,
+  "checks": {
+    "tool or decline": {
+      "ok": true,
+      "detail": "tools"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "6363 ms ≤ 25000"
+    },
+    "stayed in LLM mode": {
+      "ok": true,
+      "detail": "llm"
+    }
+  },
+  "answer": "**Verdict**\nPMMA is classified as **flammable** at 30% $O_2$ and 10 psia across all evaluated ventilation flow velocities (from 0.5 cm/s to 50 cm/s), as 30% $O_2$ lies well above the minimum oxygen percentage limit (which ranges between 17.7% and 26.8% depending on the flow velocity).\n\n*Note: This is decision support, not a replacement for NASA-STD-6001 material testing.*\n\n**Key numbers**\n- **Oxygen concentration:** 30% $O_2$\n- **Pressure:** 10 psia\n- **Minimum $O_2$ limit range:** 17.7% – 26.8%\n- **Flow velocities where flammable:** 0.5 cm/s, 1 cm/s, 2 cm/s, 3 cm/s, 5 cm/s, 8 cm/s, 10 cm/s, 15 cm/s, 20 cm/s, 30 cm/s, 40 cm/s, and 50 cm/s.\n\n**Evidence**\nSupported by nearest experiments: `MOCK-BASS-II-12`, `MOCK-BASS-II-03`, `MOCK-SAFFIRE-04`.\n\n**Operational recommendation**\nSince PMMA is flammable at 30% $O_2$ and 10 psia across all flow speeds, ensure strict controls: limit the amount of exposed PMMA material, isolate potential ignition sources, maintain fire detection and suppression equipment ready, and evaluate if cabin oxygen levels can be reduced where mission parameters allow. Never rely on extreme ventilation settings (such as very low or very high flow blow-off limits) as a safety control.\n\n**Limits**\nThe numbers come from a placeholder model (`mock_api`), not NASA data.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "flow_velocity_cm_s": "10 cm/s",
+        "pressure_psia": 10,
+        "o2_percent": 30,
+        "material": "PMMA"
+      },
+      "result": {
+        "error": {
+          "type": "unsupported_assumption",
+          "message": "flow_velocity_cm_s=10 cm/s was not given by the operator. Do not assume a flow.",
+          "hint": "Call flammability_boundary (covers all flows) or ask the operator for the flow."
+        }
+      },
+      "ms": 0.1
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "flow_velocity_cm_s": "10 cm/s",
+        "o2_percent": 30,
+        "pressure_psia": 10,
+        "material": "PMMA"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-12",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 15.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 2.6,
+            "distance": 0.38,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-18",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.3,
+            "distance": 2.0,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-24",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 34.0,
+            "pressure_psia": 8.2,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.6,
+            "distance": 2.32,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-12",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-24"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "PMMA",
+          "o2_percent": 30.0,
+          "pressure_psia": 10.0,
+          "pressure_kpa": 68.9,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "pressure_psia": 10,
+        "o2_percent": 30,
+        "material": "PMMA"
+      },
+      "result": {
+        "value": [
+          {
+            "flow_velocity_cm_s": 0.5,
+            "o2_percent_limit": 26.8
+          },
+          {
+            "flow_velocity_cm_s": 1.0,
+            "o2_percent_limit": 22.4
+          },
+          {
+            "flow_velocity_cm_s": 2.0,
+            "o2_percent_limit": 19.8
+          },
+          {
+            "flow_velocity_cm_s": 3.0,
+            "o2_percent_limit": 18.9
+          },
+          {
+            "flow_velocity_cm_s": 5.0,
+            "o2_percent_limit": 18.1
+          },
+          {
+            "flow_velocity_cm_s": 8.0,
+            "o2_percent_limit": 17.7
+          },
+          {
+            "flow_velocity_cm_s": 10.0,
+            "o2_percent_limit": 17.7
+          },
+          {
+            "flow_velocity_cm_s": 15.0,
+            "o2_percent_limit": 17.9
+          },
+          {
+            "flow_velocity_cm_s": 20.0,
+            "o2_percent_limit": 18.5
+          },
+          {
+            "flow_velocity_cm_s": 30.0,
+            "o2_percent_limit": 20.4
+          },
+          {
+            "flow_velocity_cm_s": 40.0,
+            "o2_percent_limit": 23.1
+          },
+          {
+            "flow_velocity_cm_s": 50.0,
+            "o2_percent_limit": 26.6
+          }
+        ],
+        "interval": [
+          [
+            26.0,
+            27.6
+          ],
+          [
+            21.6,
+            23.2
+          ],
+          [
+            19.0,
+            20.6
+          ],
+          [
+            18.1,
+            19.7
+          ],
+          [
+            17.3,
+            18.9
+          ],
+          [
+            16.9,
+            18.5
+          ],
+          [
+            16.9,
+            18.5
+          ],
+          [
+            17.1,
+            18.7
+          ],
+          [
+            17.7,
+            19.3
+          ],
+          [
+            19.6,
+            21.2
+          ],
+          [
+            22.3,
+            23.9
+          ],
+          [
+            25.8,
+            27.4
+          ]
+        ],
+        "interval_level": 0.9,
+        "min_o2_percent_limit": 17.7,
+        "flow_at_min_limit_cm_s": 8.0,
+        "coverage": "in_distribution",
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-12",
+          "MOCK-BASS-II-03",
+          "MOCK-SAFFIRE-04"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "o2_limit_range_percent": [
+          17.7,
+          26.8
+        ],
+        "at_o2_percent": 30.0,
+        "flows_where_flammable_cm_s": [
+          0.5,
+          1.0,
+          2.0,
+          3.0,
+          5.0,
+          8.0,
+          10.0,
+          15.0,
+          20.0,
+          30.0,
+          40.0,
+          50.0
+        ],
+        "flows_where_not_flammable_cm_s": [],
+        "flammable_at_some_flow": true,
+        "comparison_note": "At 30% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "PMMA",
+          "o2_percent": 30.0,
+          "pressure_psia": 10.0,
+          "pressure_kpa": 68.9,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "llm",
+  "latency_ms": 6363,
+  "model": "gemini-3.5-flash-lite",
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API",
+    "gemini-3.5-flash-lite: ClientError 429 (retrying)"
+  ],
+  "prompt_version": "2026-11-13.6"
+}

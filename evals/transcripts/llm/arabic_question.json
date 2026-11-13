@@ -1,0 +1,165 @@
+{
+  "id": "arabic_question",
+  "question": "هل النومكس آمن في جو أرتميس عند سرعة هواء 5 cm/s؟",
+  "behavior": "Arabic in, Arabic out (LLM mode), with technical terms in English; grounded numbers.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "2 calls"
+    },
+    "not OOD": {
+      "ok": true,
+      "detail": "in-distribution"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "Arabic answer": {
+      "ok": true,
+      "detail": ""
+    },
+    "latency": {
+      "ok": true,
+      "detail": "2904 ms ≤ 25000"
+    },
+    "stayed in LLM mode": {
+      "ok": true,
+      "detail": "llm"
+    }
+  },
+  "answer": "**Verdict**\nالنومكس غير آمن (قابل للاحتراق) في جو أرتميس عند سرعة هواء 5 cm/s.\n\n**Key numbers**\n- احتمال الاحتراق: 0.98 (بفاصل ثقة 0.86 إلى 1).\n- معدل انتشار اللهب: 0.41 mm/s (بفاصل ثقة 90% يتراوح بين 0.22 و 0.59 mm/s).\n- تركيز الأكسجين في جو أرتميس: 34% (الضغط: 8.2 psia أو 56.5 kPa).\n- الحد الأدنى للأكسجين لاحتراق النومكس عند هذه الظروف (Limiting O2): 26.2%.\n- هامش الأكسجين: 7.8 نقطة مئوية فوق الحد الأدنى.\n\n**Evidence**\nتستند هذه النتيجة إلى أقرب التجارب في البيانات: MOCK-BASS-II-24، MOCK-BASS-II-18، MOCK-BASS-II-12.\n\n**Operational recommendation**\nبما أن المادة قابلة للاحتراق في هذه الظروف، يُنصح بالحد من كمية المواد المكشوفة، عزل مصادر الإشعال، وتقليل مستويات الأكسجين حيثما تسمح المهمة، مع الحفاظ على جاهزية أنظمة الكشف عن الحريق وإطفائه. ملاحظة: هذه أداة دعم قرار وليست بديلاً عن اختبارات المواد الرسمية حسب معيار NASA-STD-6001.\n\n**Limits**\nتأتي هذه الأرقام من نموذج تجريبي (mock/synthetic placeholder)، وليست بيانات ناسا حقيقية.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "flow_velocity_cm_s": "5 cm/s",
+        "preset": "Artemis Exploration Atmosphere",
+        "material": "Nomex"
+      },
+      "result": {
+        "label": "burn",
+        "burn_probability": 0.98,
+        "burn_probability_interval": [
+          0.86,
+          1.0
+        ],
+        "value": 0.41,
+        "unit": "mm/s",
+        "quantity": "flame spread rate",
+        "interval": [
+          0.22,
+          0.59
+        ],
+        "interval_level": 0.9,
+        "limiting_o2_percent": 26.2,
+        "o2_margin_percent_points": 7.8,
+        "coverage": "partial",
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-12"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 5.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.3
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "flow_velocity_cm_s": "5 cm/s",
+        "material": "Nomex",
+        "preset": "Artemis Exploration Atmosphere"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-24",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 34.0,
+            "pressure_psia": 8.2,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.6,
+            "distance": 0.0,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-18",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.3,
+            "distance": 1.2,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-12",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 15.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 2.6,
+            "distance": 2.46,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-12"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 5.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.1
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "llm",
+  "latency_ms": 2904,
+  "model": "gemini-3.5-flash-lite",
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API"
+  ],
+  "prompt_version": "2026-11-13.6"
+}
