@@ -30,7 +30,7 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2 ms ≤ 1000"
+      "detail": "4 ms ≤ 1000"
     }
   },
   "answer": "**Verdict**\n**Nomex is not flammable at any modeled flow**: 21% O2 is below its minimum limiting O2 of 24.1%.\n\n**Key numbers**\n- Minimum limiting O2 for Nomex: 24.1% (90% band 23.3–24.9%) at 8 cm/s flow, 14.7 psia.\n\n**Evidence**\n- MOCK-SAFFIRE-06 (Saffire; Nomex, 21% O2, 14.7 psia, 20 cm/s) → extinguish\n- MOCK-BASS-II-21 (BASS-II; Nomex, 24% O2, 14.7 psia, 10 cm/s) → extinguish\n- MOCK-BASS-II-03 (BASS-II; PMMA, 21% O2, 14.7 psia, 10 cm/s) → burn\n\n**Operational recommendation**\n- Predicted to self-extinguish under these conditions; margin shrinks if O2 rises or pressure drops, so re-check after any atmosphere change.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
@@ -189,7 +189,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.3
     },
     {
       "name": "nearest_experiments",
@@ -265,7 +265,7 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 2,
+  "latency_ms": 4,
   "model": null,
   "backend": "mock",
   "ungrounded": [],

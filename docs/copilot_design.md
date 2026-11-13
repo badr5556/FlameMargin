@@ -71,7 +71,8 @@ Operational recommendation → Limits**), OOD first. It passes the same groundin
   **semantically right** (e.g. a cherry-picked range). Mitigation: comparisons are computed in code.
 - Until `src/api.py` lands, all predictions are synthetic (mock), and are labelled as such everywhere.
 - "Fans off" has no agreed flow value yet (see `docs/copilot_integration.md`).
-- Background facts are `verified: False` until the science lead checks them.
+- Background facts were re-worded against `docs/science/claims_sheet.md` (2026-11-13) but stay `verified: False`:
+  the primary sources could not be opened from the build environment, only search extracts of them.
 - Decision support only, not a replacement for NASA-STD-6001 material testing.
 
 ## AI-use disclosure (Space Apps)
@@ -81,4 +82,6 @@ Operational recommendation → Limits**), OOD first. It passes the same groundin
   model through tools; the LLM generates no numbers of its own (enforced by the code guards above).
 - **Development:** the Layer 3 code, tests, evals and these docs were written with an AI coding assistant
   (Claude Code, Anthropic) under the direction of, and reviewed by, the Layer 3 owner (Omar, team IGNISPHERE).
-- Background facts were provided by the team brief and are pending verification by the team's science lead.
+- Background facts started from the team brief; they were fact-checked with AI-assisted web search (Claude Code)
+  against search-engine extracts of the primary sources and corrected where the brief was too strong
+  (`docs/science/claims_sheet.md`). They remain marked unverified until a human opens each source.

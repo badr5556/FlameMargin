@@ -69,7 +69,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.1
+      "ms": 0.2
     },
     {
       "name": "nearest_experiments",
@@ -140,7 +140,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.1
     }
   ],
   "ood": false,

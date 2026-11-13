@@ -22,7 +22,7 @@
     },
     "latency": {
       "ok": true,
-      "detail": "1 ms ≤ 1000"
+      "detail": "2 ms ≤ 1000"
     }
   },
   "answer": "⚠️ Out of distribution: no training data at this gravity level (FM2 not yet flown)\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\n**PMMA is predicted to BURN** at Lunar surface habitat, 34% O2, 8.2 psia, 10 cm/s flow, lunar gravity.\n\n**Key numbers**\n- Burn probability: 0.99 (interval 0.74–1)\n- Flame spread rate: 2.03 mm/s (90% interval 0.41–3.65 mm/s)\n- Limiting O2 at this flow: 18.3% (margin 15.7 percentage points)\n\n**Evidence**\n- MOCK-BASS-II-12 (BASS-II; PMMA, 30% O2, 10.2 psia, 15 cm/s) → burn\n- MOCK-BASS-II-24 (BASS-II; Nomex, 34% O2, 8.2 psia, 5 cm/s) → burn\n- MOCK-BASS-II-18 (BASS-II; Nomex, 30% O2, 10.2 psia, 10 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
@@ -76,7 +76,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.4
     },
     {
       "name": "nearest_experiments",
@@ -159,7 +159,7 @@
   ],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 1,
+  "latency_ms": 2,
   "model": null,
   "backend": "mock",
   "ungrounded": [],

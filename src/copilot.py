@@ -638,9 +638,9 @@ def _recommendation(status: str, ood: bool, fans_off: bool, trace: list[dict[str
     if status == "flammable":
         rec.append("- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.")
         if fans_off:
-            bg = _call("get_background_fact", {"topic": "bass2_lower_o2_in_microgravity"}, trace)
-            src = bg["matches"][0]["source"] if bg.get("matches") else None
-            rec.append("- Do not rely on ventilation shutdown alone to extinguish a fire here" + (f" (BASS-II background: {src}, pending verification)." if src else "."))
+            # Claims sheet C2/C9: no source says shutdown fails; residual low-speed flow can still sustain a flame.
+            rec.append("- Do not rely on ventilation shutdown alone: residual low-speed flow can still sustain a flame, "
+                       "so check the low-flow end of the boundary.")
     elif status == "nonflammable":
         rec.append("- Predicted to self-extinguish under these conditions; margin shrinks if O2 rises or pressure drops, so re-check after any atmosphere change.")
     else:

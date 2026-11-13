@@ -26,7 +26,7 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2 ms ≤ 1000"
+      "detail": "1 ms ≤ 1000"
     }
   },
   "answer": "**Verdict**\nISS cabin: **Nomex is not flammable at any modeled flow**: 21% O2 is below its minimum limiting O2 of 24.1%.\nArtemis Exploration Atmosphere: **Nomex is FLAMMABLE** at 34% O2 for modeled flows from 1 to 40 cm/s.\n\n**Key numbers**\n- ISS cabin: Minimum limiting O2 for Nomex: 24.1% (90% band 23.3–24.9%) at 8 cm/s flow, 14.7 psia.\n- Artemis Exploration Atmosphere: Minimum limiting O2 for Nomex: 25.8% (90% band 24.2–27.4%) at 8 cm/s flow, 8.2 psia.\n\n**Evidence**\n- MOCK-SAFFIRE-06 (Saffire; Nomex, 21% O2, 14.7 psia, 20 cm/s) → extinguish\n- MOCK-BASS-II-21 (BASS-II; Nomex, 24% O2, 14.7 psia, 10 cm/s) → extinguish\n- MOCK-BASS-II-03 (BASS-II; PMMA, 21% O2, 14.7 psia, 10 cm/s) → burn\n\n**Operational recommendation**\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Partial training coverage here: intervals are wider than for ISS-like conditions.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
@@ -342,7 +342,7 @@
         },
         "backend": "mock"
       },
-      "ms": 0.2
+      "ms": 0.1
     },
     {
       "name": "nearest_experiments",
@@ -418,7 +418,7 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 2,
+  "latency_ms": 1,
   "model": null,
   "backend": "mock",
   "ungrounded": [],
