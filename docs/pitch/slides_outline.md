@@ -1,0 +1,15 @@
+# Slides outline (8 slides)
+
+One message per slide. Claim IDs refer to `docs/science/claims_sheet.md`; every claim used is still
+`NOT VERIFIED` until a human opens the source. Credit every NASA image on the slide ("Image: NASA").
+
+| # | Title | The one message | Visual | Speaker notes | Claim IDs |
+|---|---|---|---|---|---|
+| 1 | FlameMargin | Know your margin before the fire does. | Team name IGNISPHERE, logo, a NASA microgravity flame image (credited) | "We are IGNISPHERE, from Cairo. Our challenge is Flame in Freefall." | none |
+| 2 | Tested on Earth, flown in space | Materials are cleared by a 1 g upward-flame test, but in space air flow decides if a flame lives. | Two flame icons: teardrop (Earth) vs round (space); a fan icon with an arrow | "NASA screens materials with NASA-STD-6001B Test 1, an upward flame test in normal gravity. Without buoyancy, a candle flame in still air becomes round, and the fans' air flow becomes the key variable." | C11, C1, C14 |
+| 3 | The evidence points both ways | The Earth test looks conservative for still air, but not always for moving air. | Two-column card: left "Mir: conservative for the plastics tested (still air)"; right "BASS-II: some materials burned below their Earth O2 limits (gentle flow)" | "This is not 'NASA was wrong'. Both results are true; flow speed is what differs. That's why flow is an input in our model." | C9, C2, C14 |
+| 4 | The next atmosphere is outside the data | Artemis' 34% O2 at 8.2 psia sits above most existing material data. | Simple chart: ISS point (14.7 psia, 21%) vs Exploration Atmosphere point (8.2 psia, 34%), dashed line at 30% O2 "limited data above" | "The recommended Exploration Atmosphere is 8.2 psia and 34% O2. At 8.2 psia, the O2 limit for no increase in burning rate is 31.4%. And NASA notes limited material data above 30% O2." | C12, C4, C5, C13 |
+| 5 | FlameMargin: three layers | Model → margin map → Copilot, all from one prediction interface. | 3-box architecture diagram (from `docs/copilot_design.md`), with status tags: Layer 1/2 "integrating", Layer 3 "done" | "Layer 1 learns from NASA PSI microgravity tests. Layer 2 maps the O2 limit vs flow. Layer 3 answers questions only through Layer 1." | none |
+| 6 | Live demo | An operator question, answered with numbers, evidence and limits. | Live app (see `demo_script.md`). Backup: screenshot of the Artemis + fans-off answer | Run Act 2 of the demo script. `[FILL WITH REAL NUMBERS]` or say "mock" honestly. | (demo) |
+| 7 | Honest by design | No data → it says so first; injected instructions → it refuses. | Screenshot: `⚠️ Out of distribution...` first line for the lunar question; screenshot of the refusal | "No fire test has been run on the Moon yet, so any non-microgravity question is flagged by a hard rule in code. Every number is checked against tool outputs. 12/12 adversarial evals pass." | C10, C7 |
+| 8 | Limits and next steps | Small data, mock until connected, no lunar data, and our plan for each. | Two columns: "Limits today" / "Next" (full PSI data, held-out validation, FM2 lunar data, expert review) | "We'd rather show you our limits than hide them. Thank you." | C10 |
