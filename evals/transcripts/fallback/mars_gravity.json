@@ -1,0 +1,166 @@
+{
+  "id": "mars_gravity",
+  "question": "What happens to Delrin at 34% O2 and 8.2 psia in Mars gravity with 10 cm/s flow?",
+  "behavior": "Mars gravity is always OOD (hard rule in code).",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "2 calls"
+    },
+    "OOD first line": {
+      "ok": true,
+      "detail": "⚠️ Out of distribution: no training data at this gravity lev"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "1 ms ≤ 1000"
+    }
+  },
+  "answer": "⚠️ Out of distribution: no training data at this gravity level (FM2 not yet flown)\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\n**Delrin is predicted to BURN** at 34% O2, 8.2 psia, 10 cm/s flow, mars gravity.\n\n**Key numbers**\n- Burn probability: 0.99 (interval 0.74–1)\n- Flame spread rate: 1.67 mm/s (90% interval 0.33–3 mm/s)\n- Limiting O2 at this flow: 16.8% (margin 17.2 percentage points)\n\n**Evidence**\n- MOCK-BASS-II-24 (BASS-II; Nomex, 34% O2, 8.2 psia, 5 cm/s) → burn\n- MOCK-BASS-II-18 (BASS-II; Nomex, 30% O2, 10.2 psia, 10 cm/s) → burn\n- MOCK-BASS-II-12 (BASS-II; PMMA, 30% O2, 10.2 psia, 15 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "o2_percent": "34%",
+        "pressure_psia": "8.2 psia",
+        "gravity": "mars",
+        "material": "Delrin",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "label": "burn",
+        "burn_probability": 0.99,
+        "burn_probability_interval": [
+          0.74,
+          1.0
+        ],
+        "value": 1.67,
+        "unit": "mm/s",
+        "quantity": "flame spread rate",
+        "interval": [
+          0.33,
+          3.0
+        ],
+        "interval_level": 0.9,
+        "limiting_o2_percent": 16.8,
+        "o2_margin_percent_points": 17.2,
+        "coverage": "ood",
+        "ood_flag": true,
+        "ood_reason": "no training data at this gravity level (FM2 not yet flown)",
+        "evidence": [
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-12"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [
+          "no training data at this gravity level (FM2 not yet flown)"
+        ],
+        "inputs_normalized": {
+          "material": "Delrin",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "mars",
+          "gravity_g": 0.38
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "o2_percent": "34%",
+        "pressure_psia": "8.2 psia",
+        "gravity": "mars",
+        "material": "Delrin",
+        "k": 3,
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-24",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 34.0,
+            "pressure_psia": 8.2,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.6,
+            "distance": 2.09,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-18",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.3,
+            "distance": 2.25,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-12",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 15.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 2.6,
+            "distance": 2.29,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": true,
+        "ood_reason": "no training data at this gravity level (FM2 not yet flown)",
+        "evidence": [
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18",
+          "MOCK-BASS-II-12"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [
+          "no training data at this gravity level (FM2 not yet flown)"
+        ],
+        "inputs_normalized": {
+          "material": "Delrin",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "mars",
+          "gravity_g": 0.38
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    }
+  ],
+  "ood": true,
+  "ood_reasons": [
+    "no training data at this gravity level (FM2 not yet flown)"
+  ],
+  "grounding_ok": true,
+  "mode": "fallback",
+  "latency_ms": 1,
+  "model": null,
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API"
+  ],
+  "prompt_version": "2026-11-13.5"
+}

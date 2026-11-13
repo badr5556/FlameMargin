@@ -637,6 +637,10 @@ def tool_flammability_boundary(args: dict[str, Any]) -> dict[str, Any]:
         "flammability_boundary",
         {"material": n["material"] or n["material_input"], "pressure": n["pressure"], "gravity": n["gravity"], "flows": flows},
     )
+    if isinstance(res.get("value"), list):
+        lims = [p["o2_percent_limit"] for p in res["value"] if isinstance(p, dict) and isinstance(p.get("o2_percent_limit"), (int, float))]
+        if lims:
+            res["o2_limit_range_percent"] = [min(lims), max(lims)]
     # Where does the cabin O2 sit relative to the curve? Done in code so the LLM never compares numbers itself.
     # O2 comes from the explicit argument, else from the preset.
     o2_arg = args.get("o2_percent")

@@ -1,0 +1,715 @@
+{
+  "id": "ambiguous",
+  "question": "Is it safe?",
+  "behavior": "Asks a clarifying question or states its assumptions; must not invent numbers.",
+  "passed": true,
+  "checks": {
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "clarify/assume": {
+      "ok": true,
+      "detail": ""
+    },
+    "latency": {
+      "ok": true,
+      "detail": "2 ms ≤ 1000"
+    }
+  },
+  "answer": "**Assumptions**\n- No material specified: showing every material in the model.\n- No atmosphere specified: assuming the ISS cabin preset.\n\n**Verdict**\n**PMMA is FLAMMABLE** at 21% O2 for modeled flows from 2 to 30 cm/s.\n**Nomex is not flammable at any modeled flow**: 21% O2 is below its minimum limiting O2 of 24.1%.\n**Cotton-fiberglass is FLAMMABLE** at 21% O2 for modeled flows from 1 to 40 cm/s.\n**Delrin is FLAMMABLE** at 21% O2 for modeled flows from 1 to 40 cm/s.\n\n**Key numbers**\n- Minimum limiting O2 for PMMA: 16.6% (90% band 15.8–17.4%) at 8 cm/s flow, 14.7 psia.\n- Minimum limiting O2 for Nomex: 24.1% (90% band 23.3–24.9%) at 8 cm/s flow, 14.7 psia.\n- Minimum limiting O2 for Cotton-fiberglass: 15.6% (90% band 14.8–16.4%) at 8 cm/s flow, 14.7 psia.\n- Minimum limiting O2 for Delrin: 15.1% (90% band 14.3–15.9%) at 8 cm/s flow, 14.7 psia.\n\n**Evidence**\n- MOCK-BASS-II-03 (BASS-II; PMMA, 21% O2, 14.7 psia, 10 cm/s) → burn\n- MOCK-SAFFIRE-04 (Saffire; PMMA, 21% O2, 14.7 psia, 20 cm/s) → burn\n- MOCK-BASS-II-07 (BASS-II; PMMA, 17% O2, 14.7 psia, 5 cm/s) → extinguish\n\n**Operational recommendation**\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "material": "PMMA",
+        "preset": "ISS cabin",
+        "o2_percent": 21.0
+      },
+      "result": {
+        "value": [
+          {
+            "flow_velocity_cm_s": 0.5,
+            "o2_percent_limit": 25.6
+          },
+          {
+            "flow_velocity_cm_s": 1.0,
+            "o2_percent_limit": 21.2
+          },
+          {
+            "flow_velocity_cm_s": 2.0,
+            "o2_percent_limit": 18.7
+          },
+          {
+            "flow_velocity_cm_s": 3.0,
+            "o2_percent_limit": 17.7
+          },
+          {
+            "flow_velocity_cm_s": 5.0,
+            "o2_percent_limit": 17.0
+          },
+          {
+            "flow_velocity_cm_s": 8.0,
+            "o2_percent_limit": 16.6
+          },
+          {
+            "flow_velocity_cm_s": 10.0,
+            "o2_percent_limit": 16.6
+          },
+          {
+            "flow_velocity_cm_s": 15.0,
+            "o2_percent_limit": 16.8
+          },
+          {
+            "flow_velocity_cm_s": 20.0,
+            "o2_percent_limit": 17.3
+          },
+          {
+            "flow_velocity_cm_s": 30.0,
+            "o2_percent_limit": 19.2
+          },
+          {
+            "flow_velocity_cm_s": 40.0,
+            "o2_percent_limit": 21.9
+          },
+          {
+            "flow_velocity_cm_s": 50.0,
+            "o2_percent_limit": 25.5
+          }
+        ],
+        "interval": [
+          [
+            24.8,
+            26.4
+          ],
+          [
+            20.4,
+            22.0
+          ],
+          [
+            17.9,
+            19.5
+          ],
+          [
+            16.9,
+            18.5
+          ],
+          [
+            16.2,
+            17.8
+          ],
+          [
+            15.8,
+            17.4
+          ],
+          [
+            15.8,
+            17.4
+          ],
+          [
+            16.0,
+            17.6
+          ],
+          [
+            16.5,
+            18.1
+          ],
+          [
+            18.4,
+            20.0
+          ],
+          [
+            21.1,
+            22.7
+          ],
+          [
+            24.7,
+            26.3
+          ]
+        ],
+        "interval_level": 0.9,
+        "min_o2_percent_limit": 16.6,
+        "flow_at_min_limit_cm_s": 8.0,
+        "coverage": "in_distribution",
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-03",
+          "MOCK-SAFFIRE-04",
+          "MOCK-BASS-II-07"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "at_o2_percent": 21.0,
+        "flows_where_flammable_cm_s": [
+          2.0,
+          3.0,
+          5.0,
+          8.0,
+          10.0,
+          15.0,
+          20.0,
+          30.0
+        ],
+        "flows_where_not_flammable_cm_s": [
+          0.5,
+          1.0,
+          40.0,
+          50.0
+        ],
+        "flammable_at_some_flow": true,
+        "comparison_note": "At 21% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "PMMA",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.3
+    },
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "material": "Nomex",
+        "preset": "ISS cabin",
+        "o2_percent": 21.0
+      },
+      "result": {
+        "value": [
+          {
+            "flow_velocity_cm_s": 0.5,
+            "o2_percent_limit": 33.1
+          },
+          {
+            "flow_velocity_cm_s": 1.0,
+            "o2_percent_limit": 28.7
+          },
+          {
+            "flow_velocity_cm_s": 2.0,
+            "o2_percent_limit": 26.2
+          },
+          {
+            "flow_velocity_cm_s": 3.0,
+            "o2_percent_limit": 25.2
+          },
+          {
+            "flow_velocity_cm_s": 5.0,
+            "o2_percent_limit": 24.5
+          },
+          {
+            "flow_velocity_cm_s": 8.0,
+            "o2_percent_limit": 24.1
+          },
+          {
+            "flow_velocity_cm_s": 10.0,
+            "o2_percent_limit": 24.1
+          },
+          {
+            "flow_velocity_cm_s": 15.0,
+            "o2_percent_limit": 24.3
+          },
+          {
+            "flow_velocity_cm_s": 20.0,
+            "o2_percent_limit": 24.8
+          },
+          {
+            "flow_velocity_cm_s": 30.0,
+            "o2_percent_limit": 26.7
+          },
+          {
+            "flow_velocity_cm_s": 40.0,
+            "o2_percent_limit": 29.4
+          },
+          {
+            "flow_velocity_cm_s": 50.0,
+            "o2_percent_limit": 33.0
+          }
+        ],
+        "interval": [
+          [
+            32.3,
+            33.9
+          ],
+          [
+            27.9,
+            29.5
+          ],
+          [
+            25.4,
+            27.0
+          ],
+          [
+            24.4,
+            26.0
+          ],
+          [
+            23.7,
+            25.3
+          ],
+          [
+            23.3,
+            24.9
+          ],
+          [
+            23.3,
+            24.9
+          ],
+          [
+            23.5,
+            25.1
+          ],
+          [
+            24.0,
+            25.6
+          ],
+          [
+            25.9,
+            27.5
+          ],
+          [
+            28.6,
+            30.2
+          ],
+          [
+            32.2,
+            33.8
+          ]
+        ],
+        "interval_level": 0.9,
+        "min_o2_percent_limit": 24.1,
+        "flow_at_min_limit_cm_s": 8.0,
+        "coverage": "in_distribution",
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-21",
+          "MOCK-SAFFIRE-06",
+          "MOCK-BASS-II-18"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "at_o2_percent": 21.0,
+        "flows_where_flammable_cm_s": [],
+        "flows_where_not_flammable_cm_s": [
+          0.5,
+          1.0,
+          2.0,
+          3.0,
+          5.0,
+          8.0,
+          10.0,
+          15.0,
+          20.0,
+          30.0,
+          40.0,
+          50.0
+        ],
+        "flammable_at_some_flow": false,
+        "comparison_note": "At 21% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "material": "Cotton-fiberglass",
+        "preset": "ISS cabin",
+        "o2_percent": 21.0
+      },
+      "result": {
+        "value": [
+          {
+            "flow_velocity_cm_s": 0.5,
+            "o2_percent_limit": 24.6
+          },
+          {
+            "flow_velocity_cm_s": 1.0,
+            "o2_percent_limit": 20.2
+          },
+          {
+            "flow_velocity_cm_s": 2.0,
+            "o2_percent_limit": 17.7
+          },
+          {
+            "flow_velocity_cm_s": 3.0,
+            "o2_percent_limit": 16.7
+          },
+          {
+            "flow_velocity_cm_s": 5.0,
+            "o2_percent_limit": 16.0
+          },
+          {
+            "flow_velocity_cm_s": 8.0,
+            "o2_percent_limit": 15.6
+          },
+          {
+            "flow_velocity_cm_s": 10.0,
+            "o2_percent_limit": 15.6
+          },
+          {
+            "flow_velocity_cm_s": 15.0,
+            "o2_percent_limit": 15.8
+          },
+          {
+            "flow_velocity_cm_s": 20.0,
+            "o2_percent_limit": 16.3
+          },
+          {
+            "flow_velocity_cm_s": 30.0,
+            "o2_percent_limit": 18.2
+          },
+          {
+            "flow_velocity_cm_s": 40.0,
+            "o2_percent_limit": 20.9
+          },
+          {
+            "flow_velocity_cm_s": 50.0,
+            "o2_percent_limit": 24.5
+          }
+        ],
+        "interval": [
+          [
+            23.8,
+            25.4
+          ],
+          [
+            19.4,
+            21.0
+          ],
+          [
+            16.9,
+            18.5
+          ],
+          [
+            15.9,
+            17.5
+          ],
+          [
+            15.2,
+            16.8
+          ],
+          [
+            14.8,
+            16.4
+          ],
+          [
+            14.8,
+            16.4
+          ],
+          [
+            15.0,
+            16.6
+          ],
+          [
+            15.5,
+            17.1
+          ],
+          [
+            17.4,
+            19.0
+          ],
+          [
+            20.1,
+            21.7
+          ],
+          [
+            23.7,
+            25.3
+          ]
+        ],
+        "interval_level": 0.9,
+        "min_o2_percent_limit": 15.6,
+        "flow_at_min_limit_cm_s": 8.0,
+        "coverage": "in_distribution",
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-SIBAL-02",
+          "MOCK-SIBAL-05",
+          "MOCK-SAFFIRE-01"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "at_o2_percent": 21.0,
+        "flows_where_flammable_cm_s": [
+          1.0,
+          2.0,
+          3.0,
+          5.0,
+          8.0,
+          10.0,
+          15.0,
+          20.0,
+          30.0,
+          40.0
+        ],
+        "flows_where_not_flammable_cm_s": [
+          0.5,
+          50.0
+        ],
+        "flammable_at_some_flow": true,
+        "comparison_note": "At 21% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Cotton-fiberglass",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "material": "Delrin",
+        "preset": "ISS cabin",
+        "o2_percent": 21.0
+      },
+      "result": {
+        "value": [
+          {
+            "flow_velocity_cm_s": 0.5,
+            "o2_percent_limit": 24.1
+          },
+          {
+            "flow_velocity_cm_s": 1.0,
+            "o2_percent_limit": 19.7
+          },
+          {
+            "flow_velocity_cm_s": 2.0,
+            "o2_percent_limit": 17.2
+          },
+          {
+            "flow_velocity_cm_s": 3.0,
+            "o2_percent_limit": 16.2
+          },
+          {
+            "flow_velocity_cm_s": 5.0,
+            "o2_percent_limit": 15.5
+          },
+          {
+            "flow_velocity_cm_s": 8.0,
+            "o2_percent_limit": 15.1
+          },
+          {
+            "flow_velocity_cm_s": 10.0,
+            "o2_percent_limit": 15.1
+          },
+          {
+            "flow_velocity_cm_s": 15.0,
+            "o2_percent_limit": 15.3
+          },
+          {
+            "flow_velocity_cm_s": 20.0,
+            "o2_percent_limit": 15.8
+          },
+          {
+            "flow_velocity_cm_s": 30.0,
+            "o2_percent_limit": 17.7
+          },
+          {
+            "flow_velocity_cm_s": 40.0,
+            "o2_percent_limit": 20.4
+          },
+          {
+            "flow_velocity_cm_s": 50.0,
+            "o2_percent_limit": 24.0
+          }
+        ],
+        "interval": [
+          [
+            23.3,
+            24.9
+          ],
+          [
+            18.9,
+            20.5
+          ],
+          [
+            16.4,
+            18.0
+          ],
+          [
+            15.4,
+            17.0
+          ],
+          [
+            14.7,
+            16.3
+          ],
+          [
+            14.3,
+            15.9
+          ],
+          [
+            14.3,
+            15.9
+          ],
+          [
+            14.5,
+            16.1
+          ],
+          [
+            15.0,
+            16.6
+          ],
+          [
+            16.9,
+            18.5
+          ],
+          [
+            19.6,
+            21.2
+          ],
+          [
+            23.2,
+            24.8
+          ]
+        ],
+        "interval_level": 0.9,
+        "min_o2_percent_limit": 15.1,
+        "flow_at_min_limit_cm_s": 8.0,
+        "coverage": "in_distribution",
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-15",
+          "MOCK-BASS-II-21",
+          "MOCK-BASS-II-03"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "at_o2_percent": 21.0,
+        "flows_where_flammable_cm_s": [
+          1.0,
+          2.0,
+          3.0,
+          5.0,
+          8.0,
+          10.0,
+          15.0,
+          20.0,
+          30.0,
+          40.0
+        ],
+        "flows_where_not_flammable_cm_s": [
+          0.5,
+          50.0
+        ],
+        "flammable_at_some_flow": true,
+        "comparison_note": "At 21% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "Delrin",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.1
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "material": "PMMA",
+        "k": 3,
+        "preset": "ISS cabin"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-03",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.9,
+            "distance": 0.0,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-SAFFIRE-04",
+            "campaign": "Saffire",
+            "material": "PMMA",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 20.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.8,
+            "distance": 0.0,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-07",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 17.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "extinguish",
+            "spread_rate_mm_s": 0.0,
+            "distance": 0.8,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "evidence": [
+          "MOCK-BASS-II-03",
+          "MOCK-SAFFIRE-04",
+          "MOCK-BASS-II-07"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [],
+        "inputs_normalized": {
+          "material": "PMMA",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.1
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "fallback",
+  "latency_ms": 2,
+  "model": null,
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API"
+  ],
+  "prompt_version": "2026-11-13.5"
+}

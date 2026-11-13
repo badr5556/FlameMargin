@@ -318,7 +318,51 @@ def _generate(client: Any, model: str, contents: list[Any], config: Any, notes: 
     raise LLMUnavailable(f"{model}: retries exhausted")
 
 
-def _execute_calls(function_calls: list[Any], trace: list[dict[str, Any]]) -> list[Any]:
+_FLOW_TOOLS = ("predict", "compare_scenarios")
+
+
+def _flow_values(name: str, args: dict[str, Any]) -> list[Any]:
+    if name == "predict":
+        return [args.get("flow_velocity_cm_s")]
+    if name == "compare_scenarios" and isinstance(args.get("scenarios"), list):
+        return [s.get("flow_velocity_cm_s") for s in args["scenarios"] if isinstance(s, dict)]
+    return []
+
+
+def check_input_grounding(name: str, args: dict[str, Any], operator_text: str) -> dict[str, Any] | None:
+    """Inputs must be grounded too: the LLM may not invent a flow velocity the operator never gave.
+
+    Returns a structured tool error, or None when the call is fine. 'fans off' is always allowed
+    (the tool layer resolves or rejects it).
+    """
+    if name not in _FLOW_TOOLS:
+        return None
+    allowed = [t.value for t in extract_numbers(operator_text)]
+    for m in _FLOW_RE.finditer(operator_text):  # operator flows converted to cm/s (e.g. "5 mm/s" -> 0.5)
+        try:
+            allowed.append(tools.parse_flow_cm_s(f"{m.group(1)} {m.group(2)}")[0])
+        except tools.ToolInputError:
+            pass
+    for v in _flow_values(name, args):
+        if v in (None, "") or tools.is_fans_off(v):
+            continue
+        num = v if isinstance(v, (int, float)) and not isinstance(v, bool) else next((t.value for t in extract_numbers(str(v))), None)
+        if num is None:
+            continue
+        try:
+            cm_s = tools.parse_flow_cm_s(v)[0]
+        except tools.ToolInputError:
+            cm_s = num
+        if not any(abs(num - a) < 1e-6 or abs(cm_s - a) < 1e-6 for a in allowed):
+            return {"error": {
+                "type": "unsupported_assumption",
+                "message": f"flow_velocity_cm_s={v} was not given by the operator. Do not assume a flow.",
+                "hint": "Call flammability_boundary (covers all flows) or ask the operator for the flow.",
+            }}
+    return None
+
+
+def _execute_calls(function_calls: list[Any], trace: list[dict[str, Any]], operator_text: str = "") -> list[Any]:
     """Run every function call of one model turn (parallel calls supported); returns response parts."""
     from google.genai import types
 
@@ -326,7 +370,7 @@ def _execute_calls(function_calls: list[Any], trace: list[dict[str, Any]]) -> li
     for fc in function_calls:
         args = dict(fc.args or {})
         t0 = time.perf_counter()
-        result = tools.dispatch(fc.name, args)
+        result = check_input_grounding(fc.name, args, operator_text) or tools.dispatch(fc.name, args)
         ms = round((time.perf_counter() - t0) * 1000, 1)
         trace.append({"name": fc.name, "args": args, "result": result, "ms": ms})
         parts.append(types.Part(function_response=types.FunctionResponse(id=getattr(fc, "id", None), name=fc.name, response=result)))
@@ -342,7 +386,7 @@ def _response_text(resp: Any) -> str:
         return ""
 
 
-def _run_loop(client: Any, model: str, contents: list[Any], trace: list[dict[str, Any]], notes: list[str], deadline: float, max_rounds: int) -> str:
+def _run_loop(client: Any, model: str, contents: list[Any], trace: list[dict[str, Any]], notes: list[str], deadline: float, max_rounds: int, operator_text: str = "") -> str:
     config = _make_config()
     for _ in range(max_rounds):
         if time.monotonic() > deadline:
@@ -360,7 +404,7 @@ def _run_loop(client: Any, model: str, contents: list[Any], trace: list[dict[str
         contents.append(cand_content)  # keeps thought signatures for the next round
         from google.genai import types
 
-        contents.append(types.Content(role="user", parts=_execute_calls(fcs, trace)))
+        contents.append(types.Content(role="user", parts=_execute_calls(fcs, trace, operator_text)))
     # Round budget spent: force a text answer from what we have.
     resp = _generate(client, model, contents, _make_config(final_no_tools=True), notes)
     text = _response_text(resp)
@@ -379,7 +423,8 @@ def _llm_answer(question: str, history: list[dict[str, Any]] | None, key: str, m
     deadline = time.monotonic() + LLM_BUDGET_S
     contents = _history_to_contents(history) + [types.Content(role="user", parts=[types.Part(text=question)])]
     trace: list[dict[str, Any]] = []
-    answer = _run_loop(client, model, contents, trace, notes, deadline, MAX_ROUNDS)
+    operator_text = "\n".join([str(m.get("content") or m.get("text") or "") for m in (history or []) if m.get("role") == "user"] + [question])
+    answer = _run_loop(client, model, contents, trace, notes, deadline, MAX_ROUNDS, operator_text)
     report = verify_grounding(answer, [c["result"] for c in trace], question)
     if report.ok:
         return answer, trace, report, False
@@ -393,7 +438,7 @@ def _llm_answer(question: str, history: list[dict[str, Any]] | None, key: str, m
     )
     notes.append("grounding failed on first draft: " + ", ".join(problems))
     contents.append(types.Content(role="user", parts=[types.Part(text=feedback)]))
-    answer2 = _run_loop(client, model, contents, trace, notes, deadline + 20, 3)
+    answer2 = _run_loop(client, model, contents, trace, notes, deadline + 20, 3, operator_text)
     report2 = verify_grounding(answer2, [c["result"] for c in trace], question)
     return answer2, trace, report2, True
 

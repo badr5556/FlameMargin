@@ -1,0 +1,59 @@
+{
+  "id": "ambiguous",
+  "question": "Is it safe?",
+  "behavior": "Asks a clarifying question or states its assumptions; must not invent numbers.",
+  "passed": true,
+  "checks": {
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "clarify/assume": {
+      "ok": true,
+      "detail": ""
+    },
+    "latency": {
+      "ok": true,
+      "detail": "1947 ms ≤ 25000"
+    },
+    "stayed in LLM mode": {
+      "ok": true,
+      "detail": "llm"
+    }
+  },
+  "answer": "To evaluate whether it is safe, I need to know which material you are asking about and what ventilation flow velocity is present. \n\nPlease specify the material (known materials include PMMA, Nomex, Cotton-fiberglass, and Delrin) and the flow velocity (or state that you want to check all flow conditions using the flammability boundary for the ISS cabin).",
+  "tool_calls": [
+    {
+      "name": "get_mission_preset",
+      "args": {
+        "name": "ISS"
+      },
+      "result": {
+        "name": "ISS cabin",
+        "pressure_psia": 14.7,
+        "o2_percent": 21.0,
+        "gravity": "micro",
+        "gravity_g": 0.0,
+        "data_status": "in-distribution",
+        "source": "team brief (mirrored in src/copilot_tools.py; no preset module in repo yet)",
+        "note": "Presets do not include a ventilation flow. Ask for it, or use flammability_boundary to cover all flows.",
+        "ood_flag": false,
+        "ood_reasons": [],
+        "ood_reason": null
+      },
+      "ms": 0.0
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "llm",
+  "latency_ms": 1947,
+  "model": "gemini-3.5-flash-lite",
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API"
+  ],
+  "prompt_version": "2026-11-13.6"
+}

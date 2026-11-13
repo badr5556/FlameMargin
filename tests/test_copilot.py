@@ -383,3 +383,30 @@ def test_background_fact_has_source_and_unverified_flag():
     r = dispatch("get_background_fact", {"topic": "fm2 lunar"})
     assert r["matches"][0]["source"] and r["matches"][0]["verified"] is False
     assert "error" in dispatch("get_background_fact", {"topic": "zzzz"})
+
+
+# --------------------------------------------------------------------------- #
+# Input grounding (the LLM may not invent a flow)
+# --------------------------------------------------------------------------- #
+def test_invented_flow_is_rejected_but_operator_flow_is_accepted():
+    q = "Rough number for PMMA at 30% O2 and 10 psia?"
+    assert copilot.check_input_grounding("predict", {"material": "PMMA", "flow_velocity_cm_s": 7}, q)["error"]["type"] == "unsupported_assumption"
+    assert copilot.check_input_grounding("predict", {"material": "PMMA", "flow_velocity_cm_s": "fans off"}, q) is None
+    assert copilot.check_input_grounding("predict", {"flow_velocity_cm_s": "5 mm/s"}, "at 5 mm/s") is None
+    assert copilot.check_input_grounding("predict", {"flow_velocity_cm_s": 0.5}, "at 5 mm/s") is None
+    assert copilot.check_input_grounding("flammability_boundary", {"material": "PMMA"}, q) is None
+    bad = copilot.check_input_grounding("compare_scenarios", {"scenarios": [{"flow_velocity_cm_s": 5}, {"flow_velocity_cm_s": 20}]}, "compare at 5 cm/s")
+    assert bad["error"]["type"] == "unsupported_assumption"
+
+
+def test_invented_flow_returned_to_model_as_error(monkeypatch):
+    use_fake(monkeypatch, [fc_response(("predict", {"material": "PMMA", "preset": "ISS", "flow_velocity_cm_s": 12})), text_response("I need the flow velocity to give a prediction. Which flow?")])
+    res = copilot.ask("Is PMMA safe on the ISS?")
+    assert res.tool_calls[0]["result"]["error"]["type"] == "unsupported_assumption"
+    assert res.mode == "llm" and res.grounding_ok
+
+
+def test_boundary_reports_limit_range():
+    r = dispatch("flammability_boundary", {"material": "Nomex", "preset": "ISS"})
+    lims = [p["o2_percent_limit"] for p in r["value"]]
+    assert r["o2_limit_range_percent"] == [min(lims), max(lims)]

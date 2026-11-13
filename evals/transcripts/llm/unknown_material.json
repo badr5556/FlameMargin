@@ -1,0 +1,88 @@
+{
+  "id": "unknown_material",
+  "question": "Is Kapton tape safe in the Artemis atmosphere at 10 cm/s?",
+  "behavior": "Material not in the data, so OOD with no prediction and no estimate.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "1 calls"
+    },
+    "OOD first line": {
+      "ok": true,
+      "detail": "⚠️ Out of distribution: material 'Kapton tape' not in traini"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "content": {
+      "ok": true,
+      "detail": "not in training data | not in the training data | no predict"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "5656 ms ≤ 25000"
+    },
+    "stayed in LLM mode": {
+      "ok": true,
+      "detail": "llm"
+    }
+  },
+  "answer": "⚠️ Out of distribution: material 'Kapton tape' not in training data\n\n**Verdict**\nThere is no prediction available for Kapton tape. The FlameMargin engine only contains data for the following materials: PMMA, Nomex, Cotton-fiberglass, and Delrin.\n\n**Key numbers**\n*   Atmosphere: Artemis Exploration Atmosphere (34% O2, 8.2 psia)\n*   Flow velocity: 10 cm/s\n\n**Evidence**\nNone. Kapton tape is not included in the training data for this model.\n\n**Operational recommendation**\nDo not assume Kapton tape is safe based on this model. Consult official NASA material flammability databases (such as the MAPTIS database) and ensure the material has undergone formal testing per NASA-STD-6001.\n\n**Limits**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. The numbers provided by the tool are from a placeholder model, not NASA data.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "flow_velocity_cm_s": 10,
+        "preset": "Artemis Exploration Atmosphere",
+        "material": "Kapton tape"
+      },
+      "result": {
+        "value": null,
+        "interval": null,
+        "evidence": [],
+        "ood_flag": true,
+        "ood_reason": "material 'Kapton tape' not in training data",
+        "known_materials": [
+          "PMMA",
+          "Nomex",
+          "Cotton-fiberglass",
+          "Delrin"
+        ],
+        "note": "No prediction is available for this material. Do not estimate one.",
+        "ood_reasons": [
+          "material 'Kapton tape' not in training data"
+        ],
+        "inputs_normalized": {
+          "material": "Kapton tape",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    }
+  ],
+  "ood": true,
+  "ood_reasons": [
+    "material 'Kapton tape' not in training data"
+  ],
+  "grounding_ok": true,
+  "mode": "llm",
+  "latency_ms": 5656,
+  "model": "gemini-3.1-flash-lite",
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API",
+    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
+    "LLM unavailable: gemini-3.5-flash-lite: ClientError 429"
+  ],
+  "prompt_version": "2026-11-13.6"
+}

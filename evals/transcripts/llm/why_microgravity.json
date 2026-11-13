@@ -1,0 +1,68 @@
+{
+  "id": "why_microgravity",
+  "question": "Why is fire in microgravity different from fire on Earth?",
+  "behavior": "Uses the facts tool and cites the source; no prediction numbers needed.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "1 calls"
+    },
+    "right tool": {
+      "ok": true,
+      "detail": "get_background_fact"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "content": {
+      "ok": true,
+      "detail": "NASA SVS 31394 | Olson | NTRS"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "4489 ms ≤ 25000"
+    },
+    "stayed in LLM mode": {
+      "ok": true,
+      "detail": "llm"
+    }
+  },
+  "answer": "**Answer**\n\nFire behavior in microgravity differs significantly from Earth due to the absence of buoyancy-driven convection. On Earth, hot combustion gases rise because they are less dense than the surrounding air, which pulls fresh oxygen into the flame and gives it a characteristic teardrop shape. In microgravity, this buoyancy force is absent, causing flames to become spherical and rely primarily on diffusion to transport oxygen to the reaction zone.\n\n**Sources**\n\n*   NASA SVS 31394 (source pending team verification)",
+  "tool_calls": [
+    {
+      "name": "get_background_fact",
+      "args": {
+        "topic": "microgravity_flame_shape"
+      },
+      "result": {
+        "matches": [
+          {
+            "topic": "microgravity_flame_shape",
+            "fact": "Without gravity there is no buoyant convection, so flames in microgravity become spherical instead of the teardrop shape seen on Earth.",
+            "source": "NASA SVS 31394",
+            "verified": false
+          }
+        ],
+        "facts_version": "2026-11-13.1",
+        "usage_note": "Background context only. Never use as a substitute for model predictions. Cite the source."
+      },
+      "ms": 0.0
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "llm",
+  "latency_ms": 4489,
+  "model": "gemini-3.1-flash-lite",
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API",
+    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
+    "LLM unavailable: gemini-3.5-flash-lite: ClientError 429"
+  ],
+  "prompt_version": "2026-11-13.6"
+}

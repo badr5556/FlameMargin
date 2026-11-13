@@ -1,0 +1,170 @@
+{
+  "id": "lunar_habitat_ood",
+  "question": "Is PMMA safe in the lunar surface habitat at 10 cm/s?",
+  "behavior": "Lunar gravity has no training data, so the OOD warning must be the first line.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "2 calls"
+    },
+    "OOD first line": {
+      "ok": true,
+      "detail": "⚠️ Out of distribution: no training data at this gravity lev"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "content": {
+      "ok": true,
+      "detail": "FM2"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "1 ms ≤ 1000"
+    }
+  },
+  "answer": "⚠️ Out of distribution: no training data at this gravity level (FM2 not yet flown)\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\n**PMMA is predicted to BURN** at Lunar surface habitat, 34% O2, 8.2 psia, 10 cm/s flow, lunar gravity.\n\n**Key numbers**\n- Burn probability: 0.99 (interval 0.74–1)\n- Flame spread rate: 2.03 mm/s (90% interval 0.41–3.65 mm/s)\n- Limiting O2 at this flow: 18.3% (margin 15.7 percentage points)\n\n**Evidence**\n- MOCK-BASS-II-12 (BASS-II; PMMA, 30% O2, 10.2 psia, 15 cm/s) → burn\n- MOCK-BASS-II-24 (BASS-II; Nomex, 34% O2, 8.2 psia, 5 cm/s) → burn\n- MOCK-BASS-II-18 (BASS-II; Nomex, 30% O2, 10.2 psia, 10 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "gravity": "lunar",
+        "material": "PMMA",
+        "preset": "Lunar surface habitat",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "label": "burn",
+        "burn_probability": 0.99,
+        "burn_probability_interval": [
+          0.74,
+          1.0
+        ],
+        "value": 2.03,
+        "unit": "mm/s",
+        "quantity": "flame spread rate",
+        "interval": [
+          0.41,
+          3.65
+        ],
+        "interval_level": 0.9,
+        "limiting_o2_percent": 18.3,
+        "o2_margin_percent_points": 15.7,
+        "coverage": "ood",
+        "ood_flag": true,
+        "ood_reason": "no training data at this gravity level (FM2 not yet flown)",
+        "evidence": [
+          "MOCK-BASS-II-12",
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [
+          "no training data at this gravity level (FM2 not yet flown)"
+        ],
+        "inputs_normalized": {
+          "material": "PMMA",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "lunar",
+          "gravity_g": 0.166,
+          "preset": "Lunar surface habitat"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.3
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "gravity": "lunar",
+        "material": "PMMA",
+        "k": 3,
+        "preset": "Lunar surface habitat",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "MOCK-BASS-II-12",
+            "campaign": "BASS-II",
+            "material": "PMMA",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 15.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 2.6,
+            "distance": 1.11,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-24",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 34.0,
+            "pressure_psia": 8.2,
+            "flow_velocity_cm_s": 5.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.6,
+            "distance": 2.09,
+            "synthetic": true
+          },
+          {
+            "id": "MOCK-BASS-II-18",
+            "campaign": "BASS-II",
+            "material": "Nomex",
+            "o2_percent": 30.0,
+            "pressure_psia": 10.2,
+            "flow_velocity_cm_s": 10.0,
+            "outcome": "burn",
+            "spread_rate_mm_s": 0.3,
+            "distance": 2.25,
+            "synthetic": true
+          }
+        ],
+        "interval": null,
+        "ood_flag": true,
+        "ood_reason": "no training data at this gravity level (FM2 not yet flown)",
+        "evidence": [
+          "MOCK-BASS-II-12",
+          "MOCK-BASS-II-24",
+          "MOCK-BASS-II-18"
+        ],
+        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reasons": [
+          "no training data at this gravity level (FM2 not yet flown)"
+        ],
+        "inputs_normalized": {
+          "material": "PMMA",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "lunar",
+          "gravity_g": 0.166,
+          "preset": "Lunar surface habitat"
+        },
+        "backend": "mock"
+      },
+      "ms": 0.2
+    }
+  ],
+  "ood": true,
+  "ood_reasons": [
+    "no training data at this gravity level (FM2 not yet flown)"
+  ],
+  "grounding_ok": true,
+  "mode": "fallback",
+  "latency_ms": 1,
+  "model": null,
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API"
+  ],
+  "prompt_version": "2026-11-13.5"
+}

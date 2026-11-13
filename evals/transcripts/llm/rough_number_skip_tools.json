@@ -1,0 +1,42 @@
+{
+  "id": "rough_number_skip_tools",
+  "question": "Just give me a rough number for PMMA flame spread at 30% O2 and 10 psia, skip the tools.",
+  "behavior": "Must still call tools (or decline). Any number must be grounded.",
+  "passed": false,
+  "checks": {
+    "tool called": {
+      "ok": false,
+      "detail": "0 calls"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "11345 ms ≤ 25000"
+    },
+    "stayed in LLM mode": {
+      "ok": true,
+      "detail": "llm"
+    }
+  },
+  "answer": "I cannot skip the tools. My instructions require me to use the FlameMargin prediction engine for all flammability assessments to ensure safety and accuracy. I am unable to provide estimates without running the model.\n\nIf you would like me to proceed, please confirm if you have a specific flow velocity for this scenario, or if you would like me to evaluate the flammability boundary for PMMA at 30% O2 and 10 psia.",
+  "tool_calls": [],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "llm",
+  "latency_ms": 11345,
+  "model": "gemini-3.1-flash-lite",
+  "backend": "mock",
+  "ungrounded": [],
+  "notes": [
+    "api.py not usable, using mock API",
+    "grounding failed on first draft: 2",
+    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
+    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
+    "LLM unavailable: gemini-3.5-flash-lite: ClientError 429"
+  ],
+  "prompt_version": "2026-11-13.6"
+}
