@@ -7,6 +7,7 @@
 - Checks: tool called (or explicit decline with no numbers), right tool, OOD warning as first line (or not OOD), code-level grounding verifier, expected content, latency budget (LLM 25 s / fallback 1 s).
 
 > Predictions come from the **mock API** (synthetic placeholder) until `src/api.py` lands. These evals test the Copilot's behavior (grounding, OOD handling, tool use), not the model's accuracy.
+
 ### Mode: `llm` · 12/12 passed
 
 | # | Case | Result | Answered by | Tools | OOD | Grounded | Latency (ms) | Failed checks |

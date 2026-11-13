@@ -162,7 +162,7 @@ def main() -> int:
     if copilot_tools.backend_name() == "mock":
         header += ["> Predictions come from the **mock API** (synthetic placeholder) until `src/api.py` lands. "
                    "These evals test the Copilot's behavior (grounding, OOD handling, tool use), not the model's accuracy.", ""]
-    Path(a.out).write_text("\n".join(header) + "\n\n".join(sections) + "\n", encoding="utf-8")
+    Path(a.out).write_text("\n".join(header) + "\n" + "\n\n".join(sections) + "\n", encoding="utf-8")
     print(f"Saved {a.out}")
     return 0
 
