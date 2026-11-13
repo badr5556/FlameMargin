@@ -3,5 +3,4 @@ __pycache__/
 *.py[cod]
 .env
 # Copilot secrets (never commit)
-.env
 .streamlit/secrets.toml
