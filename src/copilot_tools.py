@@ -418,9 +418,12 @@ def _call_api(func_name: str, canonical: dict[str, Any]) -> dict[str, Any]:
     kwargs: dict[str, Any] = {}
     accepts_var_kw = any(p.kind is p.VAR_KEYWORD for p in sig.parameters.values())
     for key, val in canonical.items():
-        if val is None:
-            continue
         pname = next((a for a in _PARAM_ALIASES.get(key, [key]) if a in sig.parameters), None)
+        if val is None:
+            # Pass an explicit None only where the function insists on the parameter (e.g. optional material).
+            if pname is not None and sig.parameters[pname].default is inspect.Parameter.empty:
+                kwargs[pname] = None
+            continue
         if pname is None:
             if accepts_var_kw:
                 kwargs[_PARAM_ALIASES.get(key, [key])[0]] = val
@@ -634,31 +637,50 @@ def tool_flammability_boundary(args: dict[str, Any]) -> dict[str, Any]:
         "flammability_boundary",
         {"material": n["material"] or n["material_input"], "pressure": n["pressure"], "gravity": n["gravity"], "flows": flows},
     )
-    # If the operator supplied an O2 level, say where it sits relative to the curve (done in code, not by the LLM).
-    if args.get("o2_percent") not in (None, "") and isinstance(res.get("value"), list):
-        o2, note = parse_o2_percent(args["o2_percent"])
+    # Where does the cabin O2 sit relative to the curve? Done in code so the LLM never compares numbers itself.
+    # O2 comes from the explicit argument, else from the preset.
+    o2_arg = args.get("o2_percent")
+    if o2_arg in (None, "") and n.get("preset"):
+        o2_arg = get_mission_preset(n["preset"]).get("o2_percent")
+    if o2_arg not in (None, "") and isinstance(res.get("value"), list):
+        o2, note = parse_o2_percent(o2_arg)
         n["o2"] = o2
         if note:
             n["notes"].append(note)
-        burning = [p for p in res["value"] if isinstance(p, dict) and p.get("o2_percent_limit") is not None and o2 > p["o2_percent_limit"]]
+        pts = [p for p in res["value"] if isinstance(p, dict) and p.get("o2_percent_limit") is not None]
         res["at_o2_percent"] = o2
-        res["flows_where_flammable_cm_s"] = [p.get("flow_velocity_cm_s") for p in burning]
-        res["flammable_at_some_flow"] = bool(burning)
+        res["flows_where_flammable_cm_s"] = [p.get("flow_velocity_cm_s") for p in pts if o2 > p["o2_percent_limit"]]
+        res["flows_where_not_flammable_cm_s"] = [p.get("flow_velocity_cm_s") for p in pts if o2 <= p["o2_percent_limit"]]
+        res["flammable_at_some_flow"] = bool(res["flows_where_flammable_cm_s"])
+        res["comparison_note"] = (
+            f"At {o2:g}% O2 the material burns at the flows listed in flows_where_flammable_cm_s and "
+            "self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code)."
+        )
     return _finish(res, n, _envelope_reasons(n.get("o2"), n["pressure"], None))
 
 
 def tool_nearest_experiments(args: dict[str, Any]) -> dict[str, Any]:
     a = dict(args)
-    k = int(a.pop("k", 3) or 3)
-    k = max(1, min(k, 10))
-    n = _normalize_scenario(a, need_flow=False, need_o2=True) if a.get("material") else None
-    if n is None:
-        a2, preset = _apply_preset(a)
+    k = max(1, min(int(a.pop("k", 3) or 3), 10))
+    notes: list[str] = []
+    # Flow is optional here: an undefined "fans off" just removes the flow constraint.
+    if is_fans_off(a.get("flow_velocity_cm_s")):
+        try:
+            resolve_fans_off_flow()
+        except ToolInputError:
+            a.pop("flow_velocity_cm_s")
+            notes.append("'fans off' flow undefined: neighbours searched without a flow constraint")
+    if a.get("material"):
+        n = _normalize_scenario(a, need_flow=False, need_o2=True)
+    else:
+        a, preset = _apply_preset(a)
         n = {"material": None, "material_input": None, "preset": preset, "notes": []}
-        n["o2"], _ = parse_o2_percent(a2.get("o2_percent"))
-        n["pressure"], _ = parse_pressure_psia(a2.get("pressure_psia"))
-        n["flow"] = parse_flow_cm_s(a2["flow_velocity_cm_s"])[0] if a2.get("flow_velocity_cm_s") not in (None, "") else None
-        n["gravity"], n["gravity_g"] = parse_gravity(a2.get("gravity"))
+        n["o2"], o2_note = parse_o2_percent(a.get("o2_percent"))
+        n["pressure"], p_note = parse_pressure_psia(a.get("pressure_psia"))
+        n["flow"], f_note = parse_flow_cm_s(a["flow_velocity_cm_s"]) if a.get("flow_velocity_cm_s") not in (None, "") else (None, None)
+        n["gravity"], n["gravity_g"] = parse_gravity(a.get("gravity"))
+        n["notes"] += [x for x in (o2_note, p_note, f_note) if x]
+    n["notes"] += notes
     res = _call_api(
         "nearest_experiments",
         {"material": n["material"] or n.get("material_input"), "o2": n["o2"], "pressure": n["pressure"], "flow": n["flow"], "gravity": n["gravity"], "k": k},
