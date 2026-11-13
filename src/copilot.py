@@ -429,8 +429,8 @@ def parse_intent(q: str) -> dict[str, Any]:
     known = tools.known_materials()
     intent["material"] = tools.find_material_in_text(q, known)
     if intent["material"] is None:
-        m = re.search(r"\b(?:is|of|for|material)\s+([A-Z][\w\-]+)", q)
-        if m and m.group(1).lower() not in {"it", "this", "the", "my", "a", "an", "iss", "artemis", "lunar"}:
+        m = re.search(r"\b(?i:is|of|for|material|about)\s+([A-Z][\w\-]+)", q)
+        if m and m.group(1).lower() not in {"it", "this", "the", "my", "a", "an", "iss", "artemis", "lunar", "mars", "moon", "earth", "nasa", "orion", "gateway", "ventilation", "o2", "oxygen", "exploration"}:
             intent["material_text"] = m.group(1)
     m = _O2_RE.search(q) or _O2_RE2.search(q)
     intent["o2"] = m.group(1) + "%" if m else None
