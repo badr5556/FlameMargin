@@ -38,3 +38,16 @@ def test_mission_board_only_shows_numbers_inside_the_data():
         assert all(r["burn_probability"] is None for r in board[mission].values())
     iss = board["ISS cabin"]["SIBAL fabric"]
     assert f"{iss['burn_probability']:.2f}" in out
+
+
+def test_margin_matches_the_model_and_stays_in_the_data():
+    base = dict(material="SIBAL fabric", pressure_psia=14.7, flow_velocity_cm_s=3.0, gravity="micro")
+    env = api.get_engine().env["SIBAL_fabric"]["o2_percent"]
+    scan = visual_ui.margin_scan(api.predict, base, tuple(env))
+    assert env[0] <= scan["lo"] and scan["hi"] <= env[1]
+    if scan["status"] == "crossed":
+        b = scan["boundary"]
+        below = api.predict(**{**base, "o2_percent": max(env[0], b - 0.3)})["burn_probability"]
+        above = api.predict(**{**base, "o2_percent": min(env[1], b + 0.3)})["burn_probability"]
+        assert below <= 0.5 <= above
+    assert "THE MARGIN" in visual_ui.margin_html(scan, 19.0)

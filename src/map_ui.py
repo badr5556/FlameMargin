@@ -280,6 +280,11 @@ def render_map_tab(st: Any, grid_loader, predict_fn) -> None:
     with right:
         st.markdown("##### Readout")
         st.markdown(visual_ui.result_card_html(res, sc["name"], material), unsafe_allow_html=True)
+        if res.get("ood_level") == "in_distribution":
+            base = dict(material=material, pressure_psia=sc["pressure_psia"], flow_velocity_cm_s=sc["flow"],
+                        gravity=sc["gravity"], thickness_mm=th, flow_configuration=cfg, **kw)
+            scan = visual_ui.margin_scan(predict_fn, base, tuple(env["o2_percent"]))
+            st.markdown(visual_ui.margin_html(scan, sc["o2_percent"]), unsafe_allow_html=True)
         if res.get("burn_probability") is not None:
             st.caption(verdict_note())
         level = {"in_distribution": "🟢 in distribution", "extrapolation": "🟠 extrapolation", "out_of_envelope": "🔴 out of distribution"}
