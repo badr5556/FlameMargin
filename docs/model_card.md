@@ -227,9 +227,11 @@ threshold = 95th percentile of the leave-one-test-out nearest-neighbour distance
   potentiometer setting with no cm/s value, so those families have (almost) only burn points; Nomex has only non-sustained points.
 - 55 of the 192 training points are medium-confidence (49 from `flame_present_before_ramp`).
 - O2 per point is the calibrated initial (burn) or final (extinction) value of the test; the O2 at the exact moment is in between.
+- The PMMA-slab spread rate is **experimental**: its flow coefficient is about zero, which conflicts with the report's statement
+  that spread rates decrease as forced-flow velocity decreases (p. 58). The app and the Copilot label it experimental.
 - Not a replacement for NASA-STD-6001 material testing. Decision support and a demonstration of the pipeline only.
 
-## 9. Spread rate (PMMA slab, Table 5.1)
+## 9. Spread rate (PMMA slab, Table 5.1) · experimental
 | Item | Value |
 |---|---|
 | Data | `data/processed/spread_rates_v1.csv`: 39 spread rates (0.012–0.144 mm/s) from 18 Miller tests (M6, M12 "Not tracked"), each row with the verbatim Table 5.1 row and p. 57 |

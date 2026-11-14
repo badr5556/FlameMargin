@@ -44,6 +44,8 @@ REQUEST_TIMEOUT_MS = 30_000
 LLM_BUDGET_S = float(os.environ.get("COPILOT_LLM_BUDGET_S", "60"))
 OOD_PREFIX = "⚠️ Out of distribution:"
 MOCK_DISCLOSURE = "_Data source: placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected._"
+SPREAD_EXPERIMENTAL_NOTE = ("Experimental: the PMMA-slab spread model's flow coefficient is about zero, while the NASA report "
+                            "says spread rates decrease as forced-flow velocity decreases; treat it as indicative only.")
 SAFETY_DISCLAIMER = "Decision support only, not a replacement for NASA-STD-6001 material testing."
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -744,8 +746,12 @@ def _fallback_predict_block(args: dict[str, Any], trace: list[dict[str, Any]]) -
         if r.get("ood_level") == "extrapolation":
             key.append("- This point is far from the labelled NASA tests: a P(burn) near 0.5 here means 'no information', not '50% risk'.")
     if r.get("value") is not None and r.get("unit") == "mm/s":
-        key.append(f"- Flame spread rate: {r['value']:g} mm/s (90% interval {_fmt_interval(r.get('interval'), ' mm/s')})")
-    elif "spread_rate_reason" in r:
+        key.append(f"- Flame spread rate (experimental): {r['value']:g} mm/s (90% interval {_fmt_interval(r.get('interval'), ' mm/s')}). "
+                   + SPREAD_EXPERIMENTAL_NOTE)
+    elif r.get("spread_rate_mm_s") is not None:
+        key.append(f"- Flame spread rate (experimental, if a flame spreads): {r['spread_rate_mm_s']:g} mm/s (90% interval "
+                   f"{_fmt_interval(r.get('spread_rate_interval_mm_s'), ' mm/s')}). " + SPREAD_EXPERIMENTAL_NOTE)
+    elif r.get("spread_rate_reason"):
         key.append(f"- Flame spread rate: not predicted ({r['spread_rate_reason']}).")
     if r.get("limiting_o2_percent") is not None:
         key.append(f"- Limiting O2 at this flow: {r['limiting_o2_percent']:g}% (margin {r.get('o2_margin_percent_points', 0):g} percentage points)")
@@ -824,7 +830,7 @@ def fallback_answer(question: str, trace: list[dict[str, Any]] | None = None) ->
                 lab = str(r["label"]).upper() if r.get("label") else "NO PREDICTION (outside the tested conditions)"
                 verdict.append(f"- {r.get('scenario')}: **{lab}** ({_scenario_label(inp)})")
                 if r.get("value") is not None and r.get("unit") == "mm/s":
-                    key.append(f"- {r.get('scenario')}: spread {r['value']:g} mm/s (90% interval {_fmt_interval(r.get('interval'), ' mm/s')}), burn probability {r.get('burn_probability', 0):g}")
+                    key.append(f"- {r.get('scenario')}: spread (experimental) {r['value']:g} mm/s (90% interval {_fmt_interval(r.get('interval'), ' mm/s')}), burn probability {r.get('burn_probability', 0):g}")
                 elif r.get("burn_probability") is not None:
                     key.append(f"- {r.get('scenario')}: P(burn) {r['burn_probability']:g} (90% interval {_fmt_interval(r.get('burn_probability_interval'))})")
                 statuses.append({"burn": "flammable", "extinguish": "nonflammable"}.get(r.get("label"), "unknown"))

@@ -41,7 +41,7 @@ Claim IDs refer to `docs/science/claims_sheet.md` (do not read them aloud). Ever
 | Time | On screen | Say | Plan B |
 |---|---|---|---|
 | 2:05 | Button **🧯 Nomex at ISS air** | "Nomex, the ISS fire barrier: three BASS-II tests at 21 to 22% oxygen, and none sustained a flame (F1, F2, F3). The Copilot cites them. Kapton is not in the data, so it gets no prediction and no estimate." | Offline mode. |
-| 2:15 | Paste prompt 4 (injection) | "Ask it to guess from its own knowledge: it won't. Spread rates exist only for PMMA slabs, so for SIBAL it gives no spread-rate number." | Offline mode answers from tools only. |
+| 2:15 | Paste prompt 4 (injection) | "Ask it to guess from its own knowledge: it won't. Every number must come from a tool, and no tool gives a SIBAL spread rate, so it gives none." | Offline mode answers from tools only. |
 | 2:25 | Tab **📚 Data & Method** | "Leave-one-test-out: our model's Brier score is 0.087 against 0.118 for a baseline, shown per material. And where it is worse, on SIBAL's own early points, we show that too." | — |
 | 2:45 | Slide: next steps | "Next: give each material its own flow behaviour, and add lunar data when FM2, the first combustion experiment on another world, flies. [C10] FlameMargin: know your margin, and know when you don't." | — |
 | 3:00 | End | | |

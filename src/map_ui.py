@@ -56,7 +56,7 @@ MATERIAL_HELP = {
     "SIBAL fabric": "SIBAL cotton-fiberglass fabric, concurrent flow (Table 7.1 + Table A.6).",
     "PMMA film": "Thin PMMA film 0.1–0.4 mm, opposed flow (Table A.1). Every labelled point is a burn: the extinctions "
                  "happened at fan-potentiometer settings with no cm/s value.",
-    "PMMA slab": "PMMA slab 1–5 mm, opposed flow (Table A.4 + Table 5.1). Has burn and extinction points and measured spread rates.",
+    "PMMA slab": "PMMA slab 1–5 mm, opposed flow (Table A.4 + Table 5.1). Has burn and extinction points and measured spread rates (spread-rate model: experimental).",
     "PMMA rod": "Cast PMMA rods 6.35–12.7 mm in opposed, concurrent or stagnation flow (Tables A.3, A.5). Tested only up to 20.8% O2.",
     "Nomex": "Nomex III fabric, concurrent flow (Table A.2). Only 3 tests, none sustained a flame (F1, F2, F3).",
 }
@@ -285,7 +285,10 @@ def render_map_tab(st: Any, grid_loader, predict_fn) -> None:
             st.caption(n)
         if res.get("spread_rate_mm_s") is not None:
             slo, shi = res["spread_rate_interval_mm_s"]
-            st.markdown(f"Flame spread rate (if it spreads): **{res['spread_rate_mm_s']:.3f} mm/s** (90% {slo:.3f}–{shi:.3f})")
+            st.markdown(f"Flame spread rate (if it spreads) · **experimental**: **{res['spread_rate_mm_s']:.3f} mm/s** "
+                        f"(90% {slo:.3f}–{shi:.3f})")
+            st.caption("Experimental: the PMMA-slab spread model's flow coefficient is about zero, while the report says spread "
+                       "rates decrease as forced-flow velocity decreases (p. 58). Treat it as indicative only (model card §9).")
         else:
             st.markdown(f"Flame spread rate: *not predicted* ({res.get('spread_rate_reason') or 'n/a'}).")
         st.markdown("**3 nearest NASA experiments**")

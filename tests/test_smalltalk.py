@@ -95,3 +95,13 @@ def test_off_topic_follow_up_reaches_the_llm_when_there_is_history(monkeypatch):
                                               {"role": "assistant", "content": "..."}])
     assert called and r.mode != "smalltalk"
     assert copilot.ask("hi", history=[{"role": "user", "content": "x"}]).mode == "smalltalk"
+
+
+def test_pmma_slab_spread_rate_is_labelled_experimental(monkeypatch):
+    monkeypatch.setenv("COPILOT_FORCE_FALLBACK", "1")
+    r = copilot.ask("Will a 3 mm PMMA slab burn at 19% O2, 14.7 psia and 10 cm/s?")
+    line = next(ln for ln in r.answer.splitlines() if "spread rate" in ln.lower() and "mm/s" in ln)
+    assert "experimental" in line.lower() and r.grounding_ok
+    from src.copilot_prompt import SYSTEM_PROMPT
+
+    assert "EXPERIMENTAL" in SYSTEM_PROMPT
