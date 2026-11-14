@@ -24,6 +24,8 @@ P_COLORSCALE = [
     [0.6, "#f7b267"], [0.8, "#f4743b"], [1.0, "#c0261b"],
 ]
 OOD_FILL = "rgba(70,70,78,0.78)"
+OOD_LABEL = "Grey = outside this material's tested range"
+X_TICKS = [0.5, 1, 2, 5, 10, 20, 50]  # cm/s, log axis
 EXTRAP_FILL = "rgba(40,40,48,0.55)"
 
 FLOW_SLIDER_HELP = (
@@ -61,6 +63,19 @@ def _hover_point(r: pd.Series) -> str:
             f"<br>“{_short(r['evidence_quote'])}”<br>NASA/TM-20210011385 p. {int(r['source_page'])}{used}")
 
 
+def ood_label_position(grey: list[tuple[float, float, float, float]], x0: float, x1: float, y0: float, y1: float) -> dict[str, Any]:
+    """Anchor for the grey-region label, in the plot's bottom-left corner when the whole band below the material's lowest
+    tested O2 is grey (true for all five materials on the default views): that is low O2, away from every mission preset
+    (all at >= 21% O2). Otherwise bottom-left of the left grey strip, otherwise bottom-right of the right strip."""
+    pad = dict(y=y0 + 0.02 * (y1 - y0), xref="x", yref="y", yanchor="bottom")
+    bottom = [g for g in grey if g[2] == y0 and g[3] < y1]
+    if bottom and min(g[3] for g in bottom) - y0 >= 0.06 * (y1 - y0):
+        return dict(x=math.log10(x0) + 0.03, xanchor="left", **pad)
+    if any(g[0] == x0 for g in grey):
+        return dict(x=math.log10(x0) + 0.03, xanchor="left", **pad)
+    return dict(x=math.log10(x1) - 0.03, xanchor="right", **pad)
+
+
 def build_map_figure(grid: dict[str, Any], marker: dict[str, Any] | None = None, y_range: tuple[float, float] = (13.0, 23.0)) -> go.Figure:
     """Heatmap of P(burn) over O2 x flow (log), 0.5 contour, band edges, OOD shading and the material's NASA points."""
     o2 = np.asarray(grid["o2_percent"])
@@ -91,16 +106,21 @@ def build_map_figure(grid: dict[str, Any], marker: dict[str, Any] | None = None,
             line=dict(width=width, dash=dash), name=name, showlegend=True, hoverinfo="skip",
         ))
 
-    # Outside this material's tested O2 x flow box: "Out of distribution".
+    # Outside this material's tested O2 x flow box: grey. The label sits inside a grey strip at the bottom of the plot
+    # (low O2, far from the ISS / Artemis / lunar presets, which are all at >= 21% O2), small and semi-transparent.
     (o2lo, o2hi), (flo, fhi) = env["o2_percent"], env["flow_velocity_cm_s"]
     x0, x1 = float(flow.min()), float(flow.max())
-    for (xa, xb, ya, yb) in ((x0, flo, y0, y1), (fhi, x1, y0, y1), (flo, fhi, o2hi, y1), (flo, fhi, y0, o2lo)):
-        if xb > xa and yb > ya:
-            fig.add_shape(type="rect", x0=xa, x1=xb, y0=ya, y1=yb, fillcolor=OOD_FILL, line_width=0, layer="above")
-    if y1 > o2hi:
-        fig.add_annotation(x=math.log10(math.sqrt(flo * fhi)), y=min(y1, o2hi + (y1 - o2hi) / 2), xref="x", yref="y",
-                           text=f"Out of distribution: no NASA {grid['material']} data", showarrow=False,
-                           font=dict(color="#e8e8e8", size=13))
+    grey = [(xa, xb, ya, yb) for (xa, xb, ya, yb) in ((flo, fhi, y0, o2lo), (x0, flo, y0, y1), (fhi, x1, y0, y1), (flo, fhi, o2hi, y1))
+            if xb > xa and yb > ya]
+    for (xa, xb, ya, yb) in grey:
+        fig.add_shape(type="rect", x0=xa, x1=xb, y0=ya, y1=yb, fillcolor=OOD_FILL, line_width=0, layer="above")
+    if grey:
+        pos = ood_label_position(grey, x0, x1, y0, y1)
+        if marker and pos["xanchor"] == "left" and marker["o2"] < y0 + 0.15 * (y1 - y0) \
+                and math.log10(max(marker["flow"], x0)) < math.log10(x0) + 0.5 * (math.log10(x1) - math.log10(x0)):
+            pos.update(x=math.log10(x1) - 0.03, xanchor="right")  # a custom scenario sits on the label: move it right
+        fig.add_annotation(**pos, text=OOD_LABEL, showarrow=False,
+                           font=dict(color="rgba(235,235,235,0.78)", size=11), bgcolor="rgba(0,0,0,0)")
 
     pts = all_points()
     pts = pts[pts["material_family"] == fam]
@@ -138,7 +158,8 @@ def build_map_figure(grid: dict[str, Any], marker: dict[str, Any] | None = None,
 
     fig.update_layout(
         template="plotly_dark", height=580, margin=dict(l=10, r=10, t=30, b=10),
-        xaxis=dict(type="log", title="Forced-flow speed (cm/s, log scale)", range=[math.log10(x0), math.log10(x1)]),
+        xaxis=dict(type="log", title="Forced-flow speed (cm/s, log scale)", range=[math.log10(x0), math.log10(x1)],
+                   tickvals=[t for t in X_TICKS if x0 <= t <= x1], ticktext=[f"{t:g}" for t in X_TICKS if x0 <= t <= x1]),
         yaxis=dict(title="O2 (%)", range=[y0, y1]),
         legend=dict(orientation="h", yanchor="top", y=-0.14, xanchor="left", x=0, font=dict(size=11)),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -226,7 +247,7 @@ def render_map_tab(st: Any, grid_loader, predict_fn) -> None:
             f"{material}: {geo}{grid['flow_configuration']} flow, 14.7 psia (1 atm), microgravity. Colour = P(burn) from the "
             "shipped model; solid line = P(burn) 0.5 boundary; dashed/dotted = 90% band edges from the bootstrap over tests "
             "(missing where the band never reaches 0.5). Darkened = inside the tested ranges but far from labelled tests. "
-            "Grey = outside this material's data. Hover any NASA point for its test ID, PI, outcome, quote and page."
+            "Grey = outside this material's tested range. Hover any NASA point for its test ID, PI, outcome, quote and page."
         )
 
     with right:

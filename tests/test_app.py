@@ -23,7 +23,30 @@ def test_map_figure_has_heatmap_contour_points_and_marker():
     assert fig.layout.xaxis.type == "log"
     burn = next(t for t in fig.data if t.name == "NASA test: burn")
     assert len(burn.x) == 21 and "GMT" in burn.text[0] and "p. " in burn.text[0] and "“" in burn.text[0]
-    assert any("Out of distribution" in (a.text or "") for a in fig.layout.annotations)
+    assert any(a.text == map_ui.OOD_LABEL for a in fig.layout.annotations)
+
+
+def test_log_axis_has_clean_ticks():
+    fig = map_ui.build_map_figure(api.boundary_grid("SIBAL fabric"), None)
+    assert list(fig.layout.xaxis.tickvals) == [0.5, 1, 2, 5, 10, 20, 50]
+    assert list(fig.layout.xaxis.ticktext) == ["0.5", "1", "2", "5", "10", "20", "50"]
+
+
+@pytest.mark.parametrize("material", ["SIBAL fabric", "PMMA film", "PMMA slab", "PMMA rod", "Nomex"])
+@pytest.mark.parametrize("preset", ["ISS", "Artemis EA", "Lunar"])
+def test_grey_label_sits_in_grey_far_below_every_preset_marker(material, preset):
+    """The grey-region label must not sit next to a preset star (the old label sat right above the ISS star)."""
+    sc = map_ui.scenario_from_controls(preset, 18.0, 20.0)
+    y_range = (13.0, 36.0) if sc["o2_percent"] > 23 else (13.0, 23.0)
+    grid = api.boundary_grid(material)
+    fig = map_ui.build_map_figure(grid, {"flow": sc["flow"], "o2": sc["o2_percent"], "text": sc["name"]}, y_range)
+    lab = next(a for a in fig.layout.annotations if a.text == map_ui.OOD_LABEL)
+    assert "Out of distribution" not in " ".join(a.text or "" for a in fig.layout.annotations)
+    span = y_range[1] - y_range[0]
+    label_top = lab.y + 0.035 * span  # 11 px text (~16 px box) on a ~450 px plot area
+    assert label_top < grid["envelope"]["o2_percent"][0], "label inside the grey band below the tested O2"
+    assert sc["o2_percent"] - label_top > 0.25 * span, "preset star and its label are well above the grey label"
+    assert lab.font.size <= 11
 
 
 @pytest.mark.parametrize("material", ["SIBAL fabric", "PMMA film", "PMMA slab", "PMMA rod", "Nomex"])
