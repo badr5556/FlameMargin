@@ -102,43 +102,57 @@ def render_copilot_chat(key_prefix: str = "copilot") -> None:
         if col.button(label, key=f"{key_prefix}_sugg_{label}", use_container_width=True, help=q):
             st.session_state[pending_key] = q
 
-    for msg in history:
-        with st.chat_message(msg["role"]):
-            if msg["role"] == "assistant":
-                _render_assistant(msg)
-            else:
-                st.markdown(msg["content"])
+    # Inside a tab, st.chat_input renders inline (it is not pinned to the page bottom). The history container is
+    # created BEFORE the input, and new turns are written into it, so the input always stays below the last message.
+    chat_box = st.container()
+    with chat_box:
+        for msg in history:
+            _render_message(msg)
 
     typed = st.chat_input("Ask about a material, atmosphere, flow or mission…", key=f"{key_prefix}_input")
     question = typed or st.session_state.pop(pending_key, None)
     if not question:
         return
 
+    # Typed questions and suggested-question buttons take this same path.
     prior = [{"role": m["role"], "content": m["content"]} for m in history]
-    history.append({"role": "user", "content": question})
-    with st.chat_message("user"):
-        st.markdown(question)
-    with st.chat_message("assistant"):
-        with st.spinner("Calling the prediction engine…"):
-            wants_llm = has_key and not st.session_state.get(offline_key)
-            over_budget = wants_llm and st.session_state[used_key] >= limit
-            try:
-                res: CopilotResult = ask(question, history=prior, force_fallback=not wants_llm or over_budget)
-                if wants_llm and not over_budget:
-                    st.session_state[used_key] += 1
-                if over_budget:
-                    res.notes.append(f"per-session LLM budget reached ({limit} questions): deterministic fallback")
-                payload = res.to_dict()
-                content = res.answer
-                if over_budget:
-                    content = (f"_LLM budget for this session is used up ({limit} questions, the public demo runs on a free-tier key). "
-                               "Answering with the deterministic fallback, same tools and same guards._\n\n" + content)
-            except Exception as e:  # noqa: BLE001 - the UI must never die during a demo
-                payload, content = None, f"⚠️ Copilot error: {type(e).__name__}. Try again or switch to offline mode."
-        msg = {"role": "assistant", "content": content, "result": payload}
-        _render_assistant(msg)
+    user_msg = {"role": "user", "content": question}
+    history.append(user_msg)
+    with chat_box:
+        _render_message(user_msg)
+        with st.chat_message("assistant"):
+            with st.spinner("Calling the prediction engine…"):
+                msg = _answer(question, prior, has_key, offline_key, used_key, limit)
+            _render_assistant(msg)
     history.append(msg)
 
+
+def _render_message(msg: dict[str, Any]) -> None:
+    with st.chat_message(msg["role"]):
+        if msg["role"] == "assistant":
+            _render_assistant(msg)
+        else:
+            st.markdown(msg["content"])
+
+
+def _answer(question: str, prior: list[dict[str, Any]], has_key: bool, offline_key: str, used_key: str, limit: int) -> dict[str, Any]:
+    """Run the Copilot for one question and return the assistant message (never raises)."""
+    wants_llm = has_key and not st.session_state.get(offline_key)
+    over_budget = wants_llm and st.session_state[used_key] >= limit
+    try:
+        res: CopilotResult = ask(question, history=prior, force_fallback=not wants_llm or over_budget)
+        if wants_llm and not over_budget:
+            st.session_state[used_key] += 1
+        if over_budget:
+            res.notes.append(f"per-session LLM budget reached ({limit} questions): deterministic fallback")
+        payload = res.to_dict()
+        content = res.answer
+        if over_budget:
+            content = (f"_LLM budget for this session is used up ({limit} questions, the public demo runs on a free-tier key). "
+                       "Answering with the deterministic fallback, same tools and same guards._\n\n" + content)
+    except Exception as e:  # noqa: BLE001 - the UI must never die during a demo
+        payload, content = None, f"⚠️ Copilot error: {type(e).__name__}. Try again or switch to offline mode."
+    return {"role": "assistant", "content": content, "result": payload}
 
 if __name__ == "__main__":
     # Streamlit Cloud runs this file; serve the full 3-tab app (app.main() calls st.set_page_config once).
