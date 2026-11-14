@@ -5,9 +5,9 @@ Mount inside the main app (see docs/copilot_integration.md):
     from src.copilot_ui import render_copilot_chat
     render_copilot_chat()
 
-Standalone demo:
+Full app (map + Copilot + data), also the deployed entry point:
 
-    streamlit run src/copilot_ui.py
+    streamlit run src/copilot_ui.py      # same as: streamlit run app.py
 """
 
 from __future__ import annotations
@@ -126,7 +126,9 @@ def render_copilot_chat(key_prefix: str = "copilot") -> None:
 
 
 if __name__ == "__main__":
-    st.set_page_config(page_title="FlameMargin Copilot", page_icon="🔥", layout="wide")
-    st.title("FlameMargin · Fire Safety Copilot")
-    st.caption("Layer 3 standalone demo. Decision support, not a replacement for NASA-STD-6001 material testing.")
-    render_copilot_chat()
+    # Streamlit Cloud runs this file; serve the full 3-tab app (app.main() calls st.set_page_config once).
+    if str(_ROOT) not in sys.path:
+        sys.path.insert(0, str(_ROOT))
+    import app
+
+    app.main()
