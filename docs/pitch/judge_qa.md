@@ -1,93 +1,86 @@
 # Judge Q&A: the 15 hardest questions
 
-Short, honest answers. Claim IDs refer to `docs/science/claims_sheet.md`. Rule: if the true answer is "we don't
-know yet", say that first, then say what we did about it.
+Short, honest answers. Claim IDs refer to `docs/science/claims_sheet.md`; numbers come from `models/metrics.json`,
+`docs/model_card.md` and `evals/results.md`. Rule: if the true answer is "we don't know", say that first.
 
 ### 1. How much data did you train on?
-Honest answer: small. Microgravity fire tests are expensive, so each NASA campaign has few tests. That is
-exactly why our model reports intervals and an out-of-distribution flag instead of a single number.
-`[FILL WITH REAL NUMBERS: rows used, campaigns, materials, once Layer 1 is merged]`
+31 SIBAL cotton-fiberglass fabric tests from NASA/TM-20210011385 Table 7.1 (BASS-II, ISS, 1 atm). Each test ramps the
+flow at fixed oxygen, so four written rules turn the 12 tests with a definitive outcome into **21 observations: 11 burn,
+10 extinguished**. The other 19 rows (8 reused samples, 11 without a reported outcome) are shown on the map in grey but not used.
 
 ### 2. Are the numbers in your demo real model outputs?
-`[Pick the line that is true on demo day]`
-- If `src/api.py` is connected: "Yes, from the model trained on [dataset]. Every number in an answer is checked
-  in code against a tool result."
-- If not: "No. Today the Copilot runs on a placeholder engine (`copilot_mock_api.py`), and every answer says
-  'mock' on screen. The real model plugs into the same interface without changing the Copilot."
+Yes. Every number comes from `src/api.py`, the model trained on those 21 points, and code checks that every number in a
+Copilot answer exists in a tool result. The old placeholder engine is now only a unit-test fixture.
 
-### 3. How do you know the model is right? (validity)
-`[FILL: held-out accuracy / calibration once Layer 1 reports it]`. Until then, we do not claim accuracy. What
-we can show today is that the **Copilot** behaves correctly: 12 adversarial questions (OOD, prompt injection,
-unknown material, Arabic, "skip the tools") pass 12/12 in both LLM and offline modes (`evals/results.md`).
+### 3. How good is the model?
+Leave-one-test-out (both points of a test held out together): Brier **0.229** for the Gaussian process vs **0.263** for a
+majority-class baseline; balanced accuracy 0.668 vs 0.318; log-loss 0.651 vs 0.719. That is a modest gain, and we say so:
+two-thirds of its out-of-fold predictions are between 0.4 and 0.6. It's a proof of pipeline on real NASA data, not a
+flight-qualification tool.
 
-### 4. Why not just use NASA's Earth test (NASA-STD-6001B Test 1)?
-We don't replace it; it is the certification test. [C11] But it is run in normal gravity, and the evidence
-shows the answer depends on air flow: older Mir tests found it conservative for still air [C9], while
-BASS-II found materials burning below their Earth limits with gentle ventilation [C2]. FlameMargin helps
-explore the flow-dependent margin between tests. Decision support, not certification.
+### 4. Why is the baseline's accuracy only 0.333, below a coin flip?
+Leave-one-out artefact: when you hold out a test, the training majority shifts against that test's own points. That's why
+we pick models by Brier and log-loss, where the baseline sits near a coin flip. It's explained in the model card.
 
-### 5. Isn't the Earth test conservative? I've read Mir results saying so.
-Yes, for the plastics tested in still or very slow air on Mir. [C9] We list that as counter-evidence in our
-own fact base. Our reading of both results together: conservative for still air, not always for ventilated
-microgravity. [C14] That's why flow velocity is an input.
+### 5. Your ISS preset says "extrapolation". Isn't 21% oxygen normal?
+It is normal for the ISS, but in the extraction none of the 21% O2 tests reports a definitive outcome; the highest labelled
+oxygen is 18.7%. So the distance check flags 21% as far from labelled data and the interval becomes 0 to 1. We'd rather
+say "no information" than borrow confidence. If the PDF shows outcomes for those rows, adding them fixes it.
 
-### 6. What happens outside your training data?
-The tool layer flags it, and code forces the warning to be the first line of the answer. Inputs are not
-clamped: a 40% O2 / 5 psia question is answered with an OOD warning, not silently moved into range. Physically
-impossible inputs are rejected.
+### 6. What happens outside your data?
+Hard rules first: material other than SIBAL, pressure outside 14.7 ± 0.3 psia, gravity other than microgravity, O2 outside
+16.4–21%, flow outside 2–53 cm/s. Any of them → **no number**, with a reason for each. Then a nearest-neighbour distance
+check flags extrapolations inside those ranges. In the Copilot, code forces the warning onto the first line.
 
-### 7. What about the Moon? Artemis is going there.
-No fire test has been run on the Moon yet. [C10] Short partial-gravity tests suggest some materials can burn
-in lunar gravity that don't burn in 1 g [C7], so we refuse to extrapolate quietly: any gravity other than
-microgravity is always flagged OOD, by a hard rule in code. When NASA's FM2 experiment flies, that data is the
-first thing we would add.
+### 7. So Artemis is out of distribution?
+Yes, on both pressure (8.2 psia) and oxygen (34%). [C4] That's our key honest finding: NASA's microgravity data in this
+dataset don't reach the Exploration Atmosphere, which matches the 2026 NESC finding that material flammability is the most
+critical hurdle there. [C6]
 
-### 8. LLMs hallucinate. Why should an astronaut trust your Copilot?
-They shouldn't trust the LLM, and the design assumes that. The LLM never produces numbers: it calls tools.
-Code then checks every number in the draft against the tool results; if one doesn't match, the answer is
-regenerated once, and if it still fails, the Copilot shows the raw tool outputs instead. It also refuses
-"ignore your instructions" requests (we test that).
+### 8. What about the Moon?
+Also out of distribution. SIBAL, which extinguishes immediately in Earth gravity, burned downward at lunar gravity in
+centrifuge and parabolic-flight tests [C7], and no long-duration fire experiment has been done in actual lunar gravity;
+NASA's FM2 will be the first. [C10] That's the first data we would add.
 
-### 9. What if Gemini is down or rate-limited?
-Retry once, then a smaller model, then a deterministic rule-based fallback that calls the same tools and uses
-the same answer template. There's also an "Offline mode" switch. Fallback answers in milliseconds.
+### 9. LLMs hallucinate. Why trust the Copilot?
+We don't trust the LLM; the code does the checking. Every number and NASA test ID must exist in a tool result; verdict words
+must match the model's label; out-of-distribution warnings go first; the LLM may not invent a flow (in one eval it tried to
+assume 10 cm/s and was rejected). If a draft fails twice, the user sees deterministic tool outputs instead.
 
-### 10. Your grounding check proves the number exists. Does it prove the sentence is right?
-No, and we say so in our design doc. A number could be quoted out of context. Mitigation: comparisons and
-limits are computed in code and passed to the LLM as finished results, so it has nothing to calculate.
+### 10. What if Gemini is down or rate-limited on a public link?
+Primary key, then a backup key, then a backup model, then a deterministic fallback with the same tools and template. Each
+browser session gets 15 LLM questions, then the fallback. Final eval run: LLM 13/14, fallback 14/14 (the LLM "failure" was
+the guard blocking a citation the model took from its prompt instead of a tool).
 
-### 11. What is actually novel here?
-Three things together: (1) a model that treats **flow velocity** and **gravity** as first-class inputs, which
-is where microgravity differs from the Earth test; (2) honest uncertainty and OOD flags instead of a single
-yes/no; (3) a Copilot whose guardrails are enforced in code, not just in a prompt. We don't claim new
-combustion science.
+### 11. Does your model respect physics?
+Partly, and we report where it doesn't: P(burn) should not fall as oxygen rises at fixed flow. The shipped model has a small
+dip near 17.5% and falls back toward 0.5 above 18.7%, because a Gaussian process reverts to its prior far from data. The
+logistic model is monotone but scored worse. It's in the model card and tested.
 
-### 12. Where do your science facts come from, and did you check them?
-Every claim is in a claims sheet with its NASA source and status. We were strict: anything we could not open
-ourselves is marked "not verified", and we corrected claims that were stronger than the source (for example,
-we dropped a "70% of systems" number we could not trace). [C6]
+### 12. Why do you not predict flame spread rate?
+The extraction has no spread-rate values, so we don't. The regression dataset is an empty schema on purpose.
 
-### 13. Who did what on the team?
-`[FILL: names]` Layer 1 data and model: teammate A. Layer 2 map / dashboard: teammate B. Layer 3 Copilot,
-science fact-check and pitch: Omar. `[Add the others.]`
+### 13. Where do your science facts come from?
+Every claim has an ID, an exact wording, a primary source and a status in the claims sheet. Ten are verified against the
+primary abstract or PDF and one was corrected because it was too strong (C10); four science claims are still pending and the
+Copilot says so when it cites them. Our own data claim (D1) stays pending until the 31-row check is done.
 
 ### 14. Did you use AI to build this?
-Yes, disclosed in the README: Gemini runs the Copilot at runtime; Claude Code helped write the Copilot code,
-tests and docs, and ran the web searches for the fact-check. The team directed and reviewed everything.
+Yes, disclosed in the README: the team designed the system and its safety rules, extracted the data and verified the sources;
+AI assistants helped implement, test and draft documentation; Gemini is the runtime LLM and never produces numbers itself.
 
 ### 15. What would you do with three more months?
-1. Load all relevant PSI campaigns (BASS, BASS-II, Saffire) with traceable test IDs. 2. Validate on held-out
-tests and publish calibration. 3. Add pressure-dependent physics features. 4. Add lunar data from FM2 when it
-exists. [C10] 5. Get a NASA fire-safety engineer to review the outputs.
+1. Finish the 31-row verification and add the other BASS-II tables (PMMA, more velocities). 2. Bound the GP length scale and
+re-validate. 3. Add pressure as a feature once data at other pressures exist. 4. Add FM2 lunar data when it exists. [C10]
+5. Ask a NASA fire-safety engineer to review the outputs.
 
 ---
 
 ## Our known weaknesses (say them before a judge does)
-
 | Weakness | How we handle it |
 |---|---|
-| Small dataset | Intervals + OOD flag + nearest real experiments shown with each answer |
-| Mock numbers until Layer 1 is merged | Labelled "mock" in every answer and in the UI; same interface for the real model |
-| No lunar / Mars data | Hard OOD rule in code; never a silent extrapolation |
-| Science claims not yet verified by opening primary sources | Claims sheet with status per claim; safe wording only |
-| "Fans off" has no agreed flow value | The Copilot refuses to invent one and answers from the low-flow boundary |
+| 21 points, one material, one pressure | Leave-one-test-out metrics next to a baseline; hard OOD rules; nearest NASA tests shown with every answer |
+| Extraction not yet verified row by row | 31-row checklist for two teammates; claim D1 stays PENDING until done |
+| ISS 21% O2 has no labelled outcome | Flagged as extrapolation with a [0, 1] interval and label "uncertain" |
+| GP intervals often touch 0.5 (37% of bootstrap fits collapse) | Reported in the model card; bounded length scale is the next step |
+| No fans-off flow value | Not invented; slider labelled "Fans OFF / near-quiescent" with verified context only (C3, C8b) |

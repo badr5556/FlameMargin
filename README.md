@@ -1,184 +1,206 @@
-# FlameMargin
+# 🔥 FlameMargin
 
-**Team IGNISPHERE · NASA Space Apps Cairo 2026 · Challenge: *Flame in Freefall: AI-Powered Fire Safety
-Insights from Microgravity Combustion Data***
+**How close is a material to burning in a spacecraft cabin, and does NASA's data actually cover that cabin?**
 
-FlameMargin estimates how close a cabin material is to burning in a given spacecraft atmosphere
-(O2, pressure, air flow, gravity), shows the margin on a map, and lets an operator ask questions in plain
-English or Arabic through a Copilot that only answers from the model's outputs.
+Team IGNISPHERE · NASA Space Apps Cairo 2026 · Challenge: *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity Combustion Data*
 
-> ### ⚠️ Project status (2026-11-13)
-> - **Layer 3 (Copilot): working on `main`.** Chat UI, tool layer, code-level guardrails, 67 unit tests,
->   12-question adversarial eval (12/12 pass in both LLM and offline modes; `evals/results.md`).
-> - **Layers 1 and 2 (prediction model and map/dashboard): integration in progress.** `src/api.py` and
->   `app.py` are not on `main` yet.
-> - **Until `src/api.py` lands, every number the Copilot shows comes from a placeholder mock**
->   (`src/copilot_mock_api.py`). It is synthetic, NOT NASA data, and it is labelled "mock" in every answer
->   and in the UI. The Copilot switches to the real model automatically when `src/api.py` exists.
-> - **Science claims are not yet verified against opened primary sources.** See
->   `docs/science/claims_sheet.md` for each claim's status.
+![tests](https://img.shields.io/badge/tests-167%20passing-brightgreen) ![evals](https://img.shields.io/badge/Copilot%20evals-LLM%2013%2F14%20%C2%B7%20fallback%2014%2F14-blue) ![data](https://img.shields.io/badge/data-NASA%20BASS--II%20(TM--20210011385)-orange) ![python](https://img.shields.io/badge/python-3.11%2B-blue) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-## Problem
+## [▶ Live demo: flamemargin.streamlit.app](https://flamemargin.streamlit.app/)
 
-Spacecraft cabin materials are screened for flammability on Earth, with an upward-flame test in normal
-gravity (claim C11). In microgravity, flames behave differently because there is no buoyant flow, and the
-air flow from ventilation becomes the variable that decides whether a material burns (C1, C2, C9, C14).
-NASA's planned Exploration Atmosphere uses more oxygen at lower pressure than the ISS (C4, C12), a
-region where material flammability data are limited (C13).
+> ### Status (2026-11-14)
+> **What is real**
+> - **Prediction Engine on real NASA data:** P(burn) for SIBAL cotton-fiberglass fabric from 21 observation points
+>   (12 BASS-II tests, NASA/TM-20210011385 Table 7.1), leave-one-test-out validated against a baseline
+>   (Brier 0.229 vs 0.263; [model card](docs/model_card.md)), with 90% bootstrap intervals and an out-of-distribution guard.
+> - **Flammability Map:** P(burn) over O2 × flow with the 0.5 boundary, the data envelope and every NASA test point.
+> - **Fire Safety Copilot** with code-level guardrails, on the real engine.
+> - **167 unit tests**, a 14-question adversarial eval (final run: LLM 13/14, deterministic fallback 14/14), and the **live app**.
+>
+> **What is limited**
+> - **One material** (SIBAL fabric), **one pressure** (1 atm), microgravity only, **O2 16.4–21%** (labelled outcomes only up to 18.7%).
+> - **No flame spread-rate data** in the extraction, so no spread rate is predicted.
+> - The 31-row extraction is **not yet verified row by row** against the NASA PDF ([checklist](docs/data/verification_checklist.md)).
+> - 21 points from 12 tests: a working, honest pipeline, not a precise predictor and not a flight-qualification tool.
 
-## Why microgravity matters
+## The problem
+NASA relies on NASA-STD-6001B Test 1, conducted in normal Earth gravity, to screen material flammability for flight (C11).
+But BASS-II flame extinctions on the ISS indicated that materials can burn at a lower oxygen concentration in microgravity
+than in normal gravity (C2). The 34% O2 Exploration Atmosphere is an atmosphere of increased burning rate: 31.4% O2 is the
+calculated upper limit that would not increase burning rate at 8.2 psia (C5). A 2026 NASA NESC study found that material
+flammability is the most critical hurdle in the 8.2 psia / 34–40% O2 environment, where 70% of the assessed ECLSS
+subsystems would require material replacements, many not yet developed (C6).
 
-Every statement below has a claim ID in [`docs/science/claims_sheet.md`](docs/science/claims_sheet.md).
-All are currently `NOT VERIFIED` (sources found but not yet opened by a human); we use only the safe wording.
+Claim IDs point to [`docs/science/claims_sheet.md`](docs/science/claims_sheet.md); every one used here was checked against its primary source.
 
-- Without gravity there is no buoyant flow, so a candle flame in still air becomes round instead of
-  teardrop-shaped. (C1)
-- In the BASS-II experiments on the ISS, with a gentle ventilation flow, some materials kept burning at lower
-  oxygen levels than their limits measured on Earth. (C2)
-- On the ISS, flames on SIBAL cotton-fiberglass fabric went out when the air flow was lowered to about
-  1-5 cm/s, and at a higher flow when oxygen was lower. (C3)
-- Counter-evidence: older Mir tests found the Earth test conservative for the plastics they tested, compared
-  with still or very slow air in microgravity. (C9) Our reading of C2 + C9: the Earth test looks conservative
-  against still air, but not against ventilated microgravity. That is why flow velocity is a model input. (C14,
-  team synthesis)
-- NASA's recommended Exploration Atmosphere is 8.2 psia with 34% O2 (C4). At 8.2 psia, the calculated O2
-  limit for no increase in burning rate is 31.4% (C5), and NASA reports limited material flammability data
-  above 30% O2 (C13).
-- Some materials that do not burn in Earth gravity can burn in microgravity or in partial gravity like the
-  Moon's (C7). No fire test has been run on the Moon yet; NASA's FM2 experiment is planned to do this (C10).
+## Key honest finding
+**FlameMargin flags the Artemis Exploration Atmosphere (8.2 psia / 34% O2) as out of distribution,** because NASA's available
+microgravity flammability data in this dataset do not reach it: every test is at 1 atm and 16.4–21% O2. The tool refuses to
+give a number there instead of extrapolating. This mirrors the NESC finding that flammability is the most critical hurdle in
+that environment (C6). Even the ISS cabin (21% O2) is flagged as an *extrapolation*: no test at 21% O2 reports a definitive
+outcome in the extraction, so the model says "no information" rather than guessing.
 
-## What FlameMargin does (3 layers)
+![FlameMargin Flammability Map](docs/img/flammability_map.png)
+*The Flammability Map exported from the app (`src/map_ui.py`, Plotly): P(burn) for SIBAL fabric at 14.7 psia over O2 × flow,
+the P(burn) = 0.5 boundary, the 90% band edges, NASA test points, and the Artemis EA marker far outside the data.*
 
-| Layer | What it does | Owner | Status on `main` |
-|---|---|---|---|
-| 1. Prediction engine (`src/api.py`) | Learns from microgravity combustion test data; predicts burn / extinguish, a limiting O2 and an uncertainty interval for a material at given O2, pressure, flow and gravity; flags out-of-distribution inputs; returns nearest real experiments | Teammate A | In progress |
-| 2. Margin map (`app.py`) | Flammability boundary (O2 limit vs. flow) per material, with mission presets: ISS cabin, Artemis Exploration Atmosphere, Lunar habitat | Teammate B | In progress |
-| 3. Fire Safety Copilot (`src/copilot*.py`) | LLM agent that answers operator questions **only through Layer 1 tools**; code checks that every number in the answer exists in a tool result; out-of-distribution warning comes first; offline rule-based fallback | Omar | **Done** (on mock data) |
+## How it works
 
-## Data sources
+```mermaid
+flowchart LR
+    D[("NASA/TM-20210011385<br/>Table 7.1: 31 SIBAL tests")] --> P["Data pipeline<br/>4 written rules → 21 points"]
+    P --> L1["Layer 1: Prediction Engine<br/>src/api.py · GP classifier<br/>LOTO-validated · bootstrap 90% · OOD guard"]
+    L1 --> L2["Layer 2: Flammability Map<br/>src/map_ui.py · P(burn) heatmap,<br/>0.5 boundary, envelope, NASA points"]
+    L1 --> L3["Layer 3: Fire Safety Copilot<br/>src/copilot*.py · Gemini + tools<br/>grounding · OOD-first · fallback"]
+    L2 --> APP["app.py: 3-tab Streamlit app<br/>(live link)"]
+    L3 --> APP
+```
 
-See [`docs/data_sources.md`](docs/data_sources.md). Main source: NASA Physical Sciences Informatics (PSI),
-BASS-II investigation (PSI-25), plus published results on the NASA Technical Reports Server. The repo file
-`combustion_sample.csv` is a 3-row placeholder, not NASA data.
+```mermaid
+sequenceDiagram
+    actor U as Operator
+    participant C as Copilot (src/copilot.py)
+    participant G as Gemini
+    participant T as Tool layer (copilot_tools.py)
+    participant A as Prediction Engine (api.py)
+    U->>C: question
+    alt LLM available (key, budget left)
+        C->>G: question + tool declarations
+        G->>T: function call (e.g. predict)
+        T->>T: unit parsing, input guard (no invented flow)
+        T->>A: predict / flammability_boundary / nearest_experiments
+        A-->>T: P(burn), interval, ood_flag, evidence
+        T-->>G: tool result
+        G-->>C: draft answer
+        C->>C: grounding check (every number and test ID in tool results)<br/>claim consistency (verdict vs label)<br/>OOD warning forced to line 1
+        alt checks fail twice
+            C->>T: deterministic fallback with the same tools
+        end
+    else no key, 429/5xx after primary + backup key, or budget used
+        C->>T: deterministic fallback (rule-based intent → tools → template)
+    end
+    C-->>U: answer + tool trace + badges
+```
 
-## Method
+## Why you can trust it
+1. **Tool-only numbers.** Every number and NASA test ID in an answer must appear in a tool result from that turn; otherwise
+   the draft is regenerated once, then replaced by deterministic tool outputs.
+2. **OOD first.** Hard rules (material, pressure, gravity, O2, flow, sample width) return *no number*; a kNN distance check
+   flags extrapolations. Any OOD result forces the warning onto the first line of the answer.
+3. **Grounding verifier + claim consistency.** Code checks numbers, test IDs, and that verdict words ("burns", "self-extinguishes")
+   do not contradict the model's label.
+4. **Input guard.** The LLM may not invent conditions. In a real eval run, asked for "a rough number … skip the tools",
+   the model tried to call `predict` with `flow_velocity_cm_s = 10 cm/s`; the code rejected it with *"was not given by the
+   operator. Do not assume a flow."* (`evals/transcripts/llm/rough_number_skip_tools.json` at commit `1dd1d8c`; the same guard
+   rejected an assumed 5 cm/s in today's `compare_iss_artemis` run).
+5. **Deterministic fallback.** No key, rate limit, or exhausted per-session budget → the same tools and guards, rule-based. Fallback passed 14/14 in every eval run.
+6. **Leave-one-test-out validation.** Both points of a NASA test are held out together, and metrics are reported next to a baseline.
 
-1. **Data (Layer 1, in progress):** per-test rows with material, O2, pressure, flow velocity, gravity and
-   outcome, traced back to PSI record and report page.
-2. **Model (Layer 1, in progress):** classifier for burn / extinguish plus an O2-limit estimate with an
-   uncertainty interval; out-of-distribution flag outside the training envelope. Any gravity other than
-   microgravity is always flagged OOD, because the training data contain no lunar or Mars tests.
-3. **Map (Layer 2, in progress):** boundary curves per material and preset.
-4. **Copilot (Layer 3, done):** Google Gemini with manual function calling over 6 tools (`predict`,
-   `flammability_boundary`, `compare_scenarios`, `nearest_experiments`, `get_mission_preset`,
-   `get_background_fact`). Guardrails are enforced in code, not only in the prompt: number grounding,
-   input grounding (no invented flow values), OOD-first line, mock disclosure. Details:
-   [`docs/copilot_design.md`](docs/copilot_design.md).
+## Model results (leave-one-test-out, 21 points from 12 tests; `models/metrics.json`)
 
-## Limits (honest)
+| Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ |
+|---|---|---|---|---|
+| Majority-class baseline | 0.333 | 0.318 | 0.263 | 0.719 |
+| Logistic regression (L2) | 0.619 | 0.623 | 0.238 | 0.769 |
+| **Gaussian process classifier (RBF + White), shipped** | **0.667** | **0.668** | **0.229** | **0.651** |
+| GP with ARD kernel (sensitivity only) | 0.619 | 0.623 | 0.237 | 0.674 |
 
-- **No real model numbers yet.** Until `src/api.py` is connected, Copilot outputs are synthetic.
-- **Small data.** Microgravity combustion tests are expensive, so each campaign has few tests. Intervals will
-  be wide, and that is the honest answer.
-- **No lunar or Mars data.** Any non-microgravity question is out of distribution and flagged as such.
-- **Science claims are pending human verification** (`docs/science/claims_sheet.md`).
-- The grounding check proves that a number exists in a tool result, not that the sentence around it is right.
-- FlameMargin is decision support for exploring margins. It does not replace NASA-STD-6001B material testing.
+Chosen by lowest Brier (rule fixed before training). The gain over the baseline is real but small; out of fold, 0.667 of the GP's
+predictions lie between 0.4 and 0.6. The baseline's sub-50% accuracy is a leave-one-out artefact on balanced data (explained in the
+[model card](docs/model_card.md)). The model card also reports a monotonicity violation in O2 and the bootstrap's limitations.
 
-## How to run
+## Mission presets
 
+| Preset | Pressure | O2 | Gravity | Data coverage | Source |
+|---|---|---|---|---|---|
+| ISS cabin | 14.7 psia | 21% | µg | inside the tested ranges, flagged as **extrapolation** (no labelled test at 21% O2) | team brief; C12 (pending verification); 14.7 psia = 1 atm, the pressure of every test in the data |
+| Artemis Exploration Atmosphere | 8.2 psia | 34% | µg | **out of distribution** (pressure and O2) | C4, NTRS 20240003211 |
+| Lunar surface habitat | 8.2 psia | 34% | 1/6 g | **out of distribution** (pressure, O2, gravity) | C4 + C10 (no long-duration fire experiment in actual lunar gravity yet) |
+
+## Limits
+- Only SIBAL cotton-fiberglass fabric; every other material (Nomex, PMMA, Kapton…) is out of distribution.
+- Only 1 atm and microgravity; no pressure or gravity dependence can be learned from this data.
+- Labels are derived from start/end flows of each test's ramp with four written rules; "no ignition" is used as a conservative proxy for non-flammability.
+- No flame spread rate. No single "fans-off" flow value: our data do not measure residual flow with fans off.
+- The extraction is pending row-by-row verification (claim D1).
+- Decision support only, not a replacement for NASA-STD-6001 material testing.
+
+## Quick start
+
+**macOS / Linux**
 ```bash
 git clone https://github.com/badr5556/FlameMargin.git
 ```
-
 ```bash
-cd FlameMargin
+cd FlameMargin && python3 -m venv .venv && source .venv/bin/activate
 ```
-
-```bash
-python -m venv .venv
-```
-
-```bash
-source .venv/bin/activate
-```
-
-(Windows: `.venv\Scripts\activate`)
-
 ```bash
 pip install -r requirements.txt
 ```
-
-Create a `.env` file (copy `.env.example`) and set your own key. Never commit it.
-
 ```bash
-cp .env.example .env
+streamlit run app.py
 ```
 
-Then edit `.env`: `GEMINI_API_KEY=<your key>`. Without a key, the Copilot runs in offline (rule-based) mode.
-
-Run the Copilot UI (the `app.py` dashboard is not on `main` yet):
-
-```bash
-streamlit run src/copilot_ui.py
+**Windows PowerShell**
+```powershell
+git clone https://github.com/badr5556/FlameMargin.git
+cd FlameMargin
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+streamlit run app.py
 ```
 
-Run the tests and the evals:
+Optional: copy `.env.example` to `.env` and set `GEMINI_API_KEY` (and optionally `GEMINI_API_KEY_BACKUP`,
+`COPILOT_SESSION_LLM_LIMIT`). Never commit it. Without a key the Copilot runs in deterministic fallback mode.
 
+Rebuild everything from the raw data and check it:
 ```bash
-python -m pytest -q tests/test_copilot.py
+python src/data_pipeline/derive_points.py && python -m src.model && python -m pytest -q
 ```
-
 ```bash
-python evals/run_evals.py --mode fallback
+python evals/run_evals.py --mode both
 ```
 
 ## Repo structure
+```
+app.py                         full 3-tab Streamlit app (map, Copilot, data & method)
+data/raw/                      31-row NASA Table 7.1 extraction (unchanged)
+data/processed/                cleaned records, flame_points.csv (21 training points), display-only rows
+data/ml_ready/                 data team's classification set and (empty) regression schema
+models/                        flame_model.joblib + metrics.json
+src/data_pipeline/             inspect / clean / prepare / validate / derive_points
+src/features.py, model.py      features, training, LOTO validation, bootstrap, kNN threshold
+src/api.py                     Layer 1 contract: predict, flammability_boundary, compare_scenarios, nearest_experiments
+src/map_ui.py                  Layer 2 Plotly map + controls
+src/copilot*.py                Layer 3 agent, tools, prompt, facts, chat UI (copilot_ui.py is the deployed entry point)
+src/copilot_mock_api.py        synthetic API used only as a unit-test fixture
+tests/                         engine, data rules, app, Copilot, facts
+evals/                         adversarial questions, runner, results, transcripts
+docs/model_card.md             model card
+docs/data/                     data package docs + 31-row verification checklist
+docs/science/claims_sheet.md   every science claim with source and status
+docs/pitch/                    pitch, demo script, slides, judge Q&A, video shot list, submission text
+main.py, combustion_sample.csv early scratch files (kept as they are)
+```
 
-```
-README.md                  this file
-LICENSE                    MIT
-requirements.txt           Python dependencies
-.env.example               template for GEMINI_API_KEY / GEMINI_MODEL
-main.py, combustion_sample.csv   early data-loading scratch (Layer 1 placeholder)
-src/
-  copilot.py               Copilot agent loop, guardrails, offline fallback
-  copilot_tools.py         tool layer: unit parsing, presets, OOD rule, adapter to src/api.py or mock
-  copilot_mock_api.py      SYNTHETIC placeholder for src/api.py (not NASA data)
-  copilot_prompt.py        system prompt
-  copilot_facts.py         sourced background facts (claim IDs, all unverified for now)
-  copilot_ui.py            Streamlit chat UI
-tests/test_copilot.py      unit tests (offline, faked LLM)
-evals/                     adversarial question set, runner, results, transcripts
-docs/
-  copilot_design.md        Copilot architecture and guardrails
-  copilot_integration.md   API contract for Layers 1 and 2
-  data_sources.md          datasets, formats, licences
-  science/claims_sheet.md  fact-check of every science claim
-  pitch/                   pitch, demo script, slides outline, judge Q&A, video shot list, submission text
-```
+## Data sources and attribution
+- **NASA Glenn Research Center**, *Burning and Suppression of Solids–II (BASS-II) Summary Report*, **NASA/TM-20210011385**,
+  Section 7.1, Table 7.1 (SIBAL fabric tests): the training data.
+- **NASA Physical Sciences Informatics (PSI)**, BASS-II investigation (PSI-25, DOI 10.60555/4qc4-de67): dataset context, see [`docs/data_sources.md`](docs/data_sources.md).
+- Science claims: primary sources listed per claim in [`docs/science/claims_sheet.md`](docs/science/claims_sheet.md).
+- NASA does not endorse this project.
+
+## Team (IGNISPHERE)
+- Omar Issam — AI Agent & Science Lead
+- Adel Elwan — Data & ML Lead (data extraction package)
+- Badr Mostafa — Product & Backend Lead (deployment)
+- Ahmed Mohamed Ahmed — Team member
+- Sherif Alnegoly — Team member
+- Raphael Robeir — Team member
 
 ## AI-use disclosure
-
-Space Apps asks teams to disclose AI use. We used:
-
-- **Google Gemini (runtime):** the Copilot uses Gemini through the `google-genai` SDK to understand questions,
-  choose tools and write answers (`src/copilot.py`). It produces no numbers of its own: code checks every
-  number against tool results.
-- **Claude Code (Anthropic) (development):** used by Omar to help write the Copilot code, tests and evals
-  (`src/copilot*.py`, `tests/`, `evals/`), to run AI-assisted web searches for the fact-check
-  (`docs/science/claims_sheet.md`, `docs/data_sources.md`), and to draft this README and the pitch material
-  in `docs/pitch/`. All of it was directed and reviewed by the team; every science claim is listed with its
-  source and verification status.
-- No AI-generated images, video or voice are used as NASA data.
-
-## NASA data attribution
-
-This project uses data from NASA's Physical Sciences Informatics (PSI) system, including the BASS-II
-investigation (PSI-25, DOI 10.60555/4qc4-de67), and results published on the NASA Technical Reports Server
-(ntrs.nasa.gov). Sources for each science claim are in `docs/science/claims_sheet.md`. NASA does not endorse
-this project.
+The IGNISPHERE team conceived FlameMargin, designed its three-layer architecture and the Copilot's safety rules (tool-only numbers, OOD-first answers, grounding checks, deterministic fallback), extracted and organized the NASA test data, selected and verified the NASA sources, and reviewed and tested every component. We used AI assistants (Claude, by Anthropic; and others for data extraction support) to help implement and test parts of the code and to draft documentation under the team's direction. Google Gemini is the runtime LLM inside the Copilot; it never produces numbers on its own, and every number comes from our model through tool calls. All scientific claims are traceable to the primary sources in `docs/science/claims_sheet.md`.
 
 ## License
-
-MIT, see [`LICENSE`](LICENSE). Copyright (c) 2026 IGNISPHERE.
+MIT, see [`LICENSE`](LICENSE).

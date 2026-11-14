@@ -19,7 +19,7 @@ operator question (EN / AR)
    material aliases (EN/AR) · mission presets · physical-validity errors                  │
    HARD RULE: gravity ≠ µg ⇒ ood_flag=True "no training data at this gravity level        │
    (FM2 not yet flown)", whatever the model says                                          │
-   adapter: src/api.py (Layer 1) if importable, else src/copilot_mock_api.py              │
+   adapter: src/api.py (Layer 1); if not importable -> engine_unavailable errors      │
    tools: predict · flammability_boundary · compare_scenarios · nearest_experiments ·     │
           get_mission_preset · get_background_fact (src/copilot_facts.py, sourced)        │
         │                                                                                 │
@@ -30,7 +30,7 @@ operator question (EN / AR)
       within rounding; experiment IDs must exist in tool results → 1 regeneration with the list of
       ungrounded values → else show deterministic tool outputs, grounding_ok=False
    3. OOD guard: any OOD result ⇒ first line "⚠️ Out of distribution: <reason>" (prepended if missing)
-   4. mock disclosure line while the mock API is the backend
+   4. mock disclosure line (unit tests only: the mock is a test fixture)
         │
         ▼
  CopilotResult {answer, tool_calls[name,args,result,ms], ood, ood_reasons, grounding_ok, mode, latency_ms}
@@ -60,28 +60,33 @@ Operational recommendation → Limits**), OOD first. It passes the same groundin
 
 ## Evidence
 
-- `pytest tests/test_copilot.py`: offline unit tests with a faked Gemini client.
-- `python evals/run_evals.py --mode both` → `evals/results.md` + per-question transcripts for 12
-  adversarial questions (lunar / Mars OOD, 5 psia out of range, prompt injection, "skip the tools",
-  unknown material, ambiguity, Arabic).
+- `python -m pytest -q`: offline unit tests (faked Gemini client) for the Copilot, the engine contract, OOD rules,
+  data derivation rules and facts.
+- `python evals/run_evals.py --mode both` → `evals/results.md` + per-question transcripts for 14 adversarial
+  questions on the real engine (ISS extrapolation, Artemis / lunar / Mars OOD, 40% O2 and 5 psia, prompt injection,
+  "skip the tools", Nomex and Kapton, ambiguity, Arabic). Final run: LLM 13/14, fallback 14/14; all three runs are listed.
+
+## Upgrades (2026-11-14)
+
+- **Real engine:** `src/api.py` is used automatically; the mock is a unit-test fixture only. If the engine cannot be
+  imported, prediction tools return `engine_unavailable`: no synthetic numbers are ever shown.
+- **Per-session LLM budget:** `COPILOT_SESSION_LLM_LIMIT` (default 15) questions per browser session, then the
+  deterministic fallback with a note (the public link runs on a free-tier key).
+- **Backup key rotation:** `GEMINI_API_KEY_BACKUP` is tried before the backup model and before the fallback.
+- **Claim-consistency check:** verdict words must not contradict the tool's label (burn / extinguish / uncertain);
+  one regeneration with feedback, then deterministic tool outputs.
+- **Assumption line:** if the operator named no material and no atmosphere, code adds a line stating the defaults the
+  tools actually used.
 
 ## Known limits
 
 - The grounding verifier proves numbers **exist** in tool results, not that the sentence around them is
-  **semantically right** (e.g. a cherry-picked range). Mitigation: comparisons are computed in code.
-- Until `src/api.py` lands, all predictions are synthetic (mock), and are labelled as such everywhere.
-- "Fans off" has no agreed flow value yet (see `docs/copilot_integration.md`).
-- Background facts were re-worded against `docs/science/claims_sheet.md` (2026-11-13) but stay `verified: False`:
-  the primary sources could not be opened from the build environment, only search extracts of them.
+  **semantically right**. Mitigations: comparisons are computed in code, and the claim-consistency check covers verdicts.
+- The engine covers one material at 1 atm in microgravity; most real questions are (correctly) out of distribution.
+- "Fans off" has no agreed flow value, on purpose: our data do not measure residual flow with fans off.
+- Background facts carry `verified` flags that mirror `docs/science/claims_sheet.md` (C1, C9, C12, C13 still pending).
 - Decision support only, not a replacement for NASA-STD-6001 material testing.
 
-## AI-use disclosure (Space Apps)
+## AI-use disclosure
 
-- **Runtime:** the Copilot uses Google Gemini (default `gemini-3.5-flash-lite`, via the `google-genai`
-  SDK) to understand questions, choose tools and write answers. All predictions come from the FlameMargin
-  model through tools; the LLM generates no numbers of its own (enforced by the code guards above).
-- **Development:** the Layer 3 code, tests, evals and these docs were written with an AI coding assistant
-  (Claude Code, Anthropic) under the direction of, and reviewed by, the Layer 3 owner (Omar, team IGNISPHERE).
-- Background facts started from the team brief; they were fact-checked with AI-assisted web search (Claude Code)
-  against search-engine extracts of the primary sources and corrected where the brief was too strong
-  (`docs/science/claims_sheet.md`). They remain marked unverified until a human opens each source.
+The IGNISPHERE team conceived FlameMargin, designed its three-layer architecture and the Copilot's safety rules (tool-only numbers, OOD-first answers, grounding checks, deterministic fallback), extracted and organized the NASA test data, selected and verified the NASA sources, and reviewed and tested every component. We used AI assistants (Claude, by Anthropic; and others for data extraction support) to help implement and test parts of the code and to draft documentation under the team's direction. Google Gemini is the runtime LLM inside the Copilot; it never produces numbers on its own, and every number comes from our model through tool calls. All scientific claims are traceable to the primary sources in `docs/science/claims_sheet.md`.

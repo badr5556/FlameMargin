@@ -1,7 +1,7 @@
 """FlameMargin Fire Safety Copilot (Layer 3): agent core.
 
     from src.copilot import ask
-    res = ask("Is Nomex safe in the Artemis atmosphere with fans off?")
+    res = ask("Is SIBAL fabric safe in the Artemis atmosphere with fans off?")
     print(res.answer, res.tool_calls, res.ood, res.grounding_ok, res.mode)
 
 CLI:
@@ -753,9 +753,9 @@ def _recommendation(status: str, ood: bool, fans_off: bool, trace: list[dict[str
     if status == "flammable":
         rec.append("- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.")
         if fans_off:
-            # Claims sheet C2/C9: no source says shutdown fails; residual low-speed flow can still sustain a flame.
-            rec.append("- Do not rely on ventilation shutdown alone: residual low-speed flow can still sustain a flame, "
-                       "so check the low-flow end of the boundary.")
+            # No verified claim says what ventilation shutdown does; our data do not measure residual flow with fans off.
+            rec.append("- The residual flow with fans off is not measured in our data, so the model cannot say whether a flame "
+                       "would quench: treat that case as unknown and keep the other controls in place.")
     elif status == "nonflammable":
         rec.append("- Predicted to self-extinguish under these conditions; margin shrinks if O2 rises or pressure drops, so re-check after any atmosphere change.")
     else:
@@ -868,7 +868,7 @@ def fallback_answer(question: str, trace: list[dict[str, Any]] | None = None) ->
     if it["why"]:
         bg = _call("get_background_fact", {"topic": question}, trace)
         if "matches" in bg:
-            sections.insert(len(sections) - 1, ("Background", [f"- {f['fact']} ({f['source']}, pending verification)" for f in bg["matches"][:2]]))
+            sections.insert(len(sections) - 1, ("Background", [f"- {f['fact']} ({f['source']}" + ("" if f.get("verified") else ", pending verification") + ")" for f in bg["matches"][:2]]))
     answer = _render(sections, ood, reasons)
     if it["arabic"]:
         answer = "_(Fallback mode: deterministic template, English only.)_\n\n" + answer
@@ -927,7 +927,7 @@ def ask(question: str, history: list[dict[str, Any]] | None = None, *, force_fal
     if tools.BACKEND.load_error and backend == "unavailable":
         notes.append("src/api.py could not be imported: prediction tools return engine_unavailable")
     if not question:
-        return CopilotResult(answer="Ask a question about material flammability (e.g. 'Is Nomex safe on the ISS?').", backend=backend, notes=notes)
+        return CopilotResult(answer="Ask a question about material flammability (e.g. 'Will SIBAL fabric burn at 17.5% O2, 14.7 psia and 4 cm/s?').", backend=backend, notes=notes)
 
     key = None if (force_fallback or os.environ.get("COPILOT_FORCE_FALLBACK") == "1") else get_api_key()
     if key:

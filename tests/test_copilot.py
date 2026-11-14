@@ -379,9 +379,10 @@ def test_compare_needs_flow_and_reports_deltas():
     assert r["ood_flag"] and r["deltas"] and r["value"][1]["ood_flag"] and not r["value"][0]["ood_flag"]
 
 
-def test_background_fact_has_source_and_unverified_flag():
+def test_background_fact_has_source_and_verified_flag():
     r = dispatch("get_background_fact", {"topic": "fm2 lunar"})
-    assert r["matches"][0]["source"] and r["matches"][0]["verified"] is False
+    assert r["matches"][0]["source"] and isinstance(r["matches"][0]["verified"], bool)
+    assert dispatch("get_background_fact", {"topic": "microgravity_flame_shape"})["matches"][0]["verified"] is False
     assert "error" in dispatch("get_background_fact", {"topic": "zzzz"})
 
 

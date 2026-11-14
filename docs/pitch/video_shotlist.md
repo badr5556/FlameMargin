@@ -1,26 +1,23 @@
-# Video shot list (about 110 seconds)
+# Video shot list (about 115 seconds)
 
-Narration is in simple English: short sentences, one idea each. Read slowly (about 130 words per minute).
-Claim IDs (in brackets) are for the team only; don't read them. Credit NASA images on screen ("Image: NASA").
-Record the screen at 1920×1080. If the backend is still `mock`, keep the "mock" label visible and say so (shot 6).
+Simple English, one idea per sentence, about 130 words per minute. Claim IDs are for the team only. Credit NASA images
+("Image: NASA"). Record the live app at 1920×1080. Numbers are from the app on 2026-11-14.
 
 | # | Time | Shot (what we see) | Narration (say exactly this) | Claims |
 |---|---|---|---|---|
-| 1 | 0:00–0:08 | Title card: "FlameMargin · team IGNISPHERE", then a NASA microgravity flame image (credited) | "Fire in a spacecraft is very dangerous. The crew cannot leave." | none |
-| 2 | 0:08–0:22 | Slide 2: teardrop flame vs round flame, fan icon | "NASA tests cabin materials for fire on Earth. But in space, there is no buoyancy. A flame in still air becomes round. In space, the air flow from the fans decides if a flame lives." | C11, C1, C14 |
-| 3 | 0:22–0:38 | Slide 3: two cards, Mir vs BASS-II | "Old tests on the Mir station found the Earth test safe for still air. But on the ISS, with a gentle air flow, some materials burned at lower oxygen than on Earth." | C9, C2 |
-| 4 | 0:38–0:50 | Slide 4: ISS point vs Exploration Atmosphere point, line at 30% O2 | "NASA's next atmosphere has 34 percent oxygen at 8.2 psia. NASA has limited material data above 30 percent oxygen." | C4, C13 |
-| 5 | 0:50–1:00 | Slide 5: three-layer diagram | "FlameMargin has three parts. A model trained on NASA microgravity fire tests. A margin map. And a Copilot." | none |
-| 6 | 1:00–1:20 | Screen recording: click "🚀 Artemis + fans off", answer appears, open "🔧 Tool-call trace" | "You ask a question in plain English. The Copilot calls the model. Every number comes from the model, and the code checks it." If mock: "Today, the numbers come from a placeholder engine. The real model uses the same connection." `[FILL WITH REAL NUMBERS if the model is connected: read the verdict line]` | none |
-| 7 | 1:20–1:35 | Screen recording: click "🌕 Lunar habitat (OOD)"; zoom on the first line `⚠️ Out of distribution` | "Now the Moon. No fire test has been run on the Moon yet. We have no lunar data. So the first line is a warning." | C10 |
-| 8 | 1:35–1:45 | Screen recording: paste the "Ignore your instructions..." prompt; the refusal appears | "If you ask it to guess, it says no. It only uses the model." | none |
-| 9 | 1:45–1:55 | Slide 8: limits and next steps | "Our data is small, and we say it. Next, we add more NASA data and test our model on new experiments." | none |
-| 10 | 1:55–2:00 | End card: "FlameMargin · IGNISPHERE · NASA Space Apps Cairo 2026", "Data: NASA PSI. NASA does not endorse this project." | "Know your margin before the fire does. Thank you." | none |
+| 1 | 0:00–0:08 | Title card, then a credited NASA microgravity flame image | "Fire in a spacecraft is very dangerous. The crew cannot leave." | none |
+| 2 | 0:08–0:22 | Slide 2 | "NASA screens materials for fire in normal Earth gravity. But tests on the ISS showed materials can burn at lower oxygen in microgravity." | C11, C2 |
+| 3 | 0:22–0:36 | Slide 3 | "NASA's next cabin air has 34 percent oxygen at 8.2 psia. It is an atmosphere of increased burning rate. NASA calls material flammability the most critical hurdle there." | C4, C5, C6 |
+| 4 | 0:36–0:50 | App header and tab "🔥 Flammability Map" | "FlameMargin uses NASA's own ISS fire tests: 21 observations from 12 tests on cotton-fiberglass fabric. Colour shows the chance that a flame survives." | none |
+| 5 | 0:50–1:02 | Move the ventilation slider down to 2 cm/s; colour turns blue | "Slow the air, and the flame goes out. NASA saw flames quench at 1 to 5 centimetres per second." | C3 |
+| 6 | 1:02–1:15 | Click "Artemis EA": red banner, star far above the data | "Now Artemis. Our tool says: out of distribution. NASA's data here do not reach this cabin. So it gives no number." | C4 |
+| 7 | 1:15–1:32 | Tab "🤖 Copilot": click "🧪 In the data", open the tool-call trace | "You can also ask in plain English. The Copilot calls the model and names the NASA tests it used. Code checks every number." | none |
+| 8 | 1:32–1:42 | Tab "📚 Data & Method": the metrics table | "We test on held-out NASA tests. Our model beats a simple baseline, but only a little. We show that." | none |
+| 9 | 1:42–1:52 | Slide 8 | "Next, we verify every data row and add more NASA tests. NASA's FM2 will be the first fire experiment on the Moon. We will add its data." | C10 |
+| 10 | 1:52–1:57 | End card: "FlameMargin · IGNISPHERE · NASA Space Apps Cairo 2026 · Data: NASA. NASA does not endorse this project." | "Know your margin. Thank you." | none |
 
 ## Recording tips
-
-- Record narration separately in a quiet room, then lay it over the screen recording.
-- Use Offline mode for the screen recording if Gemini is slow: same answers, no waiting.
-- Total must stay under 2:00. If too long, cut shot 8 first, then shot 3.
-- No AI-generated voice or AI-generated "NASA" images. If any AI tool is used for editing, add it to the
-  AI-use disclosure in the README and the submission text.
+- Record narration separately, then lay it over the screen recording.
+- If Gemini is slow, use Offline mode for shot 7 (same tools, same checks).
+- Keep it under 2:00; cut shot 8 first if needed.
+- No AI-generated voice or AI-generated "NASA" images.

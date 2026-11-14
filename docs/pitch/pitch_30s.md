@@ -1,30 +1,30 @@
 # 30-second pitch
 
-Rules for this file: only claims from `docs/science/claims_sheet.md`, in their **safe wording**. Claim IDs are
-in brackets for the team; do not read them aloud. All claims are still `NOT VERIFIED` until someone opens the
-sources (see the sheet). If a claim gets marked `WRONG`, delete its sentence here.
+Rules: only claims marked VERIFIED or CORRECTED in `docs/science/claims_sheet.md`, in their exact wording or weaker.
+Claim IDs in brackets are for the team; do not read them aloud. Every number below is in `models/metrics.json`,
+the claims sheet, or the live app.
 
-## 30 seconds (about 80 words, slow pace)
+## 30 seconds (about 85 words, slow pace)
 
-> Before a material flies to the ISS, NASA tests it for fire **on Earth**, in normal gravity. [C11]
-> But in space there is no buoyancy, so the **air flow** decides if a flame lives or dies. [C1, C14]
-> On the ISS, some materials kept burning at **lower oxygen** than their Earth limits. [C2]
-> And NASA's next atmosphere, **34% oxygen at 8.2 psia**, is above most of the material data NASA has. [C4, C13]
-> FlameMargin learns from NASA's microgravity fire experiments and shows each material's **margin to burning**.
-> Our Copilot answers only from the model, and it says **"no data"** when we have none, like on the Moon. [C10]
+> NASA screens spacecraft materials for fire in normal Earth gravity. [C11]
+> But BASS-II tests on the ISS showed materials can burn at **lower oxygen in microgravity**. [C2]
+> NASA's next cabin air, **34% oxygen at 8.2 psia**, is an atmosphere of increased burning rate. [C4, C5]
+> FlameMargin turns NASA's own ISS fire tests into a **live flammability map** with honest uncertainty.
+> And it tells you when NASA's data **don't cover** your cabin: today, that includes Artemis.
+> That is the hurdle NASA's 2026 NESC study calls most critical. [C6]
 
 ## 10 seconds
 
-> Space materials are fire-tested on Earth, but in space the air flow decides if a fire lives. [C11, C14]
-> FlameMargin turns NASA's microgravity fire data into a margin-to-burning map, with a Copilot that never invents numbers.
+> FlameMargin turns NASA's microgravity fire tests into a flammability map, and it says "no data" for the Artemis
+> atmosphere instead of guessing. [C4, C6]
 
 ## Words to avoid on stage
 
 | Don't say | Why | Say instead |
 |---|---|---|
-| "Turning off the fans may not stop the fire" | No source found (C2, unsupported part) | "Low air flow can still keep a flame alive." (C9 extract: very low flows sustained burning on Mir) |
-| "70% of systems need new materials" | Number not traceable (C6) | "NASA has limited flammability data above 30% oxygen." (C13) |
-| "There is no lunar fire data at all" | Too strong: short partial-gravity tests exist (C10) | "No fire test has been run on the Moon yet." |
-| "NASA says the Earth test is wrong" | Mir data say it was conservative for some plastics (C9) | "The Earth test looks safe for still air, but not always for moving air." (C14, team synthesis) |
-| "Our model predicts..." (before `src/api.py` is connected) | Numbers are mock | "This is our placeholder engine; the real model plugs into the same interface." |
-| "Verified by NASA" | Nothing is verified yet, and NASA does not endorse us | "Sourced from NASA papers; see our claims sheet." |
+| "Turning off the fans may not stop the fire" | No source supports it (deleted from C2) | "Our data don't measure the residual flow with fans off, so we don't guess." |
+| "There is no lunar fire data at all" | Wrong: short partial-gravity tests exist (C7, C10) | "No long-duration fire experiment has been done in actual lunar gravity; FM2 will be the first." [C10] |
+| "Our model is accurate" / "validated" | 21 points; Brier 0.229 vs 0.263 baseline | "It beats a baseline modestly, and it tells you where it knows nothing." |
+| "It predicts flame spread rate" | No spread-rate data in the extraction | "It predicts the probability that a flame is sustained." |
+| "Verified by NASA" / "NASA-approved" | NASA does not endorse us; extraction pending row verification (D1) | "Built on NASA's BASS-II report, Table 7.1." |
+| Any single "fans-off" airflow number | Not in our data; C8b is typical circulation, not fans-off | "Typical spacecraft air circulation is about 20–25 cm/s." [C8b] |

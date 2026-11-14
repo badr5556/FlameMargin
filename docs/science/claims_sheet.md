@@ -1,82 +1,63 @@
 # FlameMargin claims sheet (science fact-check)
 
-Owner: Omar (AI Agent & Science Lead), team IGNISPHERE. Checked: 2026-11-13.
+Owner: Omar Issam (AI Agent & Science Lead), team IGNISPHERE. First pass: 2026-11-13. Primary-source check: 2026-11-14.
 
-## Read this first: how this check was done
-
-- **No primary source could be opened from the build environment.** Direct fetches of
-  `ntrs.nasa.gov`, `svs.gsfc.nasa.gov`, `www.nasa.gov`, `asma.kglmeridian.com`, `www.hou.usra.edu`,
-  `www.nist.gov`, `saemobilus.sae.org`, `psi.nasa.gov` and `www.spaceappschallenge.org` were refused
-  (network policy first, then a tool permission rule). Only a web search tool worked.
-- So, following the team rule (*VERIFIED = we opened the primary source and it says this*), **every row is
-  `NOT VERIFIED`**. None of these is allowed to appear as "verified" in the app or on stage until a human
-  opens the URL and ticks it.
-- To make the sheet useful anyway, each row also has a **pre-check verdict** based on the text that the search
-  engine extracted from the primary source pages (titles, abstracts, snippets). This verdict is a strong
-  hint, not proof:
-  - `LIKELY OK`: the extract says the same thing as our wording.
-  - `LIKELY PARTIAL`: the extract supports part of it, or our wording is stronger. Use the corrected wording.
-  - `UNSUPPORTED`: no extract supports this part. Drop it until someone finds the sentence in the source.
-  - `LIKELY WRONG`: an extract contradicts it. Use the corrected wording.
-- No verbatim quotes are given, on purpose: we never saw the exact page text, so every "what the source says"
-  cell is a paraphrase of a search extract.
-- URLs below are the ones the search engine returned for each record. None was opened by us.
-- **Safe wording** = the sentence we can say today. It is never stronger than the extract.
+## Rules
+- **VERIFIED** = a team member opened the primary source (abstract or PDF) and it says this. The *Claim* cell is the
+  exact wording we may use. Nothing in the app, README or pitch may be stronger than it.
+- **CORRECTED** = the original claim was too strong; the corrected wording was checked against the primary source.
+- **NOT VERIFIED** = only the 2026-11-13 search-extract pre-check exists (kept below). Say these only with "(pending
+  verification)", or not at all on stage.
+- **PENDING** = depends on work the team still has to do (named in the row).
+- The same IDs, wording, sources and `verified` flags live in `src/copilot_facts.py`; `tests/test_facts.py` checks that
+  every fact has a source and a boolean `verified`.
 
 ## Summary
 
-| ID | Short claim | Status | Pre-check verdict | Change for stage |
+| ID | Claim (exact wording we use) | Status | Source | Verified by |
 |---|---|---|---|---|
-| C1 | No buoyancy in µg → spherical flames | NOT VERIFIED | LIKELY OK (with scope) | Say "a candle flame in still air". |
-| C2 | BASS-II: burn at lower O2 in µg; fan shutdown may not be enough | NOT VERIFIED | LIKELY PARTIAL | Keep the lower-O2 part. **Drop the ventilation-shutdown part.** |
-| C3 | SIBAL quench at 1–5 cm/s; 1 g buoyant flow ~20 cm/s; branch only in µg | NOT VERIFIED | LIKELY PARTIAL | Keep 1–5 cm/s. **Drop "~20 cm/s" and "only in µg".** |
-| C4 | Exploration Atmosphere 8.2 psia / 34% O2 | NOT VERIFIED | LIKELY OK | Add "recommended; final specs still being evaluated". |
-| C5 | 31.4% O2 = no-burning-rate-increase limit at 8.2 psia | NOT VERIFIED | LIKELY OK | None. |
-| C6 | 70% of subsystems need material replacement; flammability most critical | NOT VERIFIED | UNSUPPORTED | **Do not say 70%.** Use the "limited data above 30% O2" line. |
-| C7 | Some materials that don't burn in 1 g burn in 0 g or lunar g | NOT VERIFIED | LIKELY OK | Drop "with low-speed flow" (not in the extract). |
-| C8 | Saffire: first large intentional fire in a spacecraft, ~20 cm/s | NOT VERIFIED | LIKELY PARTIAL | Add "in orbit, on an uncrewed cargo vehicle". |
-| C9 | Mir/NIST: ground test found conservative | NOT VERIFIED | LIKELY OK | Add "for the polymers tested, vs quiescent µg". |
-| C10 | No lunar-gravity combustion data exists; FM2 will fix it | NOT VERIFIED | LIKELY WRONG (too strong) | **Say "no fire test has been run on the Moon yet"**: short partial-g tests exist. |
-| C11 | Materials still cleared by an upward flame test on Earth (Test 1) | NOT VERIFIED | LIKELY OK | Use the exact test name below. |
-| C12 | ISS cabin 14.7 psia / ~21% O2 | NOT VERIFIED | LIKELY OK (secondary sources only) | None, but no NASA primary found. |
-| C13 | NASA has limited material flammability data above 30% O2 (new) | NOT VERIFIED | LIKELY OK | Strong, honest replacement for C6. |
-| C14 | Test 1 is conservative vs still air, not vs ventilated µg (team synthesis of C2 + C9) | TEAM SYNTHESIS | n/a | Say "the evidence suggests", never "NASA says". |
+| C1 | Without gravity there is no buoyant flow, so a candle flame in still air becomes round instead of teardrop-shaped. | NOT VERIFIED (pre-check: likely OK) | NASA SVS 31394, https://svs.gsfc.nasa.gov/31394 | pending |
+| C2 | BASS-II flame extinctions on the ISS indicated that materials can burn at a lower oxygen concentration in microgravity than in normal gravity. | **VERIFIED** (first half of the original claim only; the ventilation-shutdown part is deleted) | Olson, ICES 2019, https://ttu-ir.tdl.org/items/1922ad9f-ef4c-4f52-96a4-980c23debe5e | primary source abstract/PDF, checked 2026-11-14 |
+| C2b | In BASS-II opposed-flow tests on PMMA rods, flame spread was sustained at 17% O2 in microgravity vs 18% in normal gravity. | **VERIFIED** (new) | Scientific Reports 2017, doi:10.1038/s41598-017-18398-4 | primary source abstract/PDF, checked 2026-11-14 |
+| C3 | On SIBAL cotton-fiberglass fabric in microgravity, flames were quenched at low flow speeds of 1–5 cm/s, with a higher quenching speed at lower oxygen. | **VERIFIED** ("~20 cm/s buoyant flow" and "only in µg" removed) | Zhao, T'ien, Ferkul, Olson 2015, NTRS 20150008962, https://ntrs.nasa.gov/citations/20150008962 | primary source abstract/PDF, checked 2026-11-14 |
+| C4 | NASA's recommended Exploration Atmosphere was revised to 8.2 psia and 34% O2 (from 8.0 psia / 32%) to reduce hypoxia; final specifications are still being evaluated. | **VERIFIED** | NTRS 20240003211, https://ntrs.nasa.gov/citations/20240003211 | primary source abstract/PDF, checked 2026-11-14 |
+| C5 | 31.4% O2 is the calculated upper limit that would not increase burning rate at 8.2 psia, so the 34% Exploration Atmosphere is an atmosphere of increased burning rate. | **VERIFIED** | Aerospace Medicine and Human Performance 89(9), 2018, p. 792 | primary source abstract/PDF, checked 2026-11-14 |
+| C6 | A 2026 NASA NESC study found that material flammability is the most critical hurdle in the 8.2 psia / 34–40% O2 environment, where 70% of the assessed ECLSS subsystems would require material replacements, many not yet developed. | **VERIFIED** (replaces the 2026-11-13 "UNSUPPORTED" pre-check) | NASA/TM-20260003925 (NESC), https://ntrs.nasa.gov/citations/20260003925 | primary source abstract/PDF, checked 2026-11-14 |
+| C7 | SIBAL fabric, which extinguishes immediately after ignition in Earth gravity, burned downward in air at lunar gravity in centrifuge and parabolic-flight tests; flame spread rate as a function of gravity may peak near lunar gravity. | **VERIFIED** (reworded) | NTRS 20240015307, https://ntrs.nasa.gov/citations/20240015307 ; LPSC 2026, NTRS 20260000646 | primary source abstract/PDF, checked 2026-11-14 |
+| C8 | Saffire was the first large-scale fire intentionally set inside a spacecraft in orbit (uncrewed Cygnus), with an average forced airflow of about 20 cm/s. | **VERIFIED** | ICES-2017-224, NTRS 20170008805, https://ntrs.nasa.gov/citations/20170008805 | primary source abstract/PDF, checked 2026-11-14 |
+| C8b | Saffire's 20–25 cm/s forced airflow is typical of spacecraft air circulation speeds. *(Context only; not a fans-off value.)* | **VERIFIED** (new) | Legros et al., Combustion and Flame | primary source abstract/PDF, checked 2026-11-14 |
+| C9 | Older Mir tests found the Earth test conservative for the plastics they tested, compared with still or very slow air in microgravity. | NOT VERIFIED (pre-check: likely OK) | Hirsch & Beeson, SAE 2003-01-2643; NIST r0200470 | pending |
+| C10 | No long-duration fire experiment has ever been done in actual lunar gravity; NASA's FM2 will be the first combustion experiment on another world, with launch planned for late 2026. | **CORRECTED** (never say "no lunar data at all": short partial-gravity tests exist, see C7) | LPSC 2026, NTRS 20260000646 | primary source abstract/PDF, checked 2026-11-14 |
+| C11 | NASA relies on NASA-STD-6001B Test 1, conducted in normal Earth gravity, to screen material flammability for flight. | **VERIFIED** (reworded) | LPSC 2026, NTRS 20260000646 | primary source abstract/PDF, checked 2026-11-14 |
+| C12 | The ISS cabin is kept close to sea-level air: about 14.7 psia and about 21% oxygen. | NOT VERIFIED (secondary sources only) | no NASA primary found yet | pending |
+| C13 | NASA has data for many materials at 30% O2, but limited material flammability data above that level. | NOT VERIFIED (pre-check: likely OK) | NASA/TM-20260003925 | pending |
+| C14 | The evidence suggests the Earth test is conservative compared with still air in microgravity, but not compared with ventilated microgravity; air-flow speed is the variable that decides. | TEAM SYNTHESIS of C2 + C9 (never attribute to NASA) | n/a | n/a |
+| D1 | Our model is trained on SIBAL fabric tests from NASA/TM-20210011385 Table 7.1 (BASS-II, ISS, 1 atm). | **PENDING** row-by-row verification | NASA/TM-20210011385, Section 7.1, Table 7.1, printed pp. 95–96 | pending: `docs/data/verification_checklist.md` (31 rows, two people, about 20 minutes) |
 
-## Full sheet
+## Deleted or narrowed wording (do not use)
+- C2: anything like "shutting off ventilation may not be enough" (no source supports it).
+- C3: "~20 cm/s buoyant flow in 1 g" and "the quenching branch exists only in µg".
+- C6: the 70% figure is allowed **only** in the verified C6 sentence above (70% of the *assessed ECLSS subsystems*).
+- C10: "no lunar-gravity combustion data exists". Short partial-gravity tests exist (C7); the correct statement is about
+  long-duration experiments in actual lunar gravity.
+- Any single "fans-off" flow value. C8b is typical circulation context, not a fans-off number; our data do not measure
+  residual flow with fans off.
 
-| ID | Claim (exact wording we'd use) | Source | URL | What the source says (paraphrase of search extract) | Status |
-|---|---|---|---|---|---|
-| C1 | "In microgravity there is no buoyant convection, so flames become spherical." | NASA Scientific Visualization Studio, "NASA Studies Fire in Microgravity" (SVS 31394) | https://svs.gsfc.nasa.gov/31394 | Page (released May 2026 per extract) says buoyancy gives the candle flame its shape on Earth; without gravity that flow disappears and the flame becomes round. Its images are from the SoFIE experiment (a burning fabric sheet), which is **not** spherical. **Pre-check: LIKELY OK, but scope it.** Corrected wording: *"Without gravity there is no buoyant flow, so a candle flame in still air becomes round instead of teardrop-shaped."* | NOT VERIFIED |
-| C2 | "BASS-II: materials can burn at lower O2 in microgravity than in normal gravity; ventilation shutdown may not be enough at high O2 / low pressure." | Brief says "Olson et al., ICES 2019". Best match: ICES-2019-101, *Flammability Limits from BASS-II Testing in Microgravity Compared to Normal Gravity Limits* (Olson et al.). Also BASS-II Summary Report (NASA/TM-20210011385) and NASA researcher's guide *Combustion in Reduced Gravity*. | https://ices.space/wp-content/uploads/2024/09/ICES2019-LINKED-Paper-Reference-List.pdf ; https://ntrs.nasa.gov/citations/20210011385 ; https://www.nasa.gov/wp-content/uploads/2016/05/np-2015-10-034-jsc_combustion_in_reduced_gravity-iss-mini-book-011116-508.pdf | Extracts say flames in microgravity can spread at lower O2 than in normal gravity; one example given: a ¼-inch PMMA rod blows off at 16% O2 in 1 g but spread steadily at 13.6% O2 in BASS-II (numbers from the extract, to confirm). The guide says this means NASA-STD-6001 Test 1 is not conservative for ventilated µg. **No extract mentions ventilation shutdown failing at high O2 / low pressure.** Older Mir work (C9) says flow shutoff is *likely to suppress* combustion. **Pre-check: LIKELY PARTIAL.** Corrected wording: *"In BASS-II on the ISS, with a gentle ventilation flow, some materials kept burning at lower oxygen levels than their limits measured on Earth."* | NOT VERIFIED |
-| C3 | "SIBAL fabric quenching flow speeds were 1–5 cm/s in microgravity; minimum buoyant flow in 1 g is ~20 cm/s for that system; so the quenching branch exists only in microgravity." | NTRS 20150008962 (BASS/BASS-II SIBAL fabric paper; author list not seen in extract). Brief also cites Ferkul et al., USCI 2013 (paper 2G03; authors not confirmed). | https://ntrs.nasa.gov/citations/20150008962 ; https://sutherland.che.utah.edu/USCI2013/PAPERS/2G03-070HE-0218.pdf | Extract: SIBAL is a cotton-fiberglass fabric (75% cotton by mass); flow was lowered to find quenching limits; quenching speeds were between 1 and 5 cm/s, higher at lower O2; the boundary shape matches earlier theory. **No extract gives a 1 g minimum buoyant flow of ~20 cm/s**, and none says the branch "exists only in microgravity". The 20 cm/s number in our brief probably comes from Saffire (C8), where 20 cm/s was the forced flow, not a buoyant flow. **Pre-check: LIKELY PARTIAL.** Corrected wording: *"On the ISS, flames on SIBAL cotton-fiberglass fabric went out when the air flow was lowered to about 1–5 cm/s, and they went out at higher flow when oxygen was lower."* | NOT VERIFIED |
-| C4 | "Exploration Atmosphere is 8.2 psia / 34% O2." | NTRS 20240003211 (NASA, 2024; abstract only, no PDF per extract) | https://ntrs.nasa.gov/citations/20240003211 | Extract: the EA recommendation was 8 psia / 32% O2, then revised to 8.2 psia / 34% O2 to reduce hypoxia; final specifications are still being evaluated. **Pre-check: LIKELY OK, slightly stronger than source** (source calls it a recommendation). Corrected wording: *"NASA's recommended Exploration Atmosphere is 8.2 psia with 34% O2; the final specification is still being evaluated."* | NOT VERIFIED |
-| C5 | "The calculated limit for no increase in burning rate at 8.2 psia is 31.4% O2." | *Aerospace Medicine and Human Performance* 89(9):792, 2018 (running header "Wessel et al." per extract; full author list not seen) | https://asma.kglmeridian.com/view/journals/amhp/89/9/article-p792.xml | Extract: 31.4% O2 is the calculated upper limit that would not increase burning rate at 8.2 psia (56.5 kPa), so a 34% O2 atmosphere counts as an increased-burning-rate atmosphere. It also says NASA materials engineers judged the EA acceptable, with flammability testing of expected materials still needed. **Pre-check: LIKELY OK.** For fairness on stage, add: *"NASA judged it acceptable, pending material testing."* | NOT VERIFIED |
-| C6 | "70% of assessed subsystems would need material replacement in reduced-pressure atmospheres; flammability is the most critical hurdle." | NASA/TM-20260003925 (NESC-RP-20-01610), May 2026 | https://ntrs.nasa.gov/citations/20260003925 ; https://ntrs.nasa.gov/api/citations/20260003925/downloads/20260003925.pdf | Extract: 33 ECLSS-related subsystems/components were assessed for 8.2 psia (flammability assessed up to 40% O2) and 10.2 psia / 26.5% O2; most systems showed some impact; a "70%" figure appears in a garbled passage about performance and flammability requirements, **with no clear denominator**; some items (e.g., a foam, a silicone-fiberglass blanket) may need replacement. **No extract says flammability is "the most critical hurdle".** **Pre-check: UNSUPPORTED.** Do not use "70%" until someone reads the sentence in the PDF. Use C13 instead. | NOT VERIFIED |
-| C7 | "Some materials that don't burn in 1 g burn in 0 g with low-speed flow, or in lunar gravity." | Ferkul, Kralik, Liao, Johnston, *Material Flammability at Lunar and Martian Gravity*, LPSC 2026 abstract #1799 (NTRS 20260000646) | https://ntrs.nasa.gov/api/citations/20260000646/downloads/Ferkul-Lunar%20and%20Planetary%20Science%20Conference%202026.pdf ; https://www.hou.usra.edu/meetings/lpsc2026/pdf/1799.pdf | Extract: some materials that will not burn in 1 g will burn in zero gravity or in partial gravity such as the Moon's; it questions whether 1 g tests are the worst case (NASA-STD-6001B). The "low-speed flow" detail comes from a separate NASA Task Book entry (flammability minimum at very low flows), not from this abstract. Part of the extract may come from a news article quoting Ferkul, not the abstract itself. **Pre-check: LIKELY OK.** Corrected wording: *"Some materials that do not burn in Earth gravity can burn in microgravity, or in partial gravity like the Moon's."* | NOT VERIFIED |
-| C8 | "Saffire was the first large intentional fire in a spacecraft, with average flow ~20 cm/s." | ICES-2017-224, *Results of Large-Scale Spacecraft Flammability Tests* (NTRS 20170008805) | https://ntrs.nasa.gov/citations/20170008805 | Extract: for the first time, a large-scale fire was intentionally set inside a spacecraft in orbit (uncrewed Cygnus vehicle, after leaving the ISS); a 40.6 × 94 cm cotton-fiberglass sample burned in concurrent and opposed flow; average forced air speed 20 cm/s. **Pre-check: LIKELY PARTIAL** (our wording drops "in orbit" / "uncrewed", which matter). Corrected wording: *"Saffire was the first time a large fire was set on purpose inside a spacecraft in orbit, an uncrewed cargo ship, with an average air flow of about 20 cm/s."* | NOT VERIFIED |
-| C9 | "Counter-evidence: older Mir/NIST comparisons found the ground test (NASA-STD-6001 Test 1) conservative." | Hirsch & Beeson, *Microgravity Effects on Combustion of Polymers*, SAE 2003-01-2643 (paywalled; abstract only). Related NIST document r0200470. | https://saemobilus.sae.org/papers/microgravity-effects-combustion-polymers-2003-01-2643 ; https://www.nist.gov/document/r0200470pdf | Extract (abstract): on Mir, very low forced flows could sustain polymer combustion in µg, but flow shutoff is likely to suppress it; the upward-propagation ground test was conservative for the materials tested. NIST extract: Test 1 is conservative compared with **quiescent** microgravity, but the degree varies by material and cannot be estimated from the data. **Pre-check: LIKELY OK.** Corrected wording: *"Older Mir tests found the Earth test conservative for the plastics they tested, compared with still or very slow air in microgravity."* | NOT VERIFIED |
-| C10 | "No lunar-gravity combustion data exists yet; NASA's FM2 experiment is planned to address this." | Brief cites Copernical (news site, Apr 19 2026, secondary). Primary: LPSC 2026 abstract (C7); NASA FM2 record NTRS 20240015307. | https://copernical.com/news-public/item/57634-2026-04-19-07-55-08 ; https://ntrs.nasa.gov/citations/20240015307 | Extracts: FM2 (Flammability of Materials on the Moon) is a self-contained combustion chamber to fly on a CLPS lander (CP-21), planned to burn SIBAL fabric and acrylic rods; NASA abstract says planned launch late 2026, while some media say later. **But partial-gravity combustion data do exist from short tests**: SIBAL burned downward in lunar gravity in centrifuge and parabolic-flight tests, and the LUCI project burned samples in a spinning sounding rocket. So "no lunar-gravity data exists" is too strong. **Pre-check: LIKELY WRONG as worded.** Corrected wording: *"No fire test has been run on the Moon yet. Lunar-gravity data so far come only from short tests (parabolic flights, centrifuge, sounding rocket). NASA's FM2 experiment is planned to burn samples on the lunar surface."* Do not give a launch date. Do not cite Copernical; cite the NASA abstract. | NOT VERIFIED |
-| C11 | "Spacecraft materials are still cleared by an upward-flame-spread test on Earth (NASA-STD-6001 Test 1)." | NASA-STD-6001B, *Flammability, Offgassing, and Compatibility Requirements and Test Procedures*, Test 1 "Upward Flame Propagation" (Change 3 dated 2025 per file name); NASA White Sands Test Facility page | https://standards.nasa.gov/sites/default/files/standards/NASA/B-w/CHANGE-3/3/2025_06_25_NASA-STD-6001B_w_Change_3_FINAL_Admin-Change-FINAL.pdf ; https://www.nasa.gov/centers-and-facilities/white-sands/upward-flame-propagation-nasa-test-1 | Extracts: Test 1 is a pass/fail test, run in 1 g at the worst-case use condition (O2, pressure, thickness); the sample is ignited at the bottom; it passes if the burn length stays under 15.2 cm (6 in.) and no burning debris transfers and ignites nearby material; samples are 30 cm long; five specimens. **Pre-check: LIKELY OK.** Exact name to use: *"NASA-STD-6001B Test 1, Upward Flame Propagation"*. Corrected wording: *"NASA still screens cabin materials with an Earth-gravity test, NASA-STD-6001B Test 1 (Upward Flame Propagation): a material passes if the flame stops within about 15 cm and drops no burning debris."* Avoid "only test". | NOT VERIFIED |
-| C12 | "ISS cabin nominal atmosphere is 14.7 psia / ~21% O2." | No NASA primary found. Secondary: ISS article (Wikipedia-derived). NASA standards material gives habitat pressures of 8.2–14.7 psia. | https://www.nasa.gov/reference/6-0-natural-and-induced-environments-vol-2 | Extracts: ISS kept near sea-level pressure, about 101.3 kPa (14.7 psi), about 79% N2 / 21% O2 (secondary). NASA reference says expected habitat total pressures are typically 8.2 to 14.7 psia. **Pre-check: LIKELY OK, secondary only.** Wording: *"The ISS cabin is kept close to sea-level air: about 14.7 psia and about 21% oxygen."* | NOT VERIFIED |
-| C13 | "NASA has data for many materials at 30% O2, but limited flammability data above that." (new) | NASA/TM-20260003925 (same as C6) | https://ntrs.nasa.gov/api/citations/20260003925/downloads/20260003925.pdf | Extract: the report notes NASA has data for many materials in a 30% O2 environment, but limited material flammability data above this O2 level. **Pre-check: LIKELY OK.** This is our best honest "why now" line: the 34% Exploration Atmosphere sits above most existing material data. | NOT VERIFIED |
-| C14 | "The Earth test looks conservative compared with still air in microgravity, but not compared with ventilated microgravity; air flow speed is the variable that decides." | **Team synthesis** of C2 + C9 (not a quote from any one source) | n/a | Mir/NIST (C9) compared with quiescent or very-low-flow µg; BASS-II (C2) compared with ventilated µg. Both can be true. This is the reason FlameMargin uses flow velocity as a model input. Say *"the evidence suggests"*; never attribute this sentence to NASA. | TEAM SYNTHESIS |
+## How we use them
+| Where | Claims |
+|---|---|
+| App: Flammability Map ventilation slider | C3, C8b |
+| App: mission presets | C4 (Artemis EA), C10 (lunar), C12 (ISS, marked pending) |
+| README problem statement | C11, C2, C5, C6 |
+| Key honest finding (Artemis OOD) | C4, C6, model card section 6 |
+| Copilot `get_background_fact` | every row except C14 and D1, each with its `verified` flag |
 
-## How to finish the check (about 20 minutes, from a normal browser)
+## Pre-check notes kept for the NOT VERIFIED rows (2026-11-13, search extracts only)
+| ID | Open | Ctrl+F | Pre-check |
+|---|---|---|---|
+| C1 | https://svs.gsfc.nasa.gov/31394 | "buoyan", "round", "spher" | Page says buoyancy shapes the candle flame on Earth; without gravity the flame becomes round. Its images are SoFIE fabric flames, which are not spherical, so keep the "candle flame in still air" scope. |
+| C9 | SAE 2003-01-2643 abstract; NIST r0200470 | "conservative", "quiescent" | Abstract: the upward-propagation ground test was conservative for the polymers tested; NIST: conservative compared with quiescent µg, degree varies by material. |
+| C12 | any NASA ISS ECLSS document | "14.7", "21" | Only secondary sources found (about 101.3 kPa, about 21% O2). |
+| C13 | NTRS 20260003925 PDF | "30% O" | Extract: data for many materials at 30% O2, limited above that. |
 
-Open each URL, use Ctrl+F with the terms below, then change `NOT VERIFIED` to `VERIFIED` / `PARTIAL` / `WRONG`
-here **and** set `verified: True` for the matching entry in `src/copilot_facts.py`.
-
-| ID | Open | Ctrl+F |
-|---|---|---|
-| C1 | svs.gsfc.nasa.gov/31394 | "buoyan", "round", "spher" |
-| C2 | NTRS 20210011385 PDF; ICES-2019-101 (search NTRS by title) | "13.6", "lower oxygen", "conservative", "ventilation" |
-| C3 | NTRS 20150008962 PDF | "quench", "cm/s", "buoyan", "20 cm" |
-| C4 | NTRS 20240003211 | "8.2", "34%" |
-| C5 | AMHP 89(9) p792 | "31.4" |
-| C6, C13 | NTRS 20260003925 PDF | "70%", "replace", "30% O", "critical" |
-| C7 | LPSC 2026 abstract 1799 | "1 g", "lunar", "low", "FM" |
-| C8 | NTRS 20170008805 | "first time", "20 cm" |
-| C9 | SAE 2003-01-2643 abstract; NIST r0200470 | "conservative", "quiescent" |
-| C10 | NTRS 20240015307; LPSC abstract | "FM2", "launch", "CLPS", "centrifuge", "parabolic" |
-| C11 | NASA-STD-6001B Change 3 PDF | "Test 1", "15.2", "Upward Flame Propagation" |
-| C12 | any NASA ISS ECLSS document | "14.7", "21" |
+When a row is checked, change its status here **and** set `verified: True` for the matching entry in `src/copilot_facts.py`.
