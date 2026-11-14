@@ -63,9 +63,12 @@ Operational recommendation → Limits**), OOD first. It passes the same groundin
 - `python -m pytest -q`: offline unit tests (faked Gemini client) for the Copilot, the engine contract, OOD rules,
   data derivation rules and facts.
 - `python evals/run_evals.py --mode both` → `evals/results.md` + per-question transcripts for 15 adversarial
-  questions on the real engine v2 (ISS for SIBAL and PMMA in distribution, Nomex citing F1–F3, Artemis / lunar / Mars OOD,
-  40% O2 and 5 psia, prompt injection, "skip the tools", Kapton, ambiguity, Arabic). Final run: LLM 15/15, fallback 15/15;
-  all three v2 runs are listed.
+  questions on the real engine (ISS for SIBAL and PMMA in distribution, Nomex citing F1–F3, Artemis / lunar / Mars OOD,
+  40% O2 and 5 psia, prompt injection, "skip the tools", Kapton, ambiguity, Arabic). Latest run (engine v2.1, prompt
+  2026-11-14.4): LLM 14/15, fallback 15/15; the LLM miss is "Is it safe?", where the grounding guard withheld a draft
+  that failed twice and answered with the deterministic tool outputs.
+- Small talk (greetings, off-topic) is answered before any tool or LLM call, in English or Arabic, with three
+  clickable example questions and no numbers (`small_talk_kind` in `src/copilot.py`).
 
 ## Upgrades (2026-11-14)
 
