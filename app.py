@@ -1,9 +1,9 @@
-"""FlameMargin: the full app (Flammability Map + Fire Safety Copilot + Data & Method).
+"""FlameMargin: the full app (Evidence Gap + Flammability Map + Fire Safety Copilot + Data & Method).
 
     streamlit run app.py
 
 The deployed entry point (Streamlit Cloud) is src/copilot_ui.py, whose __main__ block calls app.main(),
-so both commands serve this same 3-tab app.
+so both commands serve this same 4-tab app.
 """
 
 from __future__ import annotations
@@ -143,10 +143,16 @@ def _render_method_tab() -> None:
 def main() -> None:
     st.set_page_config(page_title="FlameMargin", page_icon="🔥", layout="wide")
     from src.copilot_ui import render_copilot_chat
+    from src.evidence_gap import render_evidence_tab
     from src.map_ui import render_map_tab
 
     _header()
-    tab_map, tab_copilot, tab_method = st.tabs(["🔥 Flammability Map", "🤖 Copilot", "📚 Data & Method"])
+    tab_gap, tab_map, tab_copilot, tab_method = st.tabs(["🧭 Evidence Gap", "🔥 Flammability Map", "🤖 Copilot", "📚 Data & Method"])
+    with tab_gap:
+        try:
+            render_evidence_tab(st)
+        except Exception as e:  # noqa: BLE001 - one failing tab must not take the demo down
+            st.error(f"The Evidence Gap view could not be drawn ({type(e).__name__}). The other tabs still work.")
     with tab_map:
         try:
             _engine()

@@ -165,7 +165,7 @@ def _answer(question: str, prior: list[dict[str, Any]], has_key: bool, offline_k
     return {"role": "assistant", "content": content, "result": payload}
 
 if __name__ == "__main__":
-    # Streamlit Cloud runs this file; serve the full 3-tab app (app.main() calls st.set_page_config once).
+    # Streamlit Cloud runs this file; serve the full 4-tab app (app.main() calls st.set_page_config once).
     if str(_ROOT) not in sys.path:
         sys.path.insert(0, str(_ROOT))
     import app

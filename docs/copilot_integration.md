@@ -10,7 +10,7 @@ tell Omar if you want a different shape).
 |---|---|---|
 | `src/api.py` (Layer 1) | **real Prediction Engine** (SIBAL fabric, NASA BASS-II, `docs/model_card.md`) | used automatically; `backend = "real"` |
 | `src/copilot_mock_api.py` | **test fixture only** (`COPILOT_FORCE_MOCK_API=1` in the unit tests) | never a silent fallback: if `src/api.py` cannot be imported, prediction tools return `engine_unavailable` |
-| `app.py` (Layer 2) | full 3-tab app (map, Copilot, data & method); `src/copilot_ui.py` runs it on Streamlit Cloud | chat mounted in the Copilot tab |
+| `app.py` (Layer 2) | full 4-tab app (evidence gap, map, Copilot, data & method); `src/copilot_ui.py` runs it on Streamlit Cloud | chat mounted in the Copilot tab |
 | Mission presets | `api.MISSION_PRESETS` (ISS, Artemis EA, Lunar) | picked up automatically |
 | "Fans OFF" flow value | **deliberately not defined**: no verified single fans-off number exists | `"fans off"` returns `fans_off_undefined`; the Copilot answers from the low-flow end of the boundary instead of guessing |
 | Upgrades | per-session LLM budget (`COPILOT_SESSION_LLM_LIMIT`, default 15), backup key (`GEMINI_API_KEY_BACKUP`, tried before the backup model), claim-consistency check, assumption-line guard | see `src/copilot.py` |

@@ -39,6 +39,15 @@ subsystems would require material replacements, many not yet developed (C6).
 Claim IDs point to [`docs/science/claims_sheet.md`](docs/science/claims_sheet.md); every one used here was checked against its primary source.
 
 ## Key honest finding
+![The evidence gap: NASA BASS-II tests vs the Artemis Exploration Atmosphere](docs/img/evidence_gap.png)
+*The Evidence Gap view (first tab of the app, `src/evidence_gap.py`): all 126 BASS-II tests at their pressure and calibrated
+initial O2, coloured by material, against the ISS cabin, the Artemis Exploration Atmosphere (C4) and the lunar habitat (C4 at
+1/6 g, C10). Red segment: the calculated upper O2 limit with no burning-rate increase at 8.2 psia (C5). Dotted curve: the same
+O2 partial pressure as ISS air (derived arithmetic, 14.7 psia × 21%). Pressure is plotted at the 99.2–99.5 kPa range measured
+for the Bhattacharjee tests (p. 38) and at 1 atm otherwise (stated p. 94 for T'ien, assumed for the other PIs); points carry a
+small x jitter for visibility. Every BASS-II test ran at ~1 atm and ≤22.2% O2 (TM-20210011385). The Artemis Exploration
+Atmosphere is outside all of them (C4, C6).*
+
 **FlameMargin flags the Artemis Exploration Atmosphere (8.2 psia / 34% O2) as out of distribution for every material,**
 because no BASS-II test reaches it: all 126 tests ran at 1 atm (stated for the T'ien tests, p. 94; 99.2–99.5 kPa measured in the
 Bhattacharjee tests, p. 38) with calibrated initial O2 from 13.6% to 22.2%. The tool refuses to give a number there instead of extrapolating. This mirrors
@@ -60,7 +69,7 @@ flowchart LR
     P --> L1["Layer 1: Prediction Engine v2<br/>src/api.py · 5 materials · logistic regression<br/>LOTO-validated · bootstrap 90% · per-material OOD"]
     L1 --> L2["Layer 2: Flammability Map<br/>src/map_ui.py · P(burn) heatmap,<br/>0.5 boundary, envelope, NASA points"]
     L1 --> L3["Layer 3: Fire Safety Copilot<br/>src/copilot*.py · Gemini + tools<br/>grounding · OOD-first · fallback"]
-    L2 --> APP["app.py: 3-tab Streamlit app<br/>(live link)"]
+    L2 --> APP["app.py: 4-tab Streamlit app<br/>(live link)"]
     L3 --> APP
 ```
 
@@ -190,7 +199,7 @@ python evals/run_evals.py --mode both
 
 ## Repo structure
 ```
-app.py                         full 3-tab Streamlit app (map, Copilot, data & method)
+app.py                         full 4-tab Streamlit app (evidence gap, map, Copilot, data & method)
 data/raw/                      bass2_appendix_a_tests.csv (126 tests), source/ snapshots of the PDF text, v1 Table 7.1 extraction
 data/processed/                flame_points_v2.csv (215 points, 192 for training), spread_rates_v1.csv (39), v1 files
 models/                        flame_model_v2.joblib, metrics_v2.json, metrics_history.json, spread_rate_v1.json; v1 artifact + metrics.json
@@ -198,6 +207,7 @@ src/data_pipeline/             extract_appendix_a, report_tables, derive_points_
 src/model_v2.py                features, 4 models, LOTO, calibration, stress test, bootstrap, per-material OOD
 src/spread_rate.py             PMMA-slab spread-rate model (Table 5.1)
 src/api.py                     Layer 1 contract: predict, flammability_boundary, compare_scenarios, nearest_experiments
+src/evidence_gap.py            Evidence Gap view: all 126 tests in pressure x O2 vs the mission atmospheres
 src/map_ui.py                  Layer 2 Plotly map + controls (material, thickness, size, configuration)
 src/copilot*.py                Layer 3 agent, tools, prompt, facts, chat UI (copilot_ui.py is the deployed entry point)
 src/features.py, model.py      v1 engine (kept for the before/after comparison)
