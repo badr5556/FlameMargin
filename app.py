@@ -53,15 +53,28 @@ def _header() -> None:
     st.markdown("## 🔥 FlameMargin")
     st.caption(f"{TAGLINE}  ·  Team IGNISPHERE · NASA Space Apps Cairo 2026 · *Flame in Freefall*")
     m = _metrics()
-    best = m["models"][m["chosen_model"]]
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("NASA training points", f"{m['data']['n_points']}",
+    best, base = m["models"][m["chosen_model"]], m["models"]["baseline"]
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Leave-one-test-out AUC", f"{best['auc']:.2f}",
+              help="How well the model ranks burns above extinctions on NASA tests it never saw (every point of a test held "
+                   "out together). 0.5 = coin flip, 1 = perfect ranking.")
+    c2.metric("Brier skill vs baseline", f"{brier_skill(best['brier'], base['brier']):+.0%}",
+              help=f"1 − Brier(model) / Brier(baseline) = 1 − {best['brier']} / {base['brier']} (leave-one-test-out, "
+                   "models/metrics_v2.json). The baseline always predicts the training burn rate; positive = better than it.")
+    c3.metric("NASA training points", f"{m['data']['n_points']}",
               help=f"from {m['data']['n_tests']} BASS-II tests (all 126 tests of NASA/TM-20210011385 Appendix A were transcribed)")
-    c2.metric("Model Brier (LOTO)", f"{best['brier']:.3f}", delta=f"{best['brier'] - m['models']['baseline']['brier']:+.3f} vs baseline",
-              delta_color="inverse", help="Leave-one-test-out Brier score; lower is better.")
-    c3.metric("Materials in data", f"{len(m['data']['families'])}",
+    c4.metric("Materials in data", f"{len(m['data']['families'])}",
               help="SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex. Any other material is out of distribution.")
-    c4.metric("Artemis EA (8.2 psia / 34%)", "OOD", help="Outside NASA's BASS-II microgravity data for every material (pressure and O2).")
+    c5.metric("Artemis EA (8.2 psia / 34%)", "OOD", help="Outside NASA's BASS-II microgravity data for every material (pressure and O2).")
+
+
+AUC_FOOTNOTE = ("AUC note: the prior baseline and the GP are near-constant predictors under leave-one-test-out; their AUC is "
+                "degenerate (<0.5) because the held-out test shifts the training prior. Compare on Brier and log-loss.")
+
+
+def brier_skill(model_brier: float, baseline_brier: float) -> float:
+    """Brier skill score vs the prior baseline: 1 - Brier(model) / Brier(baseline)."""
+    return 1.0 - model_brier / baseline_brier
 
 
 def _render_method_tab() -> None:
@@ -87,11 +100,12 @@ def _render_method_tab() -> None:
                  hide_index=True, use_container_width=True)
     st.markdown("### Leave-one-test-out validation (v2) vs baseline")
     rows = [{"model": r["label"] + (" ← shipped" if k == m["chosen_model"] else ""), "accuracy": r["accuracy"],
-             "balanced accuracy": r["balanced_accuracy"], "Brier ↓": r["brier"], "log-loss ↓": r["log_loss"], "AUC": r["auc"],
+             "balanced accuracy": r["balanced_accuracy"], "Brier ↓": r["brier"], "log-loss ↓": r["log_loss"], "AUC¹": r["auc"],
              "n points": r["n_points"]} for k, r in m["models"].items()]
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
     st.caption(m["selection_note"] + " Accuracy is high for every model because 86% of the points are burns; "
                "compare on Brier, log-loss and AUC.")
+    st.caption("¹ " + AUC_FOOTNOTE)
     v1, v2o = h["v1"]["chosen"], h["v2_on_v1_points"]["chosen"]
     st.markdown(
         "### Before / after (v1 → v2)\n"

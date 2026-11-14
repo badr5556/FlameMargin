@@ -14,7 +14,7 @@ Team IGNISPHERE · NASA Space Apps Cairo 2026 · Challenge: *Flame in Freefall: 
 >   an independent 20% re-check with a second extractor passed 26/26 rows; the SIBAL Table 7.1 rows match Zhao et al. 2015 (31/31).
 > - **Prediction Engine v2 on real NASA data:** P(burn) for **five materials** (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex)
 >   from **192 labelled points from 85 tests**, each with a verbatim quote and page from the report. Leave-one-test-out Brier
->   **0.087 vs 0.118** for the baseline (AUC 0.82; [model card](docs/model_card.md)), 90% bootstrap intervals, per-material OOD guard.
+>   **0.087 vs 0.118** for the baseline, a Brier skill of **+26%** (AUC 0.82; [model card](docs/model_card.md)), 90% bootstrap intervals, per-material OOD guard.
 > - **ISS air (21% O2) is now inside the data** for SIBAL fabric, PMMA film, PMMA slab and Nomex near its tests. The Artemis
 >   Exploration Atmosphere stays **out of distribution for every material**.
 > - **Flame spread rate for PMMA slabs** from Table 5.1 (39 measured rates, LOTO RMSE 0.175 vs 0.269 log10 units for the baseline).
@@ -112,12 +112,14 @@ sequenceDiagram
 
 **v2: 192 points from 85 tests, five materials**
 
-| Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | AUC |
+| Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | AUC¹ |
 |---|---|---|---|---|---|
 | Prior baseline | 0.865 | 0.500 | 0.118 | 0.401 | 0.061 |
 | **Logistic regression (L2, O2 × material), shipped** | **0.891** | **0.612** | **0.087** | **0.306** | **0.820** |
 | Gaussian process classifier | 0.865 | 0.500 | 0.117 | 0.398 | 0.100 |
 | Gradient boosting (monotone in O2) | 0.870 | 0.568 | 0.100 | 0.340 | 0.775 |
+
+¹ Prior baseline and GP are near-constant predictors under leave-one-test-out; their AUC is degenerate (<0.5) because the held-out test shifts the training prior. Compare on Brier and log-loss.
 
 **Before / after**
 

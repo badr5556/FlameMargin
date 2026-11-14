@@ -57,14 +57,17 @@ The logistic regression also gets `o2 × material` interaction terms. All featur
 Leave-one-test-out (`LeaveOneGroupOut` grouped by `test_id`; every point of a test is held out together), 192 points.
 Model settings were fixed before training; nothing was tuned on these folds.
 
-| Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | AUC |
+| Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | AUC¹ |
 |---|---|---|---|---|---|
 | Prior baseline (training class rate) | 0.865 | 0.500 | 0.118 | 0.401 | 0.061 |
 | **Logistic regression (L2, o2 × material)** ← shipped | **0.891** | **0.612** | **0.087** | **0.306** | **0.820** |
 | Gaussian process classifier (RBF + White) | 0.865 | 0.500 | 0.117 | 0.398 | 0.100 |
 | Gradient boosting (depth ≤ 3, monotone ↑ in O2) | 0.870 | 0.568 | 0.100 | 0.340 | 0.775 |
 
-- **Selection rule (fixed before training):** lowest LOTO Brier. Logistic regression: 0.087 vs baseline 0.118.
+¹ Prior baseline and GP are near-constant predictors under leave-one-test-out; their AUC is degenerate (<0.5) because the held-out test shifts the training prior. Compare on Brier and log-loss.
+
+- **Selection rule (fixed before training):** lowest LOTO Brier. Logistic regression: 0.087 vs baseline 0.118, a Brier skill
+  score of 1 − 0.087 / 0.118 = **+26%** (shown in the app header, computed from `metrics_v2.json`).
 - **Accuracy is not informative here:** 86% of the points are burns, so "always burn" is 0.865 accurate. Read Brier, log-loss and AUC.
 - The GP collapses to the prior (its AUC 0.100 is no better than the baseline's 0.061 ordering), because one isotropic length
   scale over 13 standardized dimensions, most of them one-hots, does not fit; it is reported, not shipped.

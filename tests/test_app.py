@@ -77,3 +77,24 @@ def test_app_and_entry_point_import():
     src_text = (ROOT / "src" / "copilot_ui.py").read_text(encoding="utf-8")
     assert "st.set_page_config(" not in src_text
     assert (ROOT / "app.py").read_text(encoding="utf-8").count("st.set_page_config(") == 1
+
+
+def test_header_metrics_are_readable_and_computed_from_json(monkeypatch):
+    import json
+
+    from streamlit.testing.v1 import AppTest
+
+    import app
+
+    m = json.loads((ROOT / "models" / "metrics_v2.json").read_text(encoding="utf-8"))
+    best, base = m["models"][m["chosen_model"]], m["models"]["baseline"]
+    monkeypatch.setenv("COPILOT_FORCE_FALLBACK", "1")
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=180).run()
+    assert not at.exception
+    got = {x.label: x.value for x in at.metric}
+    assert got["Leave-one-test-out AUC"] == f"{best['auc']:.2f}"
+    skill = app.brier_skill(best["brier"], base["brier"])
+    assert got["Brier skill vs baseline"] == f"{skill:+.0%}" and abs(skill - (1 - 0.087 / 0.118)) < 1e-9
+    assert got["NASA training points"] == str(m["data"]["n_points"]) and got["Artemis EA (8.2 psia / 34%)"] == "OOD"
+    assert not any("Brier (LOTO)" in k for k in got)
+    assert any(app.AUC_FOOTNOTE in c.value for c in at.caption)
