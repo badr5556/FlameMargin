@@ -216,3 +216,65 @@ def mission_board_html(board: dict[str, dict[str, dict[str, Any]]]) -> str:
                      f'<span>{html.escape(_MISSION_SUB.get(mission, ""))}</span></div>')
         cells += [_tile(row[m]) for m in materials]
     return BOARD_CSS + '<div class="fm-board">' + "".join(cells) + "</div>"
+
+
+def margin_scan(predict_fn, base: dict[str, Any], o2_range: tuple[float, float], step: float = 0.2) -> dict[str, Any]:
+    """Walk O2 across the material's tested range at the scenario's other inputs and find where the model's P(burn)
+    crosses 0.5 (the predicted extinction line). Uses only ``predict_fn`` results; points outside the data are skipped."""
+    lo, hi = float(o2_range[0]), float(o2_range[1])
+    grid = [round(x, 3) for x in np.arange(lo, hi + 1e-9, step)]
+    if grid[-1] < hi:
+        grid.append(hi)
+    pts = []
+    for o2 in grid:
+        r = predict_fn(**{**base, "o2_percent": float(o2)})
+        if r.get("burn_probability") is not None and r.get("ood_level") == "in_distribution":
+            pts.append((float(o2), float(r["burn_probability"])))
+    out: dict[str, Any] = {"lo": lo, "hi": hi, "boundary": None, "status": "no_data"}
+    if len(pts) < 2:
+        return out
+    for (o_a, p_a), (o_b, p_b) in zip(pts, pts[1:]):
+        if (p_a - 0.5) * (p_b - 0.5) <= 0 and p_a != p_b:
+            out.update(boundary=o_a + (0.5 - p_a) * (o_b - o_a) / (p_b - p_a), status="crossed")
+            return out
+    out["status"] = "below_range" if pts[0][1] >= 0.5 else "above_range"
+    return out
+
+
+def margin_html(scan: dict[str, Any], o2_now: float) -> str:
+    """'The margin': how far the scenario's O2 is from the model's predicted extinction line, on the tested O2 range."""
+    lo, hi, b, st = scan["lo"], scan["hi"], scan["boundary"], scan["status"]
+    if st == "no_data" or hi <= lo:
+        return ""
+    pos = lambda x: max(0.0, min(100.0, 100.0 * (x - lo) / (hi - lo)))  # noqa: E731
+    now = pos(o2_now)
+    if st == "crossed":
+        d = o2_now - b
+        head = (f"+{d:.1f} O2 points above the extinction line" if d >= 0 else f"{-d:.1f} O2 points below the extinction line")
+        sub = (f"Predicted line: P(burn) = 0.5 at {b:.1f}% O2. "
+               + ("Lower O2 by this much and the flame is predicted to go out." if d >= 0
+                  else "Raise O2 by this much and the flame is predicted to survive."))
+        color = FIRE if d >= 0 else SKY
+        split = pos(b)
+        tick = (f'<div style="position:absolute;left:calc({split:.1f}% - 1px);top:-8px;width:3px;height:30px;'
+                f'background:{TEXT};border-radius:2px;"></div>'
+                f'<div style="position:absolute;left:calc({split:.1f}% - 30px);top:26px;width:60px;text-align:center;'
+                f'font-size:0.7rem;color:{TEXT};">P = 0.5</div>')
+    elif st == "below_range":
+        split, tick, color = 0.0, "", FIRE
+        head = f"≥ {o2_now - lo:.1f} O2 points of margin"
+        sub = (f"No extinction line inside NASA's tested range: even at {lo:g}% O2 (the lowest tested) the flame is "
+               "predicted to survive. The real line is lower, but we have no data there.")
+    else:
+        split, tick, color = 100.0, "", SKY
+        head = "Predicted to go out across the whole tested O2 range"
+        sub = f"Even at {hi:g}% O2 (the highest tested) P(burn) stays below 0.5 at these settings."
+    bar = (f'<div style="position:relative;height:14px;border-radius:7px;margin:18px 0 30px;'
+           f'background:linear-gradient(90deg,{SKY} 0%,{SKY} {split:.1f}%,{FIRE} {split:.1f}%,{FIRE} 100%);">'
+           f'{tick}<div style="position:absolute;left:calc({now:.1f}% - 9px);top:-7px;width:18px;height:28px;'
+           f'border-radius:6px;background:#ffe14d;border:2px solid {INK};"></div></div>')
+    return (f'<div class="fm-card" style="background:{CARD};">'
+            f'<div class="lab" style="color:{color};">THE MARGIN · O2 AT THESE SETTINGS</div>'
+            f'<div style="font-size:1.45rem;font-weight:800;color:{TEXT};margin-top:6px;line-height:1.2;">{head}</div>'
+            f'{bar}<div class="fm-scale"><span>{lo:g}% O2 · lowest tested</span><span>{hi:g}% · highest tested</span></div>'
+            f'<div class="sub">{html.escape(sub)} Yellow = your scenario. Blue = predicted to go out, orange = to burn.</div></div>')
