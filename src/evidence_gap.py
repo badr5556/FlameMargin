@@ -159,6 +159,17 @@ def build_evidence_gap_figure(height: int = 640) -> go.Figure:
     fig.add_annotation(x=14.55, y=12.4, text="every NASA test", showarrow=False, font=dict(color="#f0efec", size=12),
                        xanchor="center")
 
+    # The gap itself, measured from the edge of the test data (lowest test pressure, highest test O2) to the Artemis EA.
+    pmin, o2max = float(pts["pressure_psia"].min()), float(pts["o2_percent"].max())
+    fig.add_annotation(x=EA["pressure_psia"] + 0.25, y=EA["o2_percent"] - 0.4, ax=pmin - 0.1, ay=o2max + 0.4,
+                       axref="x", ayref="y", xref="x", yref="y", showarrow=True, arrowhead=2, arrowsize=1.4,
+                       arrowwidth=2.5, arrowcolor="#F2683C", text="")
+    fig.add_annotation(x=(pmin + EA["pressure_psia"]) / 2 + 0.9, y=(o2max + EA["o2_percent"]) / 2 + 0.6, showarrow=False,
+                       text=(f"<b>THE GAP</b><br>{pmin - EA['pressure_psia']:.1f} psia lower, "
+                             f"{EA['o2_percent'] - o2max:.1f} points more O2<br>than any NASA test"),
+                       font=dict(color="#F2683C", size=13), bgcolor="rgba(15,20,32,0.85)", bordercolor="#F2683C",
+                       borderwidth=1, borderpad=6, align="left", xanchor="left")
+
     fig.update_layout(
         template="plotly_dark", height=height, margin=dict(l=10, r=10, t=20, b=10), paper_bgcolor="rgba(0,0,0,0)",
         xaxis=dict(title="Total pressure (psia)", range=list(X_RANGE), dtick=2, zeroline=False),
@@ -177,6 +188,18 @@ def coverage_summary() -> dict[str, Any]:
 
 def render_evidence_tab(st: Any) -> None:
     s = coverage_summary()
+    from src import api, visual_ui
+
+    st.markdown("#### Mission board: can we say whether it burns?")
+    flow = st.select_slider("Cabin airflow for the board (cm/s)", options=[2, 3, 5, 8, 10, 15, 20, 30], value=10,
+                            key="board_flow", help="Forced-flow speed used for every tile. Each material was tested at its "
+                            "own flows; outside them the tile says NO DATA instead of guessing.")
+    board = {m: {mat: api.predict(material=mat, o2_percent=p["o2_percent"], pressure_psia=p["pressure_psia"],
+                                  gravity=p["gravity"], flow_velocity_cm_s=float(flow)) for mat in api.MATERIALS}
+             for m, p in api.MISSION_PRESETS.items()}
+    st.markdown(visual_ui.mission_board_html(board), unsafe_allow_html=True)
+    st.caption("Every tile is a live call to the Prediction Engine (1 atm µg training data, leave-one-test-out validated). "
+               "Orange = flame predicted to survive, blue = to go out, grey = outside NASA's data, so no number.")
     st.markdown("#### Where NASA's microgravity fire data are, and where the next missions will fly")
     st.plotly_chart(build_evidence_gap_figure(), use_container_width=True, key="evidence_gap",
                     config={"displayModeBar": False})  # the toolbar covered the top labels on phones

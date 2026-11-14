@@ -160,3 +160,59 @@ def build_3d_figure(grid: dict[str, Any], points: Any, marker: dict[str, Any] | 
         ),
     )
     return fig
+
+
+BOARD_CSS = f"""
+<style>
+.fm-board {{ display: grid; grid-template-columns: 190px repeat(5, minmax(0, 1fr)); gap: 10px; margin: 6px 0 8px; }}
+.fm-bh {{ color: {MUTED}; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-align: center; padding: 4px 0; }}
+.fm-row {{ display: flex; flex-direction: column; justify-content: center; padding: 6px 4px; }}
+.fm-row b {{ color: {TEXT}; font-size: 1.0rem; }}
+.fm-row span {{ color: {MUTED}; font-size: 0.78rem; }}
+.fm-tile {{ border-radius: 14px; padding: 12px 10px; text-align: center; min-height: 92px;
+  display: flex; flex-direction: column; justify-content: center; border: 1px solid rgba(255,255,255,0.08); }}
+.fm-tile .v {{ font-size: 1.9rem; font-weight: 800; line-height: 1.05; }}
+.fm-tile .w {{ font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; margin-top: 3px; }}
+.fm-tile .r {{ font-size: 0.72rem; color: {MUTED}; margin-top: 4px; line-height: 1.25; }}
+.fm-nodata {{ background: repeating-linear-gradient(135deg, #1d212a 0 10px, #23272f 10px 20px); }}
+</style>
+"""
+
+_MISSION_SUB = {
+    "ISS cabin": "14.7 psia · 21% O2 · µg",
+    "Artemis Exploration Atmosphere": "8.2 psia · 34% O2 · µg",
+    "Lunar surface habitat": "8.2 psia · 34% O2 · 1/6 g",
+}
+
+
+def _short_reason(res: dict[str, Any]) -> str:
+    reasons = " ".join(res.get("ood_reasons") or []).lower()
+    parts = [w for k, w in (("pressure", "pressure"), ("o2", "O2"), ("gravity", "gravity"), ("flow", "airflow"),
+                            ("configuration", "flow type")) if k in reasons]
+    return ("untested " + " + ".join(parts)) if parts else "outside NASA data"
+
+
+def _tile(res: dict[str, Any]) -> str:
+    p = res.get("burn_probability")
+    if p is None or res.get("ood_level") == "out_of_envelope":
+        return (f'<div class="fm-tile fm-nodata"><div class="v" style="color:{GREY};">—</div>'
+                f'<div class="w" style="color:#c9ced8;">NO DATA</div><div class="r">{html.escape(_short_reason(res))}</div></div>')
+    burn = str(res.get("label", "")).lower() == "burn"
+    lo, hi = res.get("burn_probability_interval") or (0.0, 1.0)
+    alpha = 0.12 + 0.30 * (float(p) if burn else 1 - float(p))
+    color, rgb, word = (FIRE, "242,104,60", "BURNS") if burn else (SKY, "90,169,230", "GOES OUT")
+    note = " · extrapolation" if res.get("ood_level") == "extrapolation" else ""
+    return (f'<div class="fm-tile" style="background:rgba({rgb},{alpha:.2f});border-color:{color}66;">'
+            f'<div class="v" style="color:{TEXT};">{float(p):.2f}</div><div class="w" style="color:{color};">{word}</div>'
+            f'<div class="r">90% {float(lo):.2f}–{float(hi):.2f}{note}</div></div>')
+
+
+def mission_board_html(board: dict[str, dict[str, dict[str, Any]]]) -> str:
+    """Grid of mission presets (rows) x materials (columns); each cell is one ``api.predict`` result."""
+    materials = list(next(iter(board.values())).keys())
+    cells = ['<div></div>'] + [f'<div class="fm-bh">{html.escape(m.upper())}</div>' for m in materials]
+    for mission, row in board.items():
+        cells.append(f'<div class="fm-row"><b>{html.escape(mission)}</b>'
+                     f'<span>{html.escape(_MISSION_SUB.get(mission, ""))}</span></div>')
+        cells += [_tile(row[m]) for m in materials]
+    return BOARD_CSS + '<div class="fm-board">' + "".join(cells) + "</div>"
