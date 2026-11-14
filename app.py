@@ -45,6 +45,11 @@ def _metrics() -> dict:
     return json.loads((ROOT / "models" / "metrics_v2.json").read_text(encoding="utf-8"))
 
 
+def _safety() -> dict | None:
+    p = ROOT / "models" / "safety_operating_point.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
 def _history() -> dict:
     return json.loads((ROOT / "models" / "metrics_history.json").read_text(encoding="utf-8"))
 
@@ -115,6 +120,7 @@ def _render_method_tab() -> None:
         f"- On the same 21 v1 points, v2's out-of-fold Brier is {v2o['brier']} (v1: {v1['brier']})."
     )
     _render_v21_section(m, h)
+    _render_safety_section()
     mono = m["monotonicity_check"][m["chosen_model"]]
     st.markdown(
         "### Uncertainty, OOD and sanity checks\n"
@@ -174,6 +180,38 @@ def _render_v21_section(m: dict, h: dict) -> None:
                  hide_index=True, use_container_width=True)
     st.caption("A tie on the ship metric, not an improvement: v2.1 is slightly better on SIBAL and the v1 points, slightly worse "
                "on log-loss and AUC, and moves no extinguished NASA point below P = 0.5. No other variant was fitted.")
+
+
+def _render_safety_section() -> None:
+    """Safety operating point (a missed burn is the costly error) + reliability plot, both leave-one-test-out."""
+    sf = _safety()
+    if not sf:
+        return
+    from src.safety_eval import reliability_figure
+
+    v, t = sf["verdict_threshold"], sf["safety_threshold"]
+    st.markdown("### Safety operating point (leave-one-test-out)")
+    st.markdown(
+        "For fire safety the costly error is a **missed burn**: saying *won't burn* where NASA saw a flame. "
+        f"Burn recall = share of NASA burn points called *burn*; false-*safe* rate = share of *won't burn* calls that were burns."
+    )
+    rows = [{"threshold on P(burn)": f"{r['threshold']:.2f}" + note, "burn recall": r["burn_recall"],
+             "missed burns": f"{r['missed_burns']} of {r['n_burn']}", "false-safe rate": r["false_safe_rate"],
+             "'won't burn' calls": r["n_safe_calls"], "extinguished recall": r["extinguished_recall"]}
+            for r, note in ((v, " (verdict, used by the readout)"),
+                            (t, f" (largest with burn recall ≥ {sf['target_burn_recall']:g})"))]
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    st.caption(
+        f"The readout keeps the {v['threshold']:.1f} verdict line (an exact tie counts as burn). It is already more conservative "
+        f"than the ≥ {sf['target_burn_recall']:g} recall target needs: the largest threshold meeting that target, "
+        f"{t['threshold']:.2f}, would catch more extinctions ({t['extinguished_recall']} vs {v['extinguished_recall']}) but miss "
+        f"{t['missed_burns']} NASA burns instead of {v['missed_burns']}. The price of 0.5: the model rarely says *won't burn* "
+        f"({v['n_safe_calls']} of {sf['n_points']} points), and only {v['extinguished_recall']:.0%} of NASA extinctions are called."
+    )
+    st.markdown("### Reliability (calibration)")
+    st.plotly_chart(reliability_figure(sf["reliability"], sf["model"]), use_container_width=True, key="reliability")
+    st.caption("Out-of-fold P(burn) binned by 0.2; marker size and label = number of points in the bin. Points on the dotted "
+               "diagonal are perfectly calibrated. The 0.2–0.4 bin is empty; the 0.6–0.8 bin is under-confident.")
 
 
 def main() -> None:

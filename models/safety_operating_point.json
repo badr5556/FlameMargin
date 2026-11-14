@@ -1,0 +1,67 @@
+{
+  "model": "logreg21",
+  "validation": "leave-one-test-out, out-of-fold P(burn) of the shipped model",
+  "n_points": 192,
+  "definitions": {
+    "burn_recall": "share of NASA burn points called 'burn' (P(burn) >= threshold)",
+    "miss_rate": "share of NASA burn points called 'won't burn' (1 - burn recall)",
+    "false_safe_rate": "share of 'won't burn' calls that were NASA burn points",
+    "extinguished_recall": "share of NASA extinguished points called 'won't burn'"
+  },
+  "verdict_threshold": {
+    "threshold": 0.5,
+    "burn_recall": 0.994,
+    "missed_burns": 1,
+    "n_burn": 166,
+    "miss_rate": 0.006,
+    "false_safe_rate": 0.143,
+    "n_safe_calls": 7,
+    "extinguished_recall": 0.231,
+    "n_extinguished": 26
+  },
+  "target_burn_recall": 0.95,
+  "safety_threshold": {
+    "threshold": 0.6,
+    "burn_recall": 0.952,
+    "missed_burns": 8,
+    "n_burn": 166,
+    "miss_rate": 0.048,
+    "false_safe_rate": 0.4,
+    "n_safe_calls": 20,
+    "extinguished_recall": 0.462,
+    "n_extinguished": 26
+  },
+  "reliability": [
+    {
+      "bin": "0.0-0.2",
+      "n": 3,
+      "mean_predicted": 0.026,
+      "observed_burn_rate": 0.0
+    },
+    {
+      "bin": "0.2-0.4",
+      "n": 0,
+      "mean_predicted": null,
+      "observed_burn_rate": null
+    },
+    {
+      "bin": "0.4-0.6",
+      "n": 18,
+      "mean_predicted": 0.537,
+      "observed_burn_rate": 0.5
+    },
+    {
+      "bin": "0.6-0.8",
+      "n": 26,
+      "mean_predicted": 0.698,
+      "observed_burn_rate": 0.769
+    },
+    {
+      "bin": "0.8-1.0",
+      "n": 145,
+      "mean_predicted": 0.949,
+      "observed_burn_rate": 0.945
+    }
+  ],
+  "readout_rule": "verdict BURN if P(burn) >= 0.5 (unchanged); the readout also flags 'may burn' when the safety threshold <= P(burn) < 0.5"
+}

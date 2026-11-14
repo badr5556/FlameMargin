@@ -99,6 +99,26 @@ Model settings were fixed before training; nothing was tuned on these folds.
 Mean predicted 0.862 vs observed 0.865. The model is reasonably calibrated where it has data; the 0.6–0.8 bin is under-confident.
 (v2's table was 3 / 0 / 13 / 30 / 146 points with observed rates 0.000 / – / 0.462 / 0.767 / 0.938.)
 
+### Safety operating point (`models/safety_operating_point.json`, written by `python -m src.safety_eval`)
+For fire safety the costly error is a **missed burn** (calling a condition *won't burn* where NASA saw a flame). On the shipped
+model's leave-one-test-out P(burn), 192 points (166 burn, 26 extinguished):
+
+| Threshold on P(burn) | Burn recall | Missed burns | False-*safe* rate | *Won't burn* calls | Extinguished recall |
+|---|---|---|---|---|---|
+| **0.50** (the verdict the readout uses) | 0.994 | 1 of 166 | 0.143 | 7 | 0.231 |
+| 0.60 (largest with burn recall ≥ 0.95) | 0.952 | 8 of 166 | 0.4 | 20 | 0.462 |
+
+Burn recall = share of burn points called *burn*; false-*safe* rate = share of *won't burn* calls that were burns; extinguished
+recall = share of extinguished points called *won't burn*. **The readout keeps 0.5** (verdict logic unchanged; an exact tie
+counts as burn): it already exceeds the 0.95 recall target, and the largest threshold that still meets the target (0.60)
+would miss 8 burns instead of 1. The price is that the model rarely says *won't burn*: only
+7 of 192 points, and 23% of the NASA extinctions. The map readout states the threshold and its miss count.
+
+### Reliability plot
+![Reliability (calibration), leave-one-test-out](img/reliability.png)
+
+*Out-of-fold P(burn) of the shipped model binned by 0.2 (bin counts on the markers; same numbers as the table above).*
+
 ### Stress test: leave-one-material-family-out (reported only, not used for selection)
 | Held-out family | Brier v2 | AUC v2 | Brier v2.1 | AUC v2.1 |
 |---|---|---|---|---|
@@ -229,7 +249,8 @@ coefficient is about zero, while the report says spread rates "also decrease as 
 python -m src.data_pipeline.extract_appendix_a        # catalog from the committed cell snapshot
 python -m src.data_pipeline.derive_points_v2          # 215 points, quote check
 python -m src.spread_rate                             # Table 5.1 spread-rate table + model
-python -m src.model_v2                                # 4 models, LOTO, stress test, bootstrap, OOD -> models/
+python -m src.model_v2                                # 4 models + v2.1, LOTO, stress test, bootstrap, OOD -> models/
+python -m src.safety_eval                             # safety operating point + reliability plot
 python -m pytest -q
 ```
 If the pickled artifact cannot be loaded (another scikit-learn version), the API rebuilds the shipped model in-process from

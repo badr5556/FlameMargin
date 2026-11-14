@@ -28,6 +28,24 @@ OOD_LABEL = "Grey = outside this material's tested range"
 X_TICKS = [0.5, 1, 2, 5, 10, 20, 50]  # cm/s, log axis
 EXTRAP_FILL = "rgba(40,40,48,0.55)"
 
+
+
+@lru_cache(maxsize=1)
+def verdict_note() -> str:
+    """The readout's threshold and why, with its leave-one-test-out miss count from models/safety_operating_point.json."""
+    note = "Verdict line: BURN if P(burn) ≥ 0.5 (an exact tie counts as burn)."
+    try:
+        import json
+        from pathlib import Path
+
+        v = json.loads((Path(__file__).resolve().parent.parent / "models" / "safety_operating_point.json")
+                       .read_text(encoding="utf-8"))["verdict_threshold"]
+        note += (f" Under leave-one-test-out it misses {v['missed_burns']} of {v['n_burn']} NASA burns "
+                 f"(burn recall {v['burn_recall']}); see Data & Method → Safety operating point.")
+    except Exception:  # noqa: BLE001 - the note is optional
+        pass
+    return note
+
 FLOW_SLIDER_HELP = (
     "Forced-flow speed at the sample. Context only (verified claims): typical spacecraft air circulation is about "
     "20–25 cm/s (Saffire, claim C8b), and SIBAL flames were quenched at 1–5 cm/s in microgravity (claim C3). "
@@ -258,6 +276,7 @@ def render_map_tab(st: Any, grid_loader, predict_fn) -> None:
             lo, hi = res["burn_probability_interval"]
             st.metric("P(burn)", f"{res['burn_probability']:.2f}", help="Probability that a flame is sustained (1 atm, µg).")
             st.markdown(f"90% interval **{lo:.2f}–{hi:.2f}** · verdict **{str(res['label']).upper()}**")
+            st.caption(verdict_note())
         level = {"in_distribution": "🟢 in distribution", "extrapolation": "🟠 extrapolation", "out_of_envelope": "🔴 out of distribution"}
         st.markdown(f"Data coverage: **{level.get(res.get('ood_level'), '?')}**")
         if res.get("ood_reasons"):

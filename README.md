@@ -150,6 +150,11 @@ extinctions) and a ship rule (Brier ≤ v2's). It tied at 0.087 (5 decimals: 0.0
 a tie, not an improvement: better on SIBAL, worse on log-loss and AUC, and it moves no extinguished NASA point below P = 0.5.
 Per-material results, calibration, the stress test and this limit are in the [model card](docs/model_card.md) (section 5b).
 
+**Safety operating point** (`models/safety_operating_point.json`): a missed burn is the costly error. At the 0.5 verdict line the
+shipped model's leave-one-test-out burn recall is 0.994 (1 of 166 NASA burns missed); the largest threshold
+that keeps burn recall ≥ 0.95 is 0.60, which would miss 8. So the readout keeps 0.5; the price is a low extinguished recall
+(0.231). Reliability plot: [`docs/img/reliability.png`](docs/img/reliability.png).
+
 ## Mission presets (at 10 cm/s; `src/api.py`)
 
 | Preset | Pressure | O2 | Gravity | SIBAL fabric | PMMA film | PMMA slab | PMMA rod | Nomex | Source |
