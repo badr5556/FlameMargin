@@ -18,7 +18,7 @@ operator question (EN / AR)
    normalization: "34%" / 0.34 · kPa/atm/bar → psia · mm/s, m/s → cm/s · "fans off" ·     │
    material aliases (EN/AR) · mission presets · physical-validity errors                  │
    HARD RULE: gravity ≠ µg ⇒ ood_flag=True "no training data at this gravity level        │
-   (FM2 not yet flown)", whatever the model says                                          │
+   (dataset is ISS microgravity only ...)", whatever the model says                       │
    adapter: src/api.py (Layer 1); if not importable -> engine_unavailable errors      │
    tools: predict · flammability_boundary · compare_scenarios · nearest_experiments ·     │
           get_mission_preset · get_background_fact (src/copilot_facts.py, sourced)        │

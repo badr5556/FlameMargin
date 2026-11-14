@@ -51,7 +51,7 @@ The adapter maps by parameter **name** (`inspect.signature`), so these alternati
 | Gravity | `gravity`, `gravity_level`, `g_level` (label) or `gravity_g`, `g` (number) | `"micro"`/`"lunar"`/`"mars"`/`"earth"` or g |
 
 If `predict` has **no gravity parameter**, that's fine: the Copilot still applies its hard rule
-(any non-µg gravity → `ood_flag=True`, reason `no training data at this gravity level (FM2 not yet flown)`).
+(any non-µg gravity → `ood_flag=True`, reason `no training data at this gravity level (the dataset is ISS microgravity only; ...)`).
 
 ### 1.2 Output keys (every function)
 

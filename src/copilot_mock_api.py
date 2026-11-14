@@ -88,7 +88,7 @@ def _loc(material: str, pressure_psia: float, flow: float) -> float:
 def _coverage(o2: float, pressure: float, flow: float | None, gravity: str) -> tuple[str, list[str]]:
     reasons: list[str] = []
     if gravity not in TRAINING_ENVELOPE["gravity"]:
-        reasons.append("no training data at this gravity level (FM2 not yet flown)")
+        reasons.append("no training data at this gravity level (mock fixture)")
     checks = [("o2_percent", o2, "O2", "%"), ("pressure_psia", pressure, "pressure", " psia")]
     if flow is not None:
         checks.append(("flow_velocity_cm_s", flow, "flow", " cm/s"))
