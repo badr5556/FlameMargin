@@ -29,7 +29,7 @@ from src import copilot, copilot_tools  # noqa: E402
 from src.copilot_prompt import PROMPT_VERSION  # noqa: E402
 
 EVAL_DIR = Path(__file__).resolve().parent
-DEFAULT_LATENCY = {"llm": 25_000, "fallback": 1_000}
+DEFAULT_LATENCY = {"llm": 25_000, "fallback": 3_000}
 DECLINE_RE = re.compile(r"cannot|can't|unable|won't|will not|not able|لا يمكن|لا أستطيع|مقدرش", re.IGNORECASE)
 ARABIC_RE = re.compile(r"[؀-ۿ]")
 CLARIFY_RE = re.compile(r"\?|؟|assum|افترض|افتراض|which material|what material|specify|clarify|please provide|need to know|let me know", re.IGNORECASE)
@@ -61,6 +61,7 @@ def check(case: dict[str, Any], res: copilot.CopilotResult, requested_mode: str)
             out["not OOD"] = (not res.ood, "; ".join(res.ood_reasons)[:60] or "in-distribution")
     if exp.get("grounding_ok"):
         out["grounding"] = (res.grounding_ok, ", ".join(map(str, res.ungrounded)) or "ok")
+    out["claims consistent"] = (res.claims_consistent and copilot.check_claim_consistency(ans, res.tool_calls)[0], "")
     if exp.get("contains_any"):
         ok = any(s.lower() in low for s in exp["contains_any"])
         out["content"] = (ok, " | ".join(exp["contains_any"])[:60])
@@ -140,6 +141,12 @@ def main() -> int:
         print("No GEMINI_API_KEY found: skipping LLM mode.")
         modes = [m for m in modes if m != "llm"] or ["fallback"]
 
+    if copilot_tools.backend_name() == "real":
+        # Warm-up, as the app does with st.cache_resource: load the model and the boundary cache before timing.
+        from src import api
+
+        api.get_engine()
+        api.flammability_boundary("SIBAL", 14.7)
     sections = []
     for m in modes:
         rows = run(m, cases, a.pause)
@@ -156,7 +163,8 @@ def main() -> int:
         f"- Prompt version: `{PROMPT_VERSION}` · prediction backend: `{copilot_tools.backend_name()}`",
         f"- Cases: `evals/hard_questions.yaml` ({len(cases)}) · transcripts: `evals/transcripts/<mode>/<id>.json`",
         "- Checks: tool called (or explicit decline with no numbers), right tool, OOD warning as first line (or not OOD), code-level grounding verifier, "
-        "expected content, latency budget (LLM 25 s / fallback 1 s).",
+        "claim consistency (verdict words vs the tool's label), expected content, latency budget (LLM 25 s / fallback 3 s).",
+        "- The prediction engine is loaded once before timing (as the app does with `st.cache_resource`).",
         "",
     ]
     if copilot_tools.backend_name() == "mock":

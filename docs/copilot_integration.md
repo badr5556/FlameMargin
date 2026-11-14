@@ -4,16 +4,18 @@ Owner: Omar (Copilot). This file lists **every change the Copilot needs in files
 other teammates**. The Copilot never edits those files itself; please apply these diffs (or
 tell Omar if you want a different shape).
 
-## Current state (when this was written)
+## Current state (2026-11-14)
 
-| Thing | Status on `main` | What the Copilot does meanwhile |
+| Thing | Status on `main` | Copilot behaviour |
 |---|---|---|
-| `src/api.py` (Layer 1) | missing | `src/copilot_tools.py` falls back to `src/copilot_mock_api.py` (synthetic, clearly labelled "mock" in every answer and in the UI badge) |
-| `app.py` (Layer 2) | missing | standalone demo: `streamlit run src/copilot_ui.py` |
-| Mission presets | only in the team brief | mirrored in `copilot_tools.BRIEF_PRESETS` |
-| "Fans OFF" flow value | not defined anywhere | `"fans off"` returns a `fans_off_undefined` tool error; the Copilot answers from the flammability boundary instead of guessing |
+| `src/api.py` (Layer 1) | **real Prediction Engine** (SIBAL fabric, NASA BASS-II, `docs/model_card.md`) | used automatically; `backend = "real"` |
+| `src/copilot_mock_api.py` | **test fixture only** (`COPILOT_FORCE_MOCK_API=1` in the unit tests) | never a silent fallback: if `src/api.py` cannot be imported, prediction tools return `engine_unavailable` |
+| `app.py` (Layer 2) | full 3-tab app (map, Copilot, data & method); `src/copilot_ui.py` runs it on Streamlit Cloud | chat mounted in the Copilot tab |
+| Mission presets | `api.MISSION_PRESETS` (ISS, Artemis EA, Lunar) | picked up automatically |
+| "Fans OFF" flow value | **deliberately not defined**: no verified single fans-off number exists | `"fans off"` returns `fans_off_undefined`; the Copilot answers from the low-flow end of the boundary instead of guessing |
+| Upgrades | per-session LLM budget (`COPILOT_SESSION_LLM_LIMIT`, default 15), backup key (`GEMINI_API_KEY_BACKUP`, tried before the backup model), claim-consistency check, assumption-line guard | see `src/copilot.py` |
 
-The adapter switches to the real API **automatically** as soon as `src/api.py` imports cleanly and exposes the four contract functions. No Copilot change is needed.
+The sections below are the original contract notes; parameter-name mapping still works the same way.
 
 ---
 

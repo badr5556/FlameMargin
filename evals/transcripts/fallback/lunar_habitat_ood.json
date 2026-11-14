@@ -1,7 +1,7 @@
 {
   "id": "lunar_habitat_ood",
-  "question": "Is PMMA safe in the lunar surface habitat at 10 cm/s?",
-  "behavior": "Lunar gravity has no training data, so the OOD warning must be the first line.",
+  "question": "Is SIBAL fabric safe in the lunar surface habitat at 10 cm/s?",
+  "behavior": "Lunar gravity (and 8.2 psia / 34% O2) has no training data, so the OOD warning must be the first line.",
   "passed": true,
   "checks": {
     "tool called": {
@@ -16,56 +16,125 @@
       "ok": true,
       "detail": "ok"
     },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
+    },
     "content": {
       "ok": true,
-      "detail": "FM2"
+      "detail": "FM2 | lunar | gravity"
     },
     "latency": {
       "ok": true,
-      "detail": "2 ms ≤ 1000"
+      "detail": "6 ms ≤ 3000"
     }
   },
-  "answer": "⚠️ Out of distribution: no training data at this gravity level (FM2 not yet flown)\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\n**PMMA is predicted to BURN** at Lunar surface habitat, 34% O2, 8.2 psia, 10 cm/s flow, lunar gravity.\n\n**Key numbers**\n- Burn probability: 0.99 (interval 0.74–1)\n- Flame spread rate: 2.03 mm/s (90% interval 0.41–3.65 mm/s)\n- Limiting O2 at this flow: 18.3% (margin 15.7 percentage points)\n\n**Evidence**\n- MOCK-BASS-II-12 (BASS-II; PMMA, 30% O2, 10.2 psia, 15 cm/s) → burn\n- MOCK-BASS-II-24 (BASS-II; Nomex, 34% O2, 8.2 psia, 5 cm/s) → burn\n- MOCK-BASS-II-18 (BASS-II; Nomex, 30% O2, 10.2 psia, 10 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); pressure 8.2 psia outside training range 14.4–15 psia; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); O2 34% outside training range 16.4–21%\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\nNo prediction: no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); pressure 8.2 psia outside training range 14.4–15 psia; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); O2 34% outside training range 16.4–21%. Known materials: .\n\n**Key numbers**\n- No numeric prediction available for this input.\n\n**Evidence**\n- GMT45-T4 (BASS-II; SIBAL cotton-fiberglass fabric, 18.7% O2, 14.7 psia, 10 cm/s) → burn\n- GMT45-T15 (BASS-II; SIBAL cotton-fiberglass fabric, 18.7% O2, 14.7 psia, 10 cm/s) → burn\n- GMT100-T13 (BASS-II; SIBAL cotton-fiberglass fabric, 17.5% O2, 14.7 psia, 4 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- No reliable prediction: treat as unknown and default to conservative controls until data or testing is available.\n\n**Limits**\n- Model scope: SIBAL cotton-fiberglass fabric only, ISS microgravity at 1 atm (NASA BASS-II tests); no flame spread-rate data, and the extraction is pending row-by-row verification.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
         "gravity": "lunar",
-        "material": "PMMA",
+        "material": "SIBAL",
         "preset": "Lunar surface habitat",
         "flow_velocity_cm_s": "10 cm/s"
       },
       "result": {
-        "label": "burn",
-        "burn_probability": 0.99,
-        "burn_probability_interval": [
-          0.74,
-          1.0
-        ],
-        "value": 2.03,
-        "unit": "mm/s",
-        "quantity": "flame spread rate",
-        "interval": [
-          0.41,
-          3.65
-        ],
-        "interval_level": 0.9,
-        "limiting_o2_percent": 18.3,
-        "o2_margin_percent_points": 15.7,
-        "coverage": "ood",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "interval_level": null,
+        "value": null,
+        "interval": null,
+        "unit": "probability",
+        "quantity": "P(burn)",
+        "spread_rate_mm_s": null,
+        "spread_rate_reason": "no spread-rate measurements in the current NASA extraction",
         "ood_flag": true,
-        "ood_reason": "no training data at this gravity level (FM2 not yet flown)",
-        "evidence": [
-          "MOCK-BASS-II-12",
-          "MOCK-BASS-II-24",
-          "MOCK-BASS-II-18"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reason": "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); pressure 8.2 psia outside training range 14.4–15 psia; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); O2 34% outside training range 16.4–21%",
         "ood_reasons": [
-          "no training data at this gravity level (FM2 not yet flown)"
+          "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+          "pressure 8.2 psia outside training range 14.4–15 psia",
+          "no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+          "O2 34% outside training range 16.4–21%"
         ],
+        "ood_level": "out_of_envelope",
+        "coverage": "out_of_envelope",
+        "hard_rule_reasons": [
+          "pressure 8.2 psia outside training range 14.4–15 psia",
+          "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+          "O2 34% outside training range 16.4–21%"
+        ],
+        "note": "No prediction outside the tested conditions: the model has no data there. Do not estimate one.",
+        "evidence": [
+          "GMT45-T4",
+          "GMT45-T15",
+          "GMT100-T13"
+        ],
+        "nearest_experiments": [
+          {
+            "id": "GMT45-T4",
+            "point_id": "GMT45-T4_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 21.68
+          },
+          {
+            "id": "GMT45-T15",
+            "point_id": "GMT45-T15_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame survived the flow increase",
+            "test_event": "no blowoff",
+            "derivation_rule": "R3 'No blowoff' with flow increased: burn=1 at (O2, flow_start) because a flame existed before the ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 21.68
+          },
+          {
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 23.4
+          }
+        ],
+        "inputs": {
+          "material": "SIBAL",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "lunar",
+          "sample_width_cm": 2.2
+        },
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
         "inputs_normalized": {
-          "material": "PMMA",
+          "material": "SIBAL",
           "o2_percent": 34.0,
           "pressure_psia": 8.2,
           "pressure_kpa": 56.5,
@@ -74,15 +143,15 @@
           "gravity_g": 0.166,
           "preset": "Lunar surface habitat"
         },
-        "backend": "mock"
+        "backend": "real"
       },
-      "ms": 0.4
+      "ms": 1.9
     },
     {
       "name": "nearest_experiments",
       "args": {
         "gravity": "lunar",
-        "material": "PMMA",
+        "material": "SIBAL",
         "k": 3,
         "preset": "Lunar surface habitat",
         "flow_velocity_cm_s": "10 cm/s"
@@ -90,56 +159,86 @@
       "result": {
         "value": [
           {
-            "id": "MOCK-BASS-II-12",
+            "id": "GMT45-T4",
+            "point_id": "GMT45-T4_start",
             "campaign": "BASS-II",
-            "material": "PMMA",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 15.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 2.6,
-            "distance": 1.11,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-24",
-            "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 34.0,
-            "pressure_psia": 8.2,
-            "flow_velocity_cm_s": 5.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 0.6,
-            "distance": 2.09,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-18",
-            "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
             "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
             "outcome": "burn",
-            "spread_rate_mm_s": 0.3,
-            "distance": 2.25,
-            "synthetic": true
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 21.68
+          },
+          {
+            "id": "GMT45-T15",
+            "point_id": "GMT45-T15_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame survived the flow increase",
+            "test_event": "no blowoff",
+            "derivation_rule": "R3 'No blowoff' with flow increased: burn=1 at (O2, flow_start) because a flame existed before the ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 21.68
+          },
+          {
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 23.4
           }
         ],
         "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
         "ood_flag": true,
-        "ood_reason": "no training data at this gravity level (FM2 not yet flown)",
-        "evidence": [
-          "MOCK-BASS-II-12",
-          "MOCK-BASS-II-24",
-          "MOCK-BASS-II-18"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reason": "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); pressure 8.2 psia outside training range 14.4–15 psia; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); O2 34% outside training range 16.4–21%",
         "ood_reasons": [
-          "no training data at this gravity level (FM2 not yet flown)"
+          "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+          "pressure 8.2 psia outside training range 14.4–15 psia",
+          "no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+          "O2 34% outside training range 16.4–21%"
         ],
+        "ood_level": "out_of_envelope",
+        "coverage": "out_of_envelope",
+        "hard_rule_reasons": [
+          "pressure 8.2 psia outside training range 14.4–15 psia",
+          "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+          "O2 34% outside training range 16.4–21%"
+        ],
+        "evidence": [
+          "GMT45-T4",
+          "GMT45-T15",
+          "GMT100-T13"
+        ],
+        "note": "Distances use standardized O2, log10 flow and sample width.",
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
         "inputs_normalized": {
-          "material": "PMMA",
+          "material": "SIBAL",
           "o2_percent": 34.0,
           "pressure_psia": 8.2,
           "pressure_kpa": 56.5,
@@ -148,23 +247,25 @@
           "gravity_g": 0.166,
           "preset": "Lunar surface habitat"
         },
-        "backend": "mock"
+        "backend": "real"
       },
-      "ms": 0.2
+      "ms": 1.6
     }
   ],
   "ood": true,
   "ood_reasons": [
-    "no training data at this gravity level (FM2 not yet flown)"
+    "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+    "pressure 8.2 psia outside training range 14.4–15 psia",
+    "no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)",
+    "O2 34% outside training range 16.4–21%"
   ],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 2,
+  "latency_ms": 6,
   "model": null,
-  "backend": "mock",
+  "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "api.py not usable, using mock API"
-  ],
-  "prompt_version": "2026-11-13.6"
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.2"
 }

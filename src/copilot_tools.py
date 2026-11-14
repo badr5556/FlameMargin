@@ -1,8 +1,10 @@
 """Tool layer for the FlameMargin Copilot.
 
 Responsibilities
-  1. Adapter: use the real ``src/api.py`` (Layer 1) when it is importable and
-     exposes the contract functions, otherwise ``src/copilot_mock_api.py``.
+  1. Adapter: use the real ``src/api.py`` (Layer 1). ``src/copilot_mock_api.py``
+     is only a test fixture, used when COPILOT_FORCE_MOCK_API=1. If the real API
+     cannot be imported, every prediction tool returns an ``engine_unavailable``
+     error: the Copilot never silently swaps in synthetic numbers.
   2. Normalization: units ("34%", 0.34, "56.5 kPa", "5 mm/s", "fans off",
      "1/6 g"...), material aliases and mission presets are converted here. The
      LLM never does unit math itself.
@@ -362,6 +364,23 @@ _PARAM_ALIASES = {
 }
 
 
+class _UnavailableAPI:
+    """Stand-in when src/api.py cannot be imported: every contract call is a structured tool error."""
+
+    MATERIALS: dict[str, Any] = {}
+
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def _fail(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        raise ToolInputError(
+            "The prediction engine is unavailable right now, so no prediction can be made.",
+            kind="engine_unavailable", hint="Say no prediction is available; do not estimate one.",
+        )
+
+    predict = flammability_boundary = compare_scenarios = nearest_experiments = _fail
+
+
 class _Backend:
     def __init__(self) -> None:
         self.module: Any = None
@@ -388,7 +407,7 @@ class _Backend:
             self.module, self.name = mod, "real"
             return mod
         self.load_error = "; ".join(errors)
-        self.module, self.name = copilot_mock_api, "mock"
+        self.module, self.name = _UnavailableAPI(self.load_error), "unavailable"
         return self.module
 
     def reset(self) -> None:

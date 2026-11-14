@@ -1,0 +1,267 @@
+{
+  "id": "in_data_sibal",
+  "question": "Will SIBAL fabric keep burning at 17.5% O2 and 14.7 psia with 4 cm/s flow?",
+  "behavior": "In-distribution prediction (P(burn) with its interval) backed by real NASA test IDs.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "2 calls"
+    },
+    "right tool": {
+      "ok": true,
+      "detail": "predict"
+    },
+    "evidence tool": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "not OOD": {
+      "ok": true,
+      "detail": "in-distribution"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
+    },
+    "content": {
+      "ok": true,
+      "detail": "GMT"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "648 ms ≤ 3000"
+    }
+  },
+  "answer": "**Verdict**\n**SIBAL is predicted to BURN** at 17.5% O2, 14.7 psia, 4 cm/s flow, µg.\n\n**Key numbers**\n- Burn probability P(burn): 0.72 (90% interval 0.5–0.84)\n- Flame spread rate: not predicted (no spread-rate measurements in the current NASA extraction).\n\n**Evidence**\n- GMT100-T13 (BASS-II; SIBAL cotton-fiberglass fabric, 17.5% O2, 14.7 psia, 4 cm/s) → burn\n- GMT175-T18 (BASS-II; SIBAL cotton-fiberglass fabric, 17.4% O2, 14.7 psia, 5 cm/s) → burn\n- GMT178-T14 (BASS-II; SIBAL cotton-fiberglass fabric, 16.9% O2, 14.7 psia, 4 cm/s) → burn\n\n**Operational recommendation**\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Model scope: SIBAL cotton-fiberglass fabric only, ISS microgravity at 1 atm (NASA BASS-II tests); no flame spread-rate data, and the extraction is pending row-by-row verification.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "o2_percent": "17.5%",
+        "pressure_psia": "14.7 psia",
+        "material": "SIBAL",
+        "flow_velocity_cm_s": "4 cm/s"
+      },
+      "result": {
+        "label": "burn",
+        "burn_probability": 0.72,
+        "burn_probability_interval": [
+          0.5,
+          0.84
+        ],
+        "interval_level": 0.9,
+        "value": 0.72,
+        "interval": [
+          0.5,
+          0.84
+        ],
+        "unit": "probability",
+        "interval_note": "90% bootstrap interval over NASA tests",
+        "bootstrap_interval_raw": [
+          0.5,
+          0.84
+        ],
+        "quantity": "P(burn): probability that a flame is sustained",
+        "spread_rate_mm_s": null,
+        "spread_rate_reason": "no spread-rate measurements in the current NASA extraction",
+        "ood_flag": false,
+        "ood_reason": null,
+        "ood_reasons": [],
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "knn_distance": 0.0,
+        "knn_threshold": 1.68,
+        "evidence": [
+          "GMT100-T13",
+          "GMT175-T18",
+          "GMT178-T14"
+        ],
+        "nearest_experiments": [
+          {
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.0
+          },
+          {
+            "id": "GMT175-T18",
+            "point_id": "GMT175-T18_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.4,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 5.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.29
+          },
+          {
+            "id": "GMT178-T14",
+            "point_id": "GMT178-T14_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 16.9,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.85
+          }
+        ],
+        "model": "Gaussian process classifier (RBF + White, standardized)",
+        "inputs": {
+          "material": "SIBAL",
+          "o2_percent": 17.5,
+          "pressure_psia": 14.7,
+          "flow_velocity_cm_s": 4.0,
+          "gravity": "micro",
+          "sample_width_cm": 2.2
+        },
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
+        "inputs_normalized": {
+          "material": "SIBAL",
+          "o2_percent": 17.5,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "flow_velocity_cm_s": 4.0,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "real"
+      },
+      "ms": 643.1
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "o2_percent": "17.5%",
+        "pressure_psia": "14.7 psia",
+        "material": "SIBAL",
+        "k": 3,
+        "flow_velocity_cm_s": "4 cm/s"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.0
+          },
+          {
+            "id": "GMT175-T18",
+            "point_id": "GMT175-T18_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.4,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 5.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.29
+          },
+          {
+            "id": "GMT178-T14",
+            "point_id": "GMT178-T14_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 16.9,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.85
+          }
+        ],
+        "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "ood_reasons": [],
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "evidence": [
+          "GMT100-T13",
+          "GMT175-T18",
+          "GMT178-T14"
+        ],
+        "note": "Distances use standardized O2, log10 flow and sample width.",
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
+        "inputs_normalized": {
+          "material": "SIBAL",
+          "o2_percent": 17.5,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "flow_velocity_cm_s": 4.0,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "real"
+      },
+      "ms": 2.5
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "fallback",
+  "latency_ms": 648,
+  "model": null,
+  "backend": "real",
+  "ungrounded": [],
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.2"
+}

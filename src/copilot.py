@@ -64,6 +64,7 @@ class CopilotResult:
     backend: str = ""
     ungrounded: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    claims_consistent: bool = True
     prompt_version: str = PROMPT_VERSION
 
     def to_dict(self) -> dict[str, Any]:
@@ -102,6 +103,32 @@ def get_api_key() -> str | None:
     return _config_value("GEMINI_API_KEY")
 
 
+def get_backup_api_key() -> str | None:
+    """Optional second key (GEMINI_API_KEY_BACKUP), tried before the backup model and before fallback."""
+    k = _config_value("GEMINI_API_KEY_BACKUP")
+    return k if k and k != get_api_key() else None
+
+
+DEFAULT_SESSION_LLM_LIMIT = 15
+
+
+def session_llm_limit() -> int:
+    """LLM questions allowed per UI session (COPILOT_SESSION_LLM_LIMIT, default 15): the public link runs on a free-tier key."""
+    try:
+        return max(0, int(_config_value("COPILOT_SESSION_LLM_LIMIT") or DEFAULT_SESSION_LLM_LIMIT))
+    except ValueError:
+        return DEFAULT_SESSION_LLM_LIMIT
+
+
+def llm_attempts(key: str, backup_key: str | None, model: str, fallback_model: str) -> list[tuple[str, str, str]]:
+    """(key label, key, model) in the order they are tried: primary key, backup key, then the backup model."""
+    keys = [("primary key", key)] + ([("backup key", backup_key)] if backup_key else [])
+    out = []
+    for m in dict.fromkeys([model, fallback_model]):
+        out += [(label, k, m) for label, k in keys]
+    return out
+
+
 def get_model() -> str:
     return _config_value("GEMINI_MODEL") or DEFAULT_MODEL
 
@@ -130,7 +157,8 @@ def _get_client(key: str) -> Any:
 # =========================================================================== #
 # Identifiers that contain digits (O2, CO2, FM2, MOCK-BASS-II-07, NASA-STD-6001, ...) are not quantities.
 _IDENT_RE = re.compile(r"(?<![A-Za-z0-9])[A-Za-z][A-Za-z0-9_]*(?:[-_][A-Za-z0-9]+)*")
-_EXPERIMENT_ID_RE = re.compile(r"\b[A-Z][A-Za-z]*(?:-[A-Za-z0-9]+)*-\d+[A-Za-z0-9]*\b")
+# Experiment IDs that must appear verbatim in tool results: MOCK-BASS-II-07 style and NASA BASS-II test IDs like GMT45-T4.
+_EXPERIMENT_ID_RE = re.compile(r"\b(?:[A-Z][A-Za-z]*(?:-[A-Za-z0-9]+)*-\d+[A-Za-z0-9]*|GMT\d+-T\d+[a-z]?)\b")
 _LIST_MARKER_RE = re.compile(r"^(\s*(?:[#>*\-]\s*)*)\d+[.)](?=\s)", re.MULTILINE)
 _FRACTION_G_RE = re.compile(r"(?<![\d.])(\d+)\s*/\s*(\d+)(?=\s*g\b)")
 _NUMBER_RE = re.compile(r"(?<![\d.٫])(\d+(?:[.٫]\d+)?)(\s*(?:%|٪|percent|بالمئة))?")
@@ -230,6 +258,56 @@ def verify_grounding(answer: str, tool_results: list[Any], question: str = "") -
         if i not in ID_WHITELIST and not _contains_token(blob, i) and not _contains_token(question, i)
     ]
     return GroundingReport(ok=not bad and not unknown_ids, ungrounded=list(dict.fromkeys(bad)), checked=len(toks), unknown_ids=unknown_ids)
+
+
+# =========================================================================== #
+# Claim-consistency check: verdict words must not contradict the tool's label
+# =========================================================================== #
+_SAYS_BURN_RE = re.compile(
+    r"\b(will|would|is predicted to|predicted to|expected to|likely to|keeps?|continues? to)\s+(burn|keep burning|sustain)|"
+    r"\b(is|are|remains?)\s+flammable\b|\bFLAMMABLE\b|\bverdict\W+burn\b|سيحترق|قابل للاشتعال",
+    re.IGNORECASE)
+_SAYS_EXTINGUISH_RE = re.compile(
+    r"\bself-extinguish|\b(will|would|is predicted to|predicted to|expected to|likely to)\s+(extinguish|go out|quench)|"
+    r"\b(not|non-?)\s*flammable\b|\bwon'?t burn\b|\bwill not burn\b|\bverdict\W+extinguish|ينطفئ|غير قابل للاشتعال",
+    re.IGNORECASE)
+_NEGATED_BURN_RE = re.compile(r"\b(not|never|no longer|won'?t|cannot|can'?t)\s+(be\s+)?(burn|flammable|sustain)", re.IGNORECASE)
+
+
+def _verdict_text(answer: str) -> str:
+    """The Verdict section (or, without headers, the first paragraph after any OOD line)."""
+    m = re.search(r"\*\*\s*Verdict\s*\*\*(.*?)(?=\*\*\s*(Key numbers|Evidence|Operational recommendation|Limits)\s*\*\*|\Z)",
+                  answer, re.IGNORECASE | re.DOTALL)
+    if m:
+        return m.group(1)
+    paras = [p for p in answer.split("\n\n") if p.strip() and not _first_line_plain(p).startswith(OOD_PREFIX)]
+    return paras[0] if paras else ""
+
+
+def check_claim_consistency(answer: str, tool_calls: list[dict[str, Any]]) -> tuple[bool, str]:
+    """Returns (ok, problem). Only single-verdict answers are checked (one predicted label across all tools)."""
+    labels = set()
+    for c in tool_calls:
+        r = c.get("result") or {}
+        if not isinstance(r, dict) or "error" in r:
+            continue
+        rows = r["value"] if c.get("name") == "compare_scenarios" and isinstance(r.get("value"), list) else [r]
+        for x in rows:
+            if isinstance(x, dict) and x.get("label") in ("burn", "extinguish", "uncertain"):
+                labels.add(x["label"])
+    if len(labels) != 1:
+        return True, ""
+    label = labels.pop()
+    v = _verdict_text(answer)
+    says_burn = bool(_SAYS_BURN_RE.search(v)) and not _NEGATED_BURN_RE.search(v)
+    says_ext = bool(_SAYS_EXTINGUISH_RE.search(v))
+    if label == "extinguish" and says_burn and not says_ext:
+        return False, "the tools predict EXTINGUISH but the verdict says the material burns"
+    if label == "burn" and says_ext and not says_burn:
+        return False, "the tools predict BURN but the verdict says the material extinguishes"
+    if label == "uncertain" and (says_burn ^ says_ext) and not re.search(r"uncertain|cannot|can't|no verdict|not enough|unknown|extrapolat|لا يمكن|غير مؤكد", v, re.IGNORECASE):
+        return False, "the tools return UNCERTAIN (extrapolation) but the verdict states a definite outcome"
+    return True, ""
 
 
 # =========================================================================== #
@@ -434,20 +512,27 @@ def _llm_answer(question: str, history: list[dict[str, Any]] | None, key: str, m
     operator_text = "\n".join([str(m.get("content") or m.get("text") or "") for m in (history or []) if m.get("role") == "user"] + [question])
     answer = _run_loop(client, model, contents, trace, notes, deadline, MAX_ROUNDS, operator_text)
     report = verify_grounding(answer, [c["result"] for c in trace], question)
-    if report.ok:
+    consistent, problem = check_claim_consistency(answer, trace)
+    if report.ok and consistent:
         return answer, trace, report, False
     # One regeneration with explicit feedback.
-    problems = report.ungrounded + [f"experiment ID {i}" for i in report.unknown_ids]
-    feedback = (
-        "GROUNDING CHECK FAILED. These values in your answer do not appear in any tool result from this turn: "
-        + ", ".join(problems)
-        + ". Rewrite the answer using ONLY numbers and IDs that appear in tool results (call tools again if needed). "
-        "Do not compute new numbers yourself. Keep the same structure."
-    )
-    notes.append("grounding failed on first draft: " + ", ".join(problems))
-    contents.append(types.Content(role="user", parts=[types.Part(text=feedback)]))
+    parts = []
+    if not report.ok:
+        problems = report.ungrounded + [f"experiment ID {i}" for i in report.unknown_ids]
+        parts.append("GROUNDING CHECK FAILED. These values in your answer do not appear in any tool result from this turn: "
+                     + ", ".join(problems) + ". Use ONLY numbers and IDs that appear in tool results (call tools again if "
+                     "needed). Do not compute new numbers yourself.")
+        notes.append("grounding failed on first draft: " + ", ".join(problems))
+    if not consistent:
+        parts.append(f"CLAIM CONSISTENCY CHECK FAILED: {problem}. Your verdict words must match the tool's label.")
+        notes.append("claim-consistency failed on first draft: " + problem)
+    contents.append(types.Content(role="user", parts=[types.Part(text=" ".join(parts) + " Rewrite the answer; keep the same structure.")]))
     answer2 = _run_loop(client, model, contents, trace, notes, deadline + 20, 3, operator_text)
     report2 = verify_grounding(answer2, [c["result"] for c in trace], question)
+    consistent2, problem2 = check_claim_consistency(answer2, trace)
+    if not consistent2:
+        report2 = GroundingReport(ok=False, ungrounded=report2.ungrounded + [f"inconsistent verdict: {problem2}"],
+                                  checked=report2.checked, unknown_ids=report2.unknown_ids)
     return answer2, trace, report2, True
 
 
@@ -790,12 +875,40 @@ def fallback_answer(question: str, trace: list[dict[str, Any]] | None = None) ->
     return answer, trace
 
 
+_STATES_ASSUMPTION_RE = re.compile(r"assum|\?|؟|افترض|افتراض|which material|what material|clarify|please (specify|provide)", re.IGNORECASE)
+
+
+def enforce_assumption_line(question: str, answer: str, trace: list[dict[str, Any]]) -> tuple[str, bool]:
+    """Code guard: if the operator named no material and no atmosphere, the answer must say what was assumed.
+
+    Built only from the arguments the tools were actually called with (never invented). Returns (answer, added?)."""
+    it = parse_intent(question)
+    if it["material"] or it["material_text"] or it["presets"] or it["o2"] or it["pressure"]:
+        return answer, False
+    if _STATES_ASSUMPTION_RE.search(answer):
+        return answer, False
+    mats = list(dict.fromkeys(str(c["args"]["material"]) for c in trace if isinstance(c.get("args"), dict) and c["args"].get("material")))
+    presets = list(dict.fromkeys(str(c["args"]["preset"]) for c in trace if isinstance(c.get("args"), dict) and c["args"].get("preset")))
+    if not mats and not presets:
+        return answer, False
+    used = "; ".join(x for x in (f"material: {', '.join(mats)}" if mats else "", f"atmosphere preset: {', '.join(presets)}" if presets else "") if x)
+    line = f"**Assumption:** your question named no material or atmosphere, so the tools were run with {used}. Ask again with your own conditions to change this."
+    lines = answer.splitlines()
+    if lines and _first_line_plain(answer).startswith(OOD_PREFIX):
+        idx = next(i for i, ln in enumerate(lines) if ln.strip())
+        return "\n".join(lines[: idx + 1] + ["", line] + lines[idx + 1:]), True
+    return f"{line}\n\n{answer}", True
+
+
 # =========================================================================== #
 # Public API
 # =========================================================================== #
-def _finalize(answer: str, trace: list[dict[str, Any]], notes: list[str]) -> tuple[str, bool, list[str]]:
+def _finalize(answer: str, trace: list[dict[str, Any]], notes: list[str], question: str = "") -> tuple[str, bool, list[str]]:
     ood, reasons = collect_ood(trace)
     answer, prepended = enforce_ood_first_line(answer, ood, reasons)
+    answer, assumed = enforce_assumption_line(question, answer, trace)
+    if assumed:
+        notes.append("assumption line added by code guard")
     if prepended:
         notes.append("OOD warning prepended by code guard")
     results = [c.get("result") for c in trace if isinstance(c.get("result"), dict)]
@@ -811,19 +924,18 @@ def ask(question: str, history: list[dict[str, Any]] | None = None, *, force_fal
     question = (question or "").strip()
     notes: list[str] = []
     backend = tools.backend_name()
-    if tools.BACKEND.load_error and backend == "mock":
-        notes.append("api.py not usable, using mock API")
+    if tools.BACKEND.load_error and backend == "unavailable":
+        notes.append("src/api.py could not be imported: prediction tools return engine_unavailable")
     if not question:
         return CopilotResult(answer="Ask a question about material flammability (e.g. 'Is Nomex safe on the ISS?').", backend=backend, notes=notes)
 
     key = None if (force_fallback or os.environ.get("COPILOT_FORCE_FALLBACK") == "1") else get_api_key()
     if key:
-        models = list(dict.fromkeys([get_model(), get_fallback_model()]))
-        for model in models:
+        for key_label, k, model in llm_attempts(key, get_backup_api_key(), get_model(), get_fallback_model()):
             try:
-                answer, trace, report, regenerated = _llm_answer(question, history, key, model, notes)
+                answer, trace, report, regenerated = _llm_answer(question, history, k, model, notes)
             except LLMUnavailable as e:
-                notes.append(f"LLM unavailable: {e}")
+                notes.append(f"LLM unavailable ({key_label}): {e}")
                 continue
             except Exception as e:  # noqa: BLE001 - SDK/import errors must not kill the demo
                 notes.append(f"LLM error: {type(e).__name__}")
@@ -833,14 +945,15 @@ def ask(question: str, history: list[dict[str, Any]] | None = None, *, force_fal
             if not report.ok:
                 # Still ungrounded after one regeneration: show fallback-formatted tool outputs instead.
                 fb, fb_trace = fallback_answer(question)
-                fb, ood, reasons = _finalize(fb, fb_trace, notes)
+                fb, ood, reasons = _finalize(fb, fb_trace, notes, question)
                 notes.append("LLM answer withheld (ungrounded numbers); showing deterministic tool outputs")
                 return CopilotResult(
                     answer=fb, tool_calls=trace + fb_trace, ood=ood, ood_reasons=reasons, grounding_ok=False, mode="fallback",
                     latency_ms=round((time.perf_counter() - t0) * 1000), model=model, backend=backend,
                     ungrounded=report.ungrounded + report.unknown_ids, notes=notes,
+                    claims_consistent=not any(u.startswith("inconsistent verdict") for u in report.ungrounded),
                 )
-            answer, ood, reasons = _finalize(answer, trace, notes)
+            answer, ood, reasons = _finalize(answer, trace, notes, question)
             return CopilotResult(
                 answer=answer, tool_calls=trace, ood=ood, ood_reasons=reasons, grounding_ok=True, mode="llm",
                 latency_ms=round((time.perf_counter() - t0) * 1000), model=model, backend=backend, notes=notes,
@@ -849,14 +962,17 @@ def ask(question: str, history: list[dict[str, Any]] | None = None, *, force_fal
         notes.append("no GEMINI_API_KEY found: fallback mode")
 
     answer, trace = fallback_answer(question)
-    answer, ood, reasons = _finalize(answer, trace, notes)
+    answer, ood, reasons = _finalize(answer, trace, notes, question)
     report = verify_grounding(answer, [c["result"] for c in trace], question)
+    consistent, problem = check_claim_consistency(answer, trace)
+    if not consistent:
+        notes.append("fallback claim-consistency check: " + problem)
     if not report.ok:
         notes.append("fallback self-check found ungrounded numbers: " + ", ".join(report.ungrounded + report.unknown_ids))
     return CopilotResult(
         answer=answer, tool_calls=trace, ood=ood, ood_reasons=reasons, grounding_ok=report.ok, mode="fallback",
         latency_ms=round((time.perf_counter() - t0) * 1000), model=None, backend=backend,
-        ungrounded=report.ungrounded + report.unknown_ids, notes=notes,
+        ungrounded=report.ungrounded + report.unknown_ids, notes=notes, claims_consistent=consistent,
     )
 
 

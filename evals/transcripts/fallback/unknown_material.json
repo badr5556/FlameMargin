@@ -16,16 +16,20 @@
       "ok": true,
       "detail": "ok"
     },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
+    },
     "content": {
       "ok": true,
       "detail": "not in training data | not in the training data | no predict"
     },
     "latency": {
       "ok": true,
-      "detail": "1 ms ≤ 1000"
+      "detail": "3 ms ≤ 3000"
     }
   },
-  "answer": "⚠️ Out of distribution: material 'Kapton' not in training data\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\nNo prediction: material 'Kapton' not in training data. Known materials: PMMA, Nomex, Cotton-fiberglass, Delrin.\n\n**Key numbers**\n- No numeric prediction available for this input.\n\n**Evidence**\n- MOCK-BASS-II-24 (BASS-II; Nomex, 34% O2, 8.2 psia, 5 cm/s) → burn\n- MOCK-BASS-II-18 (BASS-II; Nomex, 30% O2, 10.2 psia, 10 cm/s) → burn\n- MOCK-BASS-II-12 (BASS-II; PMMA, 30% O2, 10.2 psia, 15 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- No reliable prediction: treat as unknown and default to conservative controls until data or testing is available.\n\n**Limits**\n- Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: material 'Kapton' not in training data; material 'Kapton' not in training data (only SIBAL cotton-fiberglass fabric was tested in this dataset); pressure 8.2 psia outside training range 14.4–15 psia; O2 34% outside training range 16.4–21%\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\nNo prediction: material 'Kapton' not in training data. Known materials: SIBAL.\n\n**Key numbers**\n- No numeric prediction available for this input.\n\n**Evidence**\n- GMT45-T4 (BASS-II; SIBAL cotton-fiberglass fabric, 18.7% O2, 14.7 psia, 10 cm/s) → burn\n- GMT45-T15 (BASS-II; SIBAL cotton-fiberglass fabric, 18.7% O2, 14.7 psia, 10 cm/s) → burn\n- GMT100-T13 (BASS-II; SIBAL cotton-fiberglass fabric, 17.5% O2, 14.7 psia, 4 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- No reliable prediction: treat as unknown and default to conservative controls until data or testing is available.\n\n**Limits**\n- Model scope: SIBAL cotton-fiberglass fabric only, ISS microgravity at 1 atm (NASA BASS-II tests); no flame spread-rate data, and the extraction is pending row-by-row verification.\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
     {
       "name": "predict",
@@ -41,10 +45,7 @@
         "ood_flag": true,
         "ood_reason": "material 'Kapton' not in training data",
         "known_materials": [
-          "PMMA",
-          "Nomex",
-          "Cotton-fiberglass",
-          "Delrin"
+          "SIBAL"
         ],
         "note": "No prediction is available for this material. Do not estimate one.",
         "ood_reasons": [
@@ -60,7 +61,7 @@
           "gravity_g": 0.0,
           "preset": "Artemis Exploration Atmosphere"
         },
-        "backend": "mock"
+        "backend": "real"
       },
       "ms": 0.1
     },
@@ -75,54 +76,83 @@
       "result": {
         "value": [
           {
-            "id": "MOCK-BASS-II-24",
+            "id": "GMT45-T4",
+            "point_id": "GMT45-T4_start",
             "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 34.0,
-            "pressure_psia": 8.2,
-            "flow_velocity_cm_s": 5.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 0.6,
-            "distance": 0.61,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-18",
-            "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
             "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
             "outcome": "burn",
-            "spread_rate_mm_s": 0.3,
-            "distance": 1.04,
-            "synthetic": true
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 21.68
           },
           {
-            "id": "MOCK-BASS-II-12",
+            "id": "GMT45-T15",
+            "point_id": "GMT45-T15_start",
             "campaign": "BASS-II",
-            "material": "PMMA",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 15.0,
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
             "outcome": "burn",
-            "spread_rate_mm_s": 2.6,
-            "distance": 1.11,
-            "synthetic": true
+            "observation": "flame survived the flow increase",
+            "test_event": "no blowoff",
+            "derivation_rule": "R3 'No blowoff' with flow increased: burn=1 at (O2, flow_start) because a flame existed before the ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 21.68
+          },
+          {
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 23.4
           }
         ],
         "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
         "ood_flag": true,
-        "ood_reason": "material 'Kapton' not in training data",
-        "evidence": [
-          "MOCK-BASS-II-24",
-          "MOCK-BASS-II-18",
-          "MOCK-BASS-II-12"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
+        "ood_reason": "material 'Kapton' not in training data (only SIBAL cotton-fiberglass fabric was tested in this dataset); pressure 8.2 psia outside training range 14.4–15 psia; O2 34% outside training range 16.4–21%",
         "ood_reasons": [
-          "material 'Kapton' not in training data"
+          "material 'Kapton' not in training data (only SIBAL cotton-fiberglass fabric was tested in this dataset)",
+          "pressure 8.2 psia outside training range 14.4–15 psia",
+          "O2 34% outside training range 16.4–21%"
         ],
+        "ood_level": "out_of_envelope",
+        "coverage": "out_of_envelope",
+        "hard_rule_reasons": [
+          "material 'Kapton' not in training data (only SIBAL cotton-fiberglass fabric was tested in this dataset)",
+          "pressure 8.2 psia outside training range 14.4–15 psia",
+          "O2 34% outside training range 16.4–21%"
+        ],
+        "evidence": [
+          "GMT45-T4",
+          "GMT45-T15",
+          "GMT100-T13"
+        ],
+        "note": "Distances use standardized O2, log10 flow and sample width.",
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
         "inputs_normalized": {
           "material": "Kapton",
           "o2_percent": 34.0,
@@ -133,23 +163,25 @@
           "gravity_g": 0.0,
           "preset": "Artemis Exploration Atmosphere"
         },
-        "backend": "mock"
+        "backend": "real"
       },
-      "ms": 0.2
+      "ms": 1.7
     }
   ],
   "ood": true,
   "ood_reasons": [
-    "material 'Kapton' not in training data"
+    "material 'Kapton' not in training data",
+    "material 'Kapton' not in training data (only SIBAL cotton-fiberglass fabric was tested in this dataset)",
+    "pressure 8.2 psia outside training range 14.4–15 psia",
+    "O2 34% outside training range 16.4–21%"
   ],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 1,
+  "latency_ms": 3,
   "model": null,
-  "backend": "mock",
+  "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "api.py not usable, using mock API"
-  ],
-  "prompt_version": "2026-11-13.6"
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.2"
 }

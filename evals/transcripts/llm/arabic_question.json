@@ -1,7 +1,7 @@
 {
   "id": "arabic_question",
-  "question": "هل النومكس آمن في جو أرتميس عند سرعة هواء 5 cm/s؟",
-  "behavior": "Arabic in, Arabic out (LLM mode), with technical terms in English; grounded numbers.",
+  "question": "هل قماش SIBAL هيفضل يولّع عند 17.5% أكسجين و 14.7 psia وسرعة هواء 4 cm/s؟",
+  "behavior": "Arabic in, Arabic out (LLM mode), technical terms in English; in-distribution, grounded numbers.",
   "passed": true,
   "checks": {
     "tool called": {
@@ -16,150 +16,247 @@
       "ok": true,
       "detail": "ok"
     },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
+    },
     "Arabic answer": {
       "ok": true,
       "detail": ""
     },
     "latency": {
       "ok": true,
-      "detail": "2904 ms ≤ 25000"
+      "detail": "3241 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nالنومكس غير آمن (قابل للاحتراق) في جو أرتميس عند سرعة هواء 5 cm/s.\n\n**Key numbers**\n- احتمال الاحتراق: 0.98 (بفاصل ثقة 0.86 إلى 1).\n- معدل انتشار اللهب: 0.41 mm/s (بفاصل ثقة 90% يتراوح بين 0.22 و 0.59 mm/s).\n- تركيز الأكسجين في جو أرتميس: 34% (الضغط: 8.2 psia أو 56.5 kPa).\n- الحد الأدنى للأكسجين لاحتراق النومكس عند هذه الظروف (Limiting O2): 26.2%.\n- هامش الأكسجين: 7.8 نقطة مئوية فوق الحد الأدنى.\n\n**Evidence**\nتستند هذه النتيجة إلى أقرب التجارب في البيانات: MOCK-BASS-II-24، MOCK-BASS-II-18، MOCK-BASS-II-12.\n\n**Operational recommendation**\nبما أن المادة قابلة للاحتراق في هذه الظروف، يُنصح بالحد من كمية المواد المكشوفة، عزل مصادر الإشعال، وتقليل مستويات الأكسجين حيثما تسمح المهمة، مع الحفاظ على جاهزية أنظمة الكشف عن الحريق وإطفائه. ملاحظة: هذه أداة دعم قرار وليست بديلاً عن اختبارات المواد الرسمية حسب معيار NASA-STD-6001.\n\n**Limits**\nتأتي هذه الأرقام من نموذج تجريبي (mock/synthetic placeholder)، وليست بيانات ناسا حقيقية.",
+  "answer": "**Verdict**\nالنتيجة هي **burn** (احتراق محتمل).\n\n**Key numbers**\n- احتمال الاحتراق P(burn): 0.72، بفترة ثقة 90% تتراوح بين 0.5 و 0.84.\n- ظروف التشغيل: 17.5% أكسجين، 14.7 psia، وسرعة هواء 4 cm/s في بيئة انعدام الجاذبية (microgravity).\n\n**Evidence**\nالتجارب الأقرب في قاعدة البيانات من اختبارات NASA BASS-II (مرجع NASA/TM-20210011385، الجدول 7.1):\n- `GMT100-T13`\n- `GMT175-T18`\n- `GMT178-T14`\n\n**Operational recommendation**\nبما أن الاحتمال يشير إلى استمرار الاشتعال، يُنصح باتخاذ تدابير وقائية إضافية مثل تقليل كمية المواد المعرضة للاشتعال، عزل مصادر الاشتعال بشكل تام، وتجهيز أنظمة الكشف وإطفاء الحريق للتدخل الفوري. هذه أدوات لدعم القرار وليست بديلاً عن اختبارات المواد الرسمية طبقاً لـ NASA-STD-6001.\n\n**Limits**\nهذا التنبؤ مخصص فقط لقماش SIBAL تحت ظروف الجاذبية الصغرى (microgravity) وبالضغوط ومستويات الأكسجين وسرعات الهواء المذكورة؛ أي تغير في الظروف أو المواد يعتبر خارج نطاق البيانات المتاحة (out of distribution).",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "flow_velocity_cm_s": "5 cm/s",
-        "preset": "Artemis Exploration Atmosphere",
-        "material": "Nomex"
+        "o2_percent": 17.5,
+        "material": "SIBAL",
+        "flow_velocity_cm_s": "4 cm/s",
+        "pressure_psia": 14.7
       },
       "result": {
         "label": "burn",
-        "burn_probability": 0.98,
+        "burn_probability": 0.72,
         "burn_probability_interval": [
-          0.86,
-          1.0
-        ],
-        "value": 0.41,
-        "unit": "mm/s",
-        "quantity": "flame spread rate",
-        "interval": [
-          0.22,
-          0.59
+          0.5,
+          0.84
         ],
         "interval_level": 0.9,
-        "limiting_o2_percent": 26.2,
-        "o2_margin_percent_points": 7.8,
-        "coverage": "partial",
+        "value": 0.72,
+        "interval": [
+          0.5,
+          0.84
+        ],
+        "unit": "probability",
+        "interval_note": "90% bootstrap interval over NASA tests",
+        "bootstrap_interval_raw": [
+          0.5,
+          0.84
+        ],
+        "quantity": "P(burn): probability that a flame is sustained",
+        "spread_rate_mm_s": null,
+        "spread_rate_reason": "no spread-rate measurements in the current NASA extraction",
         "ood_flag": false,
         "ood_reason": null,
-        "evidence": [
-          "MOCK-BASS-II-24",
-          "MOCK-BASS-II-18",
-          "MOCK-BASS-II-12"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
         "ood_reasons": [],
-        "inputs_normalized": {
-          "material": "Nomex",
-          "o2_percent": 34.0,
-          "pressure_psia": 8.2,
-          "pressure_kpa": 56.5,
-          "flow_velocity_cm_s": 5.0,
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "knn_distance": 0.0,
+        "knn_threshold": 1.68,
+        "evidence": [
+          "GMT100-T13",
+          "GMT175-T18",
+          "GMT178-T14"
+        ],
+        "nearest_experiments": [
+          {
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.0
+          },
+          {
+            "id": "GMT175-T18",
+            "point_id": "GMT175-T18_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.4,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 5.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.29
+          },
+          {
+            "id": "GMT178-T14",
+            "point_id": "GMT178-T14_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 16.9,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.85
+          }
+        ],
+        "model": "Gaussian process classifier (RBF + White, standardized)",
+        "inputs": {
+          "material": "SIBAL",
+          "o2_percent": 17.5,
+          "pressure_psia": 14.7,
+          "flow_velocity_cm_s": 4.0,
           "gravity": "micro",
-          "gravity_g": 0.0,
-          "preset": "Artemis Exploration Atmosphere"
+          "sample_width_cm": 2.2
         },
-        "backend": "mock"
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
+        "inputs_normalized": {
+          "material": "SIBAL",
+          "o2_percent": 17.5,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "flow_velocity_cm_s": 4.0,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "real"
       },
-      "ms": 0.3
+      "ms": 466.4
     },
     {
       "name": "nearest_experiments",
       "args": {
-        "flow_velocity_cm_s": "5 cm/s",
-        "material": "Nomex",
-        "preset": "Artemis Exploration Atmosphere"
+        "o2_percent": 17.5,
+        "pressure_psia": 14.7,
+        "material": "SIBAL",
+        "flow_velocity_cm_s": "4 cm/s"
       },
       "result": {
         "value": [
           {
-            "id": "MOCK-BASS-II-24",
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
             "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 34.0,
-            "pressure_psia": 8.2,
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.0
+          },
+          {
+            "id": "GMT175-T18",
+            "point_id": "GMT175-T18_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.4,
+            "pressure_psia": 14.7,
             "flow_velocity_cm_s": 5.0,
+            "sample_width_cm": 2.2,
             "outcome": "burn",
-            "spread_rate_mm_s": 0.6,
-            "distance": 0.0,
-            "synthetic": true
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.29
           },
           {
-            "id": "MOCK-BASS-II-18",
+            "id": "GMT178-T14",
+            "point_id": "GMT178-T14_start",
             "campaign": "BASS-II",
-            "material": "Nomex",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 10.0,
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 16.9,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
             "outcome": "burn",
-            "spread_rate_mm_s": 0.3,
-            "distance": 1.2,
-            "synthetic": true
-          },
-          {
-            "id": "MOCK-BASS-II-12",
-            "campaign": "BASS-II",
-            "material": "PMMA",
-            "o2_percent": 30.0,
-            "pressure_psia": 10.2,
-            "flow_velocity_cm_s": 15.0,
-            "outcome": "burn",
-            "spread_rate_mm_s": 2.6,
-            "distance": 2.46,
-            "synthetic": true
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 0.85
           }
         ],
         "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
         "ood_flag": false,
         "ood_reason": null,
-        "evidence": [
-          "MOCK-BASS-II-24",
-          "MOCK-BASS-II-18",
-          "MOCK-BASS-II-12"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
         "ood_reasons": [],
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "evidence": [
+          "GMT100-T13",
+          "GMT175-T18",
+          "GMT178-T14"
+        ],
+        "note": "Distances use standardized O2, log10 flow and sample width.",
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
         "inputs_normalized": {
-          "material": "Nomex",
-          "o2_percent": 34.0,
-          "pressure_psia": 8.2,
-          "pressure_kpa": 56.5,
-          "flow_velocity_cm_s": 5.0,
+          "material": "SIBAL",
+          "o2_percent": 17.5,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "flow_velocity_cm_s": 4.0,
           "gravity": "micro",
-          "gravity_g": 0.0,
-          "preset": "Artemis Exploration Atmosphere"
+          "gravity_g": 0.0
         },
-        "backend": "mock"
+        "backend": "real"
       },
-      "ms": 0.1
+      "ms": 1.8
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2904,
+  "latency_ms": 3241,
   "model": "gemini-3.5-flash-lite",
-  "backend": "mock",
+  "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "api.py not usable, using mock API"
-  ],
-  "prompt_version": "2026-11-13.6"
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.2"
 }

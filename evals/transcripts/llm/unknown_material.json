@@ -10,11 +10,15 @@
     },
     "OOD first line": {
       "ok": true,
-      "detail": "⚠️ Out of distribution: material 'Kapton' not in training da"
+      "detail": "⚠️ Out of distribution: material 'Kapton tape' not in traini"
     },
     "grounding": {
       "ok": true,
       "detail": "ok"
+    },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
     },
     "content": {
       "ok": true,
@@ -22,40 +26,37 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2013 ms ≤ 25000"
+      "detail": "1674 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: material 'Kapton' not in training data\n\n**Verdict**\nNo prediction is available for Kapton tape. The prediction cannot be trusted because Kapton is not present in the training data. The known materials are PMMA, Nomex, Cotton-fiberglass, and Delrin.\n\n**Key numbers**\nNone available (material not supported).\n\n**Evidence**\nNone available.\n\n**Operational recommendation**\nDo not use unverified materials such as Kapton tape without formal testing. Defer to approved materials (PMMA, Nomex, Cotton-fiberglass, Delrin) that have baseline test data, or perform dedicated NASA-STD-6001 flammability testing for Kapton. Prefer controls that add margin: limit the amount of exposed material, isolate ignition sources, lower O2 where the mission allows, and keep fire detection and suppression ready.\n\n**Limits**\nThe numbers and results come from a placeholder model, not NASA data. This is decision support, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: material 'Kapton tape' not in training data\n\n**Verdict**\nNo prediction can be made. The requested material, Kapton tape, is out of distribution because it is not present in the prediction engine's training data. The known material in the database is SIBAL fabric.\n\n**Key numbers**\nNone available.\n\n**Evidence**\nNone available.\n\n**Operational recommendation**\nDo not rely on this system to evaluate the flammability of Kapton tape. Follow standard NASA-STD-6001 material testing protocols for qualification.\n\n**Limits**\nThe underlying prediction engine has no data for Kapton tape and only supports SIBAL cotton-fiberglass fabric.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
+        "flow_velocity_cm_s": 10,
         "preset": "Artemis Exploration Atmosphere",
-        "material": "Kapton",
-        "flow_velocity_cm_s": 10
+        "material": "Kapton tape"
       },
       "result": {
         "value": null,
         "interval": null,
         "evidence": [],
         "ood_flag": true,
-        "ood_reason": "material 'Kapton' not in training data",
+        "ood_reason": "material 'Kapton tape' not in training data",
         "known_materials": [
-          "PMMA",
-          "Nomex",
-          "Cotton-fiberglass",
-          "Delrin"
+          "SIBAL"
         ],
         "note": "No prediction is available for this material. Do not estimate one.",
         "ood_reasons": [
-          "material 'Kapton' not in training data"
+          "material 'Kapton tape' not in training data"
         ],
         "inputs_normalized": {
-          "material": "Kapton",
+          "material": "Kapton tape",
           "o2_percent": 34.0,
           "pressure_psia": 8.2,
           "pressure_kpa": 56.5,
@@ -64,23 +65,22 @@
           "gravity_g": 0.0,
           "preset": "Artemis Exploration Atmosphere"
         },
-        "backend": "mock"
+        "backend": "real"
       },
-      "ms": 1.2
+      "ms": 0.3
     }
   ],
   "ood": true,
   "ood_reasons": [
-    "material 'Kapton' not in training data"
+    "material 'Kapton tape' not in training data"
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2013,
+  "latency_ms": 1674,
   "model": "gemini-3.5-flash-lite",
-  "backend": "mock",
+  "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "api.py not usable, using mock API"
-  ],
-  "prompt_version": "2026-11-13.6"
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.2"
 }

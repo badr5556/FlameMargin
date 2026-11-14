@@ -1,12 +1,12 @@
 {
   "id": "out_of_range_40pct_5psia",
   "question": "Is it safe at 40% O2 and 5 psia?",
-  "behavior": "5 psia is outside the training range; flagged OOD, not clamped. No material given, so it states an assumption or asks.",
+  "behavior": "40% O2 and 5 psia are outside the data; flagged OOD, not clamped. No material given, so it states an assumption or asks.",
   "passed": true,
   "checks": {
     "tool called": {
       "ok": true,
-      "detail": "2 calls"
+      "detail": "3 calls"
     },
     "OOD first line": {
       "ok": true,
@@ -16,23 +16,27 @@
       "ok": true,
       "detail": "ok"
     },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
+    },
     "latency": {
       "ok": true,
-      "detail": "3175 ms ≤ 25000"
+      "detail": "3652 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: pressure 5 psia outside training range 7.5–15.5 psia\n\n**Verdict**\nUnsafe / Flammable. At 40% O2 and 5 psia (assuming PMMA as the baseline material since none was specified), the environment is well above the limiting oxygen concentration across all evaluated flow velocities, meaning the material will burn.\n\n**Key numbers**\n- Pressure: 5 psia (34.5 kPa)\n- Oxygen concentration: 40%\n- Minimum O2 limit for combustion: 19.8% (at 8 cm/s flow)\n- Flammable flow range: All evaluated flows from 0.5 cm/s to 50 cm/s\n\n**Evidence**\nSupported by nearest experiments: MOCK-BASS-II-12, MOCK-SIBAL-09, MOCK-BASS-II-18.\n\n**Operational recommendation**\nDo not operate at 40% O2 and 5 psia with exposed flammable materials. Lower the oxygen concentration or restrict flammable materials, ensure fire detection and suppression are active, and limit exposed surface areas.\n\n**Limits**\nThe results cannot be fully trusted because the pressure (5 psia) is out of the model's training range (7.5–15.5 psia). Additionally, the numbers come from a placeholder model, not NASA data. Note: This is decision support, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: pressure 5 psia outside training range 14.4–15 psia; O2 40% outside training range 16.4–21%\n\n**Verdict**\nAssumption: Material SIBAL fabric, microgravity, flow velocity not specified. Because the requested condition (40% O2, 5 psia) is strictly outside the training envelope of the model (16.4–21% O2, 14.4–15 psia), no valid prediction can be made and the system cannot determine safety.\n\n**Key numbers**\n- Requested O2: 40%\n- Requested pressure: 5 psia (34.5 kPa)\n- Training range O2: 16.4–21%\n- Training range pressure: 14.4–15 psia\n\n**Evidence**\nNearest experiments in the database (which are all at 14.7 psia and 17.5–18.7% O2): GMT45-T4, GMT45-T15, GMT100-T13. None of the training data cover low pressures or high oxygen concentrations.\n\n**Operational recommendation**\nTreat this condition as completely unverified. Do not rely on model outputs for 40% O2 at 5 psia. Ensure strict adherence to NASA-STD-6001 flammability testing for any hardware or materials exposed to this atmosphere.\n\n**Limits**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. The prediction engine cannot evaluate conditions outside its validated envelope (16.4–21% O2, 14.4–15 psia, microgravity, SIBAL fabric).",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "material": "PMMA",
+        "o2_percent": 40,
         "pressure_psia": 5,
-        "o2_percent": 40
+        "material": "SIBAL"
       },
       "result": {
         "error": {
@@ -46,173 +50,165 @@
     {
       "name": "flammability_boundary",
       "args": {
-        "material": "PMMA",
+        "material": "SIBAL",
         "o2_percent": 40,
         "pressure_psia": 5
       },
       "result": {
-        "value": [
-          {
-            "flow_velocity_cm_s": 0.5,
-            "o2_percent_limit": 28.9
-          },
-          {
-            "flow_velocity_cm_s": 1.0,
-            "o2_percent_limit": 24.4
-          },
-          {
-            "flow_velocity_cm_s": 2.0,
-            "o2_percent_limit": 21.9
-          },
-          {
-            "flow_velocity_cm_s": 3.0,
-            "o2_percent_limit": 21.0
-          },
-          {
-            "flow_velocity_cm_s": 5.0,
-            "o2_percent_limit": 20.2
-          },
-          {
-            "flow_velocity_cm_s": 8.0,
-            "o2_percent_limit": 19.8
-          },
-          {
-            "flow_velocity_cm_s": 10.0,
-            "o2_percent_limit": 19.8
-          },
-          {
-            "flow_velocity_cm_s": 15.0,
-            "o2_percent_limit": 20.0
-          },
-          {
-            "flow_velocity_cm_s": 20.0,
-            "o2_percent_limit": 20.6
-          },
-          {
-            "flow_velocity_cm_s": 30.0,
-            "o2_percent_limit": 22.4
-          },
-          {
-            "flow_velocity_cm_s": 40.0,
-            "o2_percent_limit": 25.1
-          },
-          {
-            "flow_velocity_cm_s": 50.0,
-            "o2_percent_limit": 28.7
-          }
-        ],
-        "interval": [
-          [
-            25.9,
-            31.9
-          ],
-          [
-            21.4,
-            27.4
-          ],
-          [
-            18.9,
-            24.9
-          ],
-          [
-            18.0,
-            24.0
-          ],
-          [
-            17.2,
-            23.2
-          ],
-          [
-            16.8,
-            22.8
-          ],
-          [
-            16.8,
-            22.8
-          ],
-          [
-            17.0,
-            23.0
-          ],
-          [
-            17.6,
-            23.6
-          ],
-          [
-            19.4,
-            25.4
-          ],
-          [
-            22.1,
-            28.1
-          ],
-          [
-            25.7,
-            31.7
-          ]
-        ],
-        "interval_level": 0.9,
-        "min_o2_percent_limit": 19.8,
-        "flow_at_min_limit_cm_s": 8.0,
-        "coverage": "ood",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "interval_level": null,
+        "value": null,
+        "interval": null,
+        "unit": "probability",
+        "quantity": "P(burn)",
+        "spread_rate_mm_s": null,
+        "spread_rate_reason": "no spread-rate measurements in the current NASA extraction",
         "ood_flag": true,
-        "ood_reason": "pressure 5 psia outside training range 7.5–15.5 psia",
-        "evidence": [
-          "MOCK-BASS-II-12",
-          "MOCK-SIBAL-09",
-          "MOCK-BASS-II-18"
-        ],
-        "source": "mock_api (synthetic placeholder, NOT NASA data)",
-        "o2_limit_range_percent": [
-          19.8,
-          28.9
-        ],
-        "at_o2_percent": 40.0,
-        "flows_where_flammable_cm_s": [
-          0.5,
-          1.0,
-          2.0,
-          3.0,
-          5.0,
-          8.0,
-          10.0,
-          15.0,
-          20.0,
-          30.0,
-          40.0,
-          50.0
-        ],
-        "flows_where_not_flammable_cm_s": [],
-        "flammable_at_some_flow": true,
-        "comparison_note": "At 40% O2 the material burns at the flows listed in flows_where_flammable_cm_s and self-extinguishes at the flows in flows_where_not_flammable_cm_s (computed in code).",
+        "ood_reason": "pressure 5 psia outside training range 14.4–15 psia; O2 40% outside training range 16.4–21%",
         "ood_reasons": [
-          "pressure 5 psia outside training range 7.5–15.5 psia"
+          "pressure 5 psia outside training range 14.4–15 psia",
+          "O2 40% outside training range 16.4–21%"
         ],
+        "ood_level": "out_of_envelope",
+        "coverage": "out_of_envelope",
+        "hard_rule_reasons": [
+          "pressure 5 psia outside training range 14.4–15 psia",
+          "O2 40% outside training range 16.4–21%"
+        ],
+        "note": "No boundary outside the tested conditions.",
+        "evidence": [],
+        "nearest_experiments": [],
+        "inputs": {
+          "material": "SIBAL",
+          "pressure_psia": 5.0,
+          "gravity": "micro",
+          "o2_percent": 40.0
+        },
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
         "inputs_normalized": {
-          "material": "PMMA",
+          "material": "SIBAL",
           "o2_percent": 40.0,
           "pressure_psia": 5.0,
           "pressure_kpa": 34.5,
           "gravity": "micro",
           "gravity_g": 0.0
         },
-        "backend": "mock"
+        "backend": "real"
       },
       "ms": 0.2
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "pressure_psia": 5,
+        "material": "SIBAL",
+        "o2_percent": 40
+      },
+      "result": {
+        "value": [
+          {
+            "id": "GMT45-T4",
+            "point_id": "GMT45-T4_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 30.18
+          },
+          {
+            "id": "GMT45-T15",
+            "point_id": "GMT45-T15_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 18.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame survived the flow increase",
+            "test_event": "no blowoff",
+            "derivation_rule": "R3 'No blowoff' with flow increased: burn=1 at (O2, flow_start) because a flame existed before the ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 30.18
+          },
+          {
+            "id": "GMT100-T13",
+            "point_id": "GMT100-T13_start",
+            "campaign": "BASS-II",
+            "material": "SIBAL cotton-fiberglass fabric",
+            "o2_percent": 17.5,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 4.0,
+            "sample_width_cm": 2.2,
+            "outcome": "burn",
+            "observation": "flame present before the flow ramp",
+            "test_event": "quenched",
+            "derivation_rule": "R1 quenched: burn=1 at (O2, flow_start) because a flame existed before the flow ramp",
+            "source": "NASA/TM-20210011385, Section 7.1, Table 7.1",
+            "source_page": "printed pp. 95-96 (PDF report pp. 97-98 approx.)",
+            "distance": 31.88
+          }
+        ],
+        "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "ood_flag": true,
+        "ood_reason": "pressure 5 psia outside training range 14.4–15 psia; O2 40% outside training range 16.4–21%",
+        "ood_reasons": [
+          "pressure 5 psia outside training range 14.4–15 psia",
+          "O2 40% outside training range 16.4–21%"
+        ],
+        "ood_level": "out_of_envelope",
+        "coverage": "out_of_envelope",
+        "hard_rule_reasons": [
+          "pressure 5 psia outside training range 14.4–15 psia",
+          "O2 40% outside training range 16.4–21%"
+        ],
+        "evidence": [
+          "GMT45-T4",
+          "GMT45-T15",
+          "GMT100-T13"
+        ],
+        "note": "Distances use standardized O2, log10 flow and sample width (no flow given: O2 and width only).",
+        "source": "FlameMargin Prediction Engine: model trained on 21 points from 12 NASA BASS-II SIBAL tests (NASA/TM-20210011385, Table 7.1)",
+        "inputs_normalized": {
+          "material": "SIBAL",
+          "o2_percent": 40.0,
+          "pressure_psia": 5.0,
+          "pressure_kpa": 34.5,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "real"
+      },
+      "ms": 2.7
     }
   ],
   "ood": true,
   "ood_reasons": [
-    "pressure 5 psia outside training range 7.5–15.5 psia"
+    "pressure 5 psia outside training range 14.4–15 psia",
+    "O2 40% outside training range 16.4–21%"
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 3175,
+  "latency_ms": 3652,
   "model": "gemini-3.5-flash-lite",
-  "backend": "mock",
+  "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "api.py not usable, using mock API"
-  ],
-  "prompt_version": "2026-11-13.6"
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.2"
 }

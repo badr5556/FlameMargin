@@ -16,13 +16,17 @@
       "ok": true,
       "detail": "ok"
     },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
+    },
     "content": {
       "ok": true,
       "detail": "NASA SVS 31394 | Olson | NTRS"
     },
     "latency": {
       "ok": true,
-      "detail": "1 ms ≤ 1000"
+      "detail": "1 ms ≤ 3000"
     }
   },
   "answer": "**Answer**\n- Without gravity there is no buoyant flow, so a candle flame in still air becomes round instead of the teardrop shape seen on Earth.\n- Saffire was the first time a large fire was set on purpose inside a spacecraft in orbit (an uncrewed cargo ship), with an average forced air flow of about 20 cm/s.\n- In BASS-II on the ISS, with a gentle ventilation flow, some materials kept burning at lower O2 levels than their limits measured in 1 g, which suggests the 1 g screening test is not always conservative.\n\n**Sources**\n- NASA SVS 31394 (NASA Studies Fire in Microgravity) (pending team verification)\n- ICES-2017-224, NTRS 20170008805 (pending team verification)\n- Olson et al., ICES-2019-101; BASS-II Summary Report, NASA/TM-20210011385 (pending team verification)",
@@ -59,7 +63,7 @@
         "facts_version": "2026-11-13.2",
         "usage_note": "Background context only. Never use as a substitute for model predictions. Cite the source."
       },
-      "ms": 0.1
+      "ms": 0.2
     }
   ],
   "ood": false,
@@ -68,10 +72,9 @@
   "mode": "fallback",
   "latency_ms": 1,
   "model": null,
-  "backend": "mock",
+  "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "api.py not usable, using mock API"
-  ],
-  "prompt_version": "2026-11-13.6"
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.2"
 }

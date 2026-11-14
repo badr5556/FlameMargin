@@ -1,11 +1,10 @@
 """Mock Prediction Engine for the FlameMargin Copilot (Layer 3).
 
-WHY THIS FILE EXISTS
-    When this was written, ``src/api.py`` (teammate A, Layer 1) did not exist yet.
-    This module implements the agreed API contract with the same function
-    names, so the Copilot can be built, tested and demoed end to end.
-    ``src/copilot_tools.py`` uses the real ``src/api.py`` automatically as soon
-    as it is importable and exposes the four contract functions.
+WHY THIS FILE EXISTS (test fixture only)
+    Before ``src/api.py`` existed, this module implemented the agreed API contract
+    so the Copilot could be built and tested. The real Prediction Engine now
+    serves the app; this mock is used ONLY by the unit tests
+    (COPILOT_FORCE_MOCK_API=1). It is never a silent fallback in the app.
 
 HONESTY NOTE
     Every number produced here is SYNTHETIC. The formulas are only meant to
