@@ -46,7 +46,7 @@ def _metrics_v2() -> dict[str, Any]:
 
 
 _M = _metrics_v2()
-SOURCE = (f"FlameMargin Prediction Engine v2: model trained on {_M['data']['n_points']} points from {_M['data']['n_tests']} "
+SOURCE = (f"FlameMargin Prediction Engine {_M.get('engine_version', 'v2')}: model trained on {_M['data']['n_points']} points from {_M['data']['n_tests']} "
           "NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)")
 SPREAD_RATE_REASON = "spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material or condition"
 GRAVITY_OOD_REASON = (

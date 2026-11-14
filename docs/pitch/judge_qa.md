@@ -14,13 +14,13 @@ Yes. Every number comes from `src/api.py`, the model trained on those 192 points
 Copilot answer exists in a tool result. The old placeholder engine is now only a unit-test fixture.
 
 ### 3. How good is the model?
-Leave-one-test-out (all points of a test held out together): Brier **0.087** for the logistic regression vs **0.118** for the
-baseline; log-loss 0.306 vs 0.401; AUC 0.82. On SIBAL's own 21 v1 points it is worse than v1 (0.269 vs 0.229), and we say so:
-its flow terms are shared by all materials. It's a proof of pipeline on real NASA data, not a flight-qualification tool.
+Leave-one-test-out (all points of a test held out together): Brier **0.087** for the shipped v2.1 vs **0.118** for the
+baseline, a Brier skill of **+26%**; log-loss 0.320 vs 0.401; AUC 0.80. On SIBAL's own 21 v1 points it is still worse than v1
+(0.258 vs 0.229), and we say so. v2.1 was one pre-registered fix for that (per-material flow terms); it tied v2 overall. It's a proof of pipeline on real NASA data, not a flight-qualification tool.
 
 ### 4. Why is accuracy 0.89 for the model and 0.865 for the baseline?
 Because 86% of the points are burns, so "always burn" is already 0.865 accurate. That's why we pick models by Brier and
-log-loss and also report AUC (0.82 vs 0.06). It's explained in the model card.
+log-loss and also report AUC (0.80 vs 0.06; the baseline's AUC is degenerate, see the model card footnote). It's explained in the model card.
 
 ### 5. Is the ISS cabin (21% oxygen) covered?
 Now yes, for four of the five materials. The report says two SIBAL tests at 21% O2 reached steady spread (GMT96-T7 and -T8,
@@ -55,7 +55,7 @@ the guard blocking a citation the model took from its prompt instead of a tool).
 
 ### 11. Does your model respect physics?
 On oxygen, yes: P(burn) never falls as oxygen rises at fixed flow (0 of 18 checked curves). Where it doesn't: it cannot bend
-into SIBAL's low-flow quenching branch (it says 0.78 at 18.7% O2 and 2.2 cm/s, where GMT45-T4 quenched). It's in the model
+into SIBAL's low-flow quenching branch (it says 0.71 at 18.7% O2 and 2.2 cm/s, where GMT45-T4 quenched; v2 said 0.78). It's in the model
 card and tested.
 
 ### 12. Do you predict flame spread rate?
@@ -84,6 +84,6 @@ the PIs' raw data instead of digitizing them. 3. Add pressure as a feature once 
 |---|---|
 | 192 points, five materials, one pressure | Leave-one-test-out metrics next to a baseline; per-material OOD rules; nearest NASA tests (with quote and page) shown with every answer |
 | One-sided labels: PMMA film all burns, Nomex 3 non-sustained tests | Said in every answer for those materials; the model only repeats those tests |
-| v2 is worse than v1 on SIBAL's own points (0.269 vs 0.229) | Reported in the model card and README; per-material flow terms are the next step |
+| The engine is worse than v1 on SIBAL's own points (v2.1 0.258, v2 0.269, v1 0.229) | Reported in the model card and README; the pre-registered per-material flow fix (v2.1) narrowed it, did not close it |
 | 55 of 192 points are medium-confidence | Labelled per point; a high-confidence-only run is reported (Brier 0.116 vs 0.109) |
 | No fans-off flow value | Not invented; slider labelled "Fans OFF / near-quiescent" with verified context only (C3, C8b) |

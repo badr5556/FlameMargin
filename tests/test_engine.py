@@ -202,14 +202,39 @@ def test_nearest_experiments_are_real_nasa_tests_with_quotes():
 # --------------------------------------------------------------------------- #
 # Metrics honesty
 # --------------------------------------------------------------------------- #
-def test_metrics_report_four_models_baseline_and_selection():
+def test_metrics_report_models_baseline_and_selection():
     m = METRICS
-    assert set(m["models"]) == {"baseline", "logreg", "gpc", "hgb"}
+    assert set(m["models"]) == {"baseline", "logreg", "gpc", "hgb", "logreg21"}
     for r in m["models"].values():
         assert {"accuracy", "balanced_accuracy", "brier", "log_loss", "auc", "n_points"} <= set(r)
-    best = min((n for n in m["models"] if n != "baseline"), key=lambda n: m["models"][n]["brier"])
-    assert m["chosen_model"] == best and m["models"][best]["brier"] < m["models"]["baseline"]["brier"]
+    # v2 selection: lowest LOTO Brier among the v2 candidates, which must beat the baseline.
+    v2 = min(model_v2.V2_CANDIDATES, key=lambda n: m["models"][n]["brier"])
+    pre = m["v21_preregistered"]
+    assert pre["v2_model"] == v2 and m["models"][v2]["brier"] < m["models"]["baseline"]["brier"]
+    # Pre-registered v2.1 ship rule (docs/model_card.md section 5b): ship only if Brier (3 decimals) <= v2's.
+    assert pre["shipped"] == (m["models"]["logreg21"]["brier"] <= m["models"][v2]["brier"])
+    assert m["chosen_model"] == ("logreg21" if pre["shipped"] else v2)
+    assert m["engine_version"] == ("v2.1" if pre["shipped"] else "v2")
     assert "leave-one-test-out" in m["validation"] and m["bootstrap"]["n_resamples"] >= 200
+
+
+def test_v21_is_reported_whether_or_not_it_shipped():
+    h = json.loads((ROOT / "models" / "metrics_history.json").read_text(encoding="utf-8"))
+    assert h["v2"]["chosen_model"] == "logreg" and h["v2_1"]["model"] == "logreg21"
+    assert h["shipped"] == METRICS["chosen_model"]
+    for k in ("chosen", "per_family_brier", "on_v1_points", "monotonicity", "extinguished_points_below_p_0_5"):
+        assert k in h["v2_1"]
+    assert set(model_v2.FLOW_SHAPE_FAMILIES) == {f for f, v in METRICS["data"]["families"].items()
+                                                 if v["n_burn"] and v["n_extinguished"] >= 8}
+    assert "## 5b. Pre-registered variant: engine v2.1" in (ROOT / "docs" / "model_card.md").read_text(encoding="utf-8")
+
+
+def test_artifact_unpickles_without_a_rebuild():
+    import sklearn
+
+    if METRICS["environment"]["scikit_learn"] != sklearn.__version__:
+        pytest.skip("artifact was pickled with another scikit-learn version; the API rebuilds it by design")
+    assert api.get_engine().art.get("retrained_at_load") is None
 
 
 def test_metrics_match_the_committed_points():

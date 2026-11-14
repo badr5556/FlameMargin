@@ -1,5 +1,7 @@
 {
-  "note": "LOTO metrics. v1 = 21 SIBAL points from 12 tests (Table 7.1). v2 = all BASS-II families (Appendix A + Tables 7.1 and 5.1). 'v2 on the v1 points' scores v2's out-of-fold predictions on the same 21 points.",
+  "note": "LOTO metrics. v1 = 21 SIBAL points from 12 tests (Table 7.1). v2 = all BASS-II families (Appendix A + Tables 7.1 and 5.1). v2.1 = v2 + per-material flow shape for SIBAL fabric and PMMA slab (pre-registered, docs/model_card.md section 5b). 'on the v1 points' scores out-of-fold predictions on the same 21 points.",
+  "shipped": "logreg21",
+  "engine_version": "v2.1",
   "v1": {
     "chosen_model": "gpc",
     "n_points": 21,
@@ -50,6 +52,13 @@
       "log_loss": 0.306,
       "auc": 0.82,
       "n_points": 192
+    },
+    "per_family_brier": {
+      "SIBAL_fabric": 0.208,
+      "PMMA_film": 0.0,
+      "PMMA_slab": 0.097,
+      "PMMA_rod": 0.046,
+      "Nomex": 0.001
     }
   },
   "v2_on_v1_points": {
@@ -68,6 +77,53 @@
       "log_loss": 0.746,
       "auc": 0.627,
       "n_points": 21
+    }
+  },
+  "v2_1": {
+    "model": "logreg21",
+    "shipped": true,
+    "ship_rule": "ship v2.1 only if its overall LOTO Brier (3 decimals) <= v2's",
+    "n_points": 192,
+    "chosen": {
+      "accuracy": 0.891,
+      "balanced_accuracy": 0.612,
+      "brier": 0.087,
+      "log_loss": 0.32,
+      "auc": 0.803,
+      "n_points": 192
+    },
+    "per_family_brier": {
+      "SIBAL_fabric": 0.204,
+      "PMMA_film": 0.0,
+      "PMMA_slab": 0.1,
+      "PMMA_rod": 0.047,
+      "Nomex": 0.001
+    },
+    "on_v1_points": {
+      "accuracy": 0.524,
+      "balanced_accuracy": 0.505,
+      "brier": 0.258,
+      "log_loss": 0.833,
+      "auc": 0.664,
+      "n_points": 21
+    },
+    "monotonicity": {
+      "curves": 18,
+      "violated": 0,
+      "max_drop": 0.0,
+      "worst_curve": null
+    },
+    "extinguished_points_below_p_0_5": {
+      "logreg": {
+        "n_extinguished": 26,
+        "in_sample_final_model": 7,
+        "out_of_fold": 6
+      },
+      "logreg21": {
+        "n_extinguished": 26,
+        "in_sample_final_model": 7,
+        "out_of_fold": 6
+      }
     }
   }
 }

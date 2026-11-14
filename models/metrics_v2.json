@@ -1,6 +1,6 @@
 {
   "generated_utc": "2026-11-14",
-  "engine_version": "v2",
+  "engine_version": "v2.1",
   "data": {
     "points_file": "data/processed/flame_points_v2.csv",
     "points_sha256": "6cb15b94ee4b5ae776bc7e8763d358053cebc6633165c0d385005232f4ac9ba4",
@@ -211,6 +211,31 @@
       "cfg_opposed",
       "cfg_concurrent",
       "cfg_stagnation"
+    ],
+    "logreg21": [
+      "o2_pct",
+      "log10_flow",
+      "log10_flow_sq",
+      "log10_thickness",
+      "thickness_missing",
+      "size_z",
+      "fam_SIBAL_fabric",
+      "fam_PMMA_film",
+      "fam_PMMA_slab",
+      "fam_PMMA_rod",
+      "fam_Nomex",
+      "cfg_opposed",
+      "cfg_concurrent",
+      "cfg_stagnation",
+      "o2_x_SIBAL_fabric",
+      "o2_x_PMMA_film",
+      "o2_x_PMMA_slab",
+      "o2_x_PMMA_rod",
+      "o2_x_Nomex",
+      "log10_flow_x_SIBAL_fabric",
+      "log10_flow_sq_x_SIBAL_fabric",
+      "log10_flow_x_PMMA_slab",
+      "log10_flow_sq_x_PMMA_slab"
     ]
   },
   "validation": "leave-one-test-out (LeaveOneGroupOut grouped by test_id)",
@@ -252,6 +277,16 @@
       "brier": 0.1,
       "log_loss": 0.34,
       "auc": 0.775,
+      "n_points": 192,
+      "n_burn": 166
+    },
+    "logreg21": {
+      "label": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
+      "accuracy": 0.891,
+      "balanced_accuracy": 0.612,
+      "brier": 0.087,
+      "log_loss": 0.32,
+      "auc": 0.803,
       "n_points": 192,
       "n_burn": 166
     }
@@ -444,14 +479,84 @@
         "n_points": 3,
         "n_burn": 0
       }
+    },
+    "logreg21": {
+      "SIBAL_fabric": {
+        "accuracy": 0.677,
+        "balanced_accuracy": 0.526,
+        "brier": 0.204,
+        "log_loss": 0.669,
+        "auc": 0.681,
+        "n_points": 31,
+        "n_burn": 21
+      },
+      "PMMA_film": {
+        "accuracy": 1.0,
+        "balanced_accuracy": null,
+        "brier": 0.0,
+        "log_loss": 0.005,
+        "auc": null,
+        "n_points": 27,
+        "n_burn": 27
+      },
+      "PMMA_slab": {
+        "accuracy": 0.889,
+        "balanced_accuracy": 0.591,
+        "brier": 0.1,
+        "log_loss": 0.355,
+        "auc": 0.744,
+        "n_points": 81,
+        "n_burn": 70
+      },
+      "PMMA_rod": {
+        "accuracy": 0.96,
+        "balanced_accuracy": 0.5,
+        "brier": 0.047,
+        "log_loss": 0.233,
+        "auc": 0.24,
+        "n_points": 50,
+        "n_burn": 48
+      },
+      "Nomex": {
+        "accuracy": 1.0,
+        "balanced_accuracy": null,
+        "brier": 0.001,
+        "log_loss": 0.026,
+        "auc": null,
+        "n_points": 3,
+        "n_burn": 0
+      }
     }
   },
   "selection_rule": "lowest LOTO Brier score; if none beats the baseline, ship logreg",
-  "chosen_model": "logreg",
+  "chosen_model": "logreg21",
   "chosen_beats_baseline": true,
   "selection_note": "Lowest LOTO Brier: logreg (0.087) vs baseline (0.118).",
+  "v21_preregistered": {
+    "spec": "docs/model_card.md section 5b (committed before fitting)",
+    "change": "material x log10(flow) and x log10(flow)^2 for SIBAL_fabric, PMMA_slab; C = 1.0 unchanged",
+    "ship_rule": "ship v2.1 only if its overall LOTO Brier (3 decimals) <= v2's",
+    "v2_model": "logreg",
+    "v2_brier": 0.087,
+    "v21_brier": 0.087,
+    "v2_brier_5dp": 0.08657,
+    "v21_brier_5dp": 0.0871,
+    "shipped": true,
+    "extinguished_points_below_p_0_5": {
+      "logreg": {
+        "n_extinguished": 26,
+        "in_sample_final_model": 7,
+        "out_of_fold": 6
+      },
+      "logreg21": {
+        "n_extinguished": 26,
+        "in_sample_final_model": 7,
+        "out_of_fold": 6
+      }
+    }
+  },
   "calibration_oof": {
-    "model": "logreg",
+    "model": "logreg21",
     "table": [
       {
         "bin": "0.0-0.2",
@@ -467,24 +572,24 @@
       },
       {
         "bin": "0.4-0.6",
-        "n": 13,
-        "mean_predicted": 0.516,
-        "observed_burn_rate": 0.462
+        "n": 18,
+        "mean_predicted": 0.537,
+        "observed_burn_rate": 0.5
       },
       {
         "bin": "0.6-0.8",
-        "n": 30,
-        "mean_predicted": 0.689,
-        "observed_burn_rate": 0.767
+        "n": 26,
+        "mean_predicted": 0.698,
+        "observed_burn_rate": 0.769
       },
       {
         "bin": "0.8-1.0",
-        "n": 146,
-        "mean_predicted": 0.945,
-        "observed_burn_rate": 0.938
+        "n": 145,
+        "mean_predicted": 0.949,
+        "observed_burn_rate": 0.945
       }
     ],
-    "mean_predicted_p_burn": 0.861,
+    "mean_predicted_p_burn": 0.862,
     "observed_burn_rate": 0.865
   },
   "stress_test_leave_one_family_out": {
@@ -628,6 +733,53 @@
         "n_points": 3,
         "n_burn": 0
       }
+    },
+    "logreg21": {
+      "SIBAL_fabric": {
+        "accuracy": 0.677,
+        "balanced_accuracy": 0.5,
+        "brier": 0.316,
+        "log_loss": 1.524,
+        "auc": 0.633,
+        "n_points": 31,
+        "n_burn": 21
+      },
+      "PMMA_film": {
+        "accuracy": 1.0,
+        "balanced_accuracy": null,
+        "brier": 0.004,
+        "log_loss": 0.042,
+        "auc": null,
+        "n_points": 27,
+        "n_burn": 27
+      },
+      "PMMA_slab": {
+        "accuracy": 0.864,
+        "balanced_accuracy": 0.5,
+        "brier": 0.12,
+        "log_loss": 0.456,
+        "auc": 0.719,
+        "n_points": 81,
+        "n_burn": 70
+      },
+      "PMMA_rod": {
+        "accuracy": 0.1,
+        "balanced_accuracy": 0.531,
+        "brier": 0.668,
+        "log_loss": 2.291,
+        "auc": 0.708,
+        "n_points": 50,
+        "n_burn": 48
+      },
+      "Nomex": {
+        "accuracy": 0.0,
+        "balanced_accuracy": null,
+        "brier": 0.996,
+        "log_loss": 6.308,
+        "auc": null,
+        "n_points": 3,
+        "n_burn": 0
+      }
     }
   },
   "monotonicity_check": {
@@ -644,6 +796,12 @@
       "worst_curve": null
     },
     "hgb": {
+      "curves": 18,
+      "violated": 0,
+      "max_drop": 0.0,
+      "worst_curve": null
+    },
+    "logreg21": {
       "curves": 18,
       "violated": 0,
       "max_drop": 0.0,
@@ -710,6 +868,26 @@
         "n_points": 137,
         "n_burn": 112
       }
+    },
+    "logreg21": {
+      "trained_on_high_only": {
+        "accuracy": 0.839,
+        "balanced_accuracy": 0.669,
+        "brier": 0.117,
+        "log_loss": 0.414,
+        "auc": 0.781,
+        "n_points": 137,
+        "n_burn": 112
+      },
+      "trained_on_high_and_medium_scored_on_high": {
+        "accuracy": 0.854,
+        "balanced_accuracy": 0.616,
+        "brier": 0.109,
+        "log_loss": 0.394,
+        "auc": 0.796,
+        "n_points": 137,
+        "n_burn": 112
+      }
     }
   },
   "on_v1_points": {
@@ -750,6 +928,15 @@
         "auc": 0.691,
         "n_points": 21,
         "n_burn": 11
+      },
+      "logreg21": {
+        "accuracy": 0.524,
+        "balanced_accuracy": 0.505,
+        "brier": 0.258,
+        "log_loss": 0.833,
+        "auc": 0.664,
+        "n_points": 21,
+        "n_burn": 11
       }
     },
     "note": "v2 out-of-fold predictions (trained on all families) scored on the 21 v1 SIBAL points"
@@ -788,6 +975,15 @@
       "brier": 0.187,
       "log_loss": 0.55,
       "auc": 0.738,
+      "n_points": 31,
+      "n_burn": 21
+    },
+    "logreg21": {
+      "accuracy": 0.677,
+      "balanced_accuracy": 0.526,
+      "brier": 0.204,
+      "log_loss": 0.669,
+      "auc": 0.681,
       "n_points": 31,
       "n_burn": 21
     }
@@ -1012,5 +1208,5 @@
     "numpy": "2.5.3",
     "pandas": "3.0.5"
   },
-  "artifact_version": "2.0"
+  "artifact_version": "2.1"
 }

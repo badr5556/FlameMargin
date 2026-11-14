@@ -114,6 +114,7 @@ def _render_method_tab() -> None:
         f"LOTO Brier {h['v2']['chosen']['brier']} (baseline {h['v2']['baseline']['brier']}).\n"
         f"- On the same 21 v1 points, v2's out-of-fold Brier is {v2o['brier']} (v1: {v1['brier']})."
     )
+    _render_v21_section(m, h)
     mono = m["monotonicity_check"][m["chosen_model"]]
     st.markdown(
         "### Uncertainty, OOD and sanity checks\n"
@@ -138,6 +139,41 @@ def _render_method_tab() -> None:
     )
     with st.expander("All labelled points (with rule, quote and page)"):
         st.dataframe(load_points_v2(training_only=False), hide_index=True, use_container_width=True)
+
+
+def _render_v21_section(m: dict, h: dict) -> None:
+    """Engine v2.1: the single pre-registered variant, reported next to v2 whether or not it shipped."""
+    pre = m.get("v21_preregistered")
+    if not pre:
+        return
+    v2, v21 = m["models"][pre["v2_model"]], m["models"]["logreg21"]
+    ext = pre["extinguished_points_below_p_0_5"]
+    pf2, pf21 = m["per_family"][pre["v2_model"]], m["per_family"]["logreg21"]
+    on1 = m["on_v1_points"]["models"]
+    rows = [
+        ("Brier ↓ (3 decimals: the ship metric)", v2["brier"], v21["brier"]),
+        ("Brier ↓ (5 decimals)", pre.get("v2_brier_5dp"), pre.get("v21_brier_5dp")),
+        ("Log-loss ↓", v2["log_loss"], v21["log_loss"]),
+        ("AUC", v2["auc"], v21["auc"]),
+        ("Brier on SIBAL fabric", pf2["SIBAL_fabric"]["brier"], pf21["SIBAL_fabric"]["brier"]),
+        ("Brier on PMMA slab", pf2["PMMA_slab"]["brier"], pf21["PMMA_slab"]["brier"]),
+        (f"Brier on the 21 v1 points (v1: {h['v1']['chosen']['brier']})", on1[pre["v2_model"]]["brier"], on1["logreg21"]["brier"]),
+        ("O2 curves that decrease", f"{m['monotonicity_check'][pre['v2_model']]['violated']} / {m['monotonicity_check'][pre['v2_model']]['curves']}",
+         f"{m['monotonicity_check']['logreg21']['violated']} / {m['monotonicity_check']['logreg21']['curves']}"),
+        ("Extinguished NASA points with P(burn) < 0.5 (final model / out of fold)",
+         f"{ext['logreg']['in_sample_final_model']} / {ext['logreg']['out_of_fold']} of {ext['logreg']['n_extinguished']}",
+         f"{ext['logreg21']['in_sample_final_model']} / {ext['logreg21']['out_of_fold']} of {ext['logreg21']['n_extinguished']}"),
+    ]
+    st.markdown("### Engine v2.1: one pre-registered variant (per-material flow shape)")
+    st.markdown(
+        f"Written and committed before fitting: add `material × log10(flow)` and `× log10(flow)²` terms only for SIBAL fabric "
+        f"and PMMA slab (both classes, ≥ 8 extinctions), same C = 1.0, same leave-one-test-out protocol. Ship rule: "
+        f"*{pre['ship_rule']}*. Result: **{'shipped' if pre['shipped'] else 'not shipped'}**."
+    )
+    st.dataframe(pd.DataFrame([{"leave-one-test-out": r[0], "v2": str(r[1]), "v2.1": str(r[2])} for r in rows]),
+                 hide_index=True, use_container_width=True)
+    st.caption("A tie on the ship metric, not an improvement: v2.1 is slightly better on SIBAL and the v1 points, slightly worse "
+               "on log-loss and AUC, and moves no extinguished NASA point below P = 0.5. No other variant was fitted.")
 
 
 def main() -> None:

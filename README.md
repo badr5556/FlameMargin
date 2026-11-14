@@ -8,13 +8,13 @@ Team IGNISPHERE · NASA Space Apps Cairo 2026 · Challenge: *Flame in Freefall: 
 
 ## [▶ Live demo: flamemargin.streamlit.app](https://flamemargin.streamlit.app/)
 
-> ### Status (2026-11-14, engine v2)
+> ### Status (2026-11-14, engine v2.1)
 > **What is real**
 > - **All 126 BASS-II tests transcribed** from NASA/TM-20210011385 Appendix A (Tables A.1–A.6), every row compared with the PDF;
 >   an independent 20% re-check with a second extractor passed 26/26 rows; the SIBAL Table 7.1 rows match Zhao et al. 2015 (31/31).
-> - **Prediction Engine v2 on real NASA data:** P(burn) for **five materials** (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex)
+> - **Prediction Engine v2.1 on real NASA data:** P(burn) for **five materials** (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex)
 >   from **192 labelled points from 85 tests**, each with a verbatim quote and page from the report. Leave-one-test-out Brier
->   **0.087 vs 0.118** for the baseline, a Brier skill of **+26%** (AUC 0.82; [model card](docs/model_card.md)), 90% bootstrap intervals, per-material OOD guard.
+>   **0.087 vs 0.118** for the baseline, a Brier skill of **+26%** (AUC 0.80; [model card](docs/model_card.md)), 90% bootstrap intervals, per-material OOD guard.
 > - **ISS air (21% O2) is now inside the data** for SIBAL fabric, PMMA film, PMMA slab and Nomex near its tests. The Artemis
 >   Exploration Atmosphere stays **out of distribution for every material**.
 > - **Flame spread rate for PMMA slabs** from Table 5.1 (39 measured rates, LOTO RMSE 0.175 vs 0.269 log10 units for the baseline).
@@ -25,7 +25,8 @@ Team IGNISPHERE · NASA Space Apps Cairo 2026 · Challenge: *Flame in Freefall: 
 > - **1 atm and ISS microgravity only**: no pressure or gravity dependence can be learned from BASS-II.
 > - PMMA film points are all burns and Nomex points all non-sustained: for those the model repeats the tests, it cannot locate a
 >   boundary. PMMA rods were tested only up to 20.8% O2.
-> - On SIBAL's own v1 points v2 is worse than v1 (Brier 0.269 vs 0.229): its flow terms are shared by all materials.
+> - On SIBAL's own v1 points the engine is still worse than v1 (Brier 0.258 vs 0.229). v2.1 added a pre-registered per-material
+>   flow shape for SIBAL and PMMA slab: it ties v2 overall (0.087) and narrows that gap (v2: 0.269), but does not close it.
 > - Decision support, not a precise predictor and not a flight-qualification tool.
 
 ## The problem
@@ -66,7 +67,7 @@ excluded points in grey, and the Artemis EA marker far outside the data. The app
 ```mermaid
 flowchart LR
     D[("NASA/TM-20210011385<br/>Appendix A: 126 tests<br/>Tables 7.1, 5.1")] --> P["Data pipeline<br/>written rules → 192 points<br/>(quote + page each)"]
-    P --> L1["Layer 1: Prediction Engine v2<br/>src/api.py · 5 materials · logistic regression<br/>LOTO-validated · bootstrap 90% · per-material OOD"]
+    P --> L1["Layer 1: Prediction Engine v2.1<br/>src/api.py · 5 materials · logistic regression<br/>LOTO-validated · bootstrap 90% · per-material OOD"]
     L1 --> L2["Layer 2: Flammability Map<br/>src/map_ui.py · P(burn) heatmap,<br/>0.5 boundary, envelope, NASA points"]
     L1 --> L3["Layer 3: Fire Safety Copilot<br/>src/copilot*.py · Gemini + tools<br/>grounding · OOD-first · fallback"]
     L2 --> APP["app.py: 4-tab Streamlit app<br/>(live link)"]
@@ -119,14 +120,15 @@ sequenceDiagram
 
 ## Model results (leave-one-test-out; `models/metrics_v2.json`, history in `models/metrics_history.json`)
 
-**v2: 192 points from 85 tests, five materials**
+**v2.1: 192 points from 85 tests, five materials**
 
 | Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | AUC¹ |
 |---|---|---|---|---|---|
 | Prior baseline | 0.865 | 0.500 | 0.118 | 0.401 | 0.061 |
-| **Logistic regression (L2, O2 × material), shipped** | **0.891** | **0.612** | **0.087** | **0.306** | **0.820** |
+| Logistic regression (L2, O2 × material) = v2 | 0.891 | 0.612 | 0.087 | 0.306 | 0.820 |
 | Gaussian process classifier | 0.865 | 0.500 | 0.117 | 0.398 | 0.100 |
 | Gradient boosting (monotone in O2) | 0.870 | 0.568 | 0.100 | 0.340 | 0.775 |
+| **v2.1: v2 + per-material flow shape (pre-registered), shipped** | **0.891** | **0.612** | **0.087** | **0.320** | **0.803** |
 
 ¹ Prior baseline and GP are near-constant predictors under leave-one-test-out; their AUC is degenerate (<0.5) because the held-out test shifts the training prior. Compare on Brier and log-loss.
 
@@ -137,17 +139,22 @@ sequenceDiagram
 | v1 | 21 SIBAL points, 12 tests (Table 7.1) | GP | 0.229 (0.263) |
 | v2 | 192 points, 85 tests, 5 materials (Appendix A + Tables 7.1, 5.1) | logistic regression | 0.087 (0.118) |
 | v2 on the same 21 v1 points | | logistic regression | 0.269 (0.369) |
+| v2.1 | 192 points, 85 tests, 5 materials | v2 + per-material flow shape (SIBAL, PMMA slab) | 0.087 (0.118) |
+| v2.1 on the same 21 v1 points | | v2.1 | 0.258 (0.369) |
 
 Chosen by lowest Brier (rule fixed before training). Accuracy is not informative here (86% of the points are burns). No model
 decreases P(burn) as O2 rises (0 of 18 O2 curves). **Honest reading:** v2 is the broader, better-verified screen, but on SIBAL's
-own v1 points it is worse than v1, because its flow terms are shared by all materials and cannot bend into SIBAL's low-flow
-quenching branch. Per-material results, calibration, the stress test and this limit are in the [model card](docs/model_card.md).
+own v1 points it was worse than v1, because its flow terms are shared by all materials and cannot bend into SIBAL's low-flow
+quenching branch. We **pre-registered one fix before fitting it** (v2.1: per-material flow terms for the two families with ≥ 8
+extinctions) and a ship rule (Brier ≤ v2's). It tied at 0.087 (5 decimals: 0.0871 vs 0.0866), so it shipped by that rule; it is
+a tie, not an improvement: better on SIBAL, worse on log-loss and AUC, and it moves no extinguished NASA point below P = 0.5.
+Per-material results, calibration, the stress test and this limit are in the [model card](docs/model_card.md) (section 5b).
 
 ## Mission presets (at 10 cm/s; `src/api.py`)
 
 | Preset | Pressure | O2 | Gravity | SIBAL fabric | PMMA film | PMMA slab | PMMA rod | Nomex | Source |
 |---|---|---|---|---|---|---|---|---|---|
-| ISS cabin | 14.7 psia | 21% | µg | in distribution, burn (P 0.96) | in distribution, burn | in distribution, burn (P 0.93) | **OOD** (tested ≤ 20.8% O2) | in distribution, no sustained flame (P 0.02) | team brief; C12 (pending verification) |
+| ISS cabin | 14.7 psia | 21% | µg | in distribution, burn (P 0.97) | in distribution, burn | in distribution, burn (P 0.94) | **OOD** (tested ≤ 20.8% O2) | in distribution, no sustained flame (P 0.02) | team brief; C12 (pending verification) |
 | Artemis Exploration Atmosphere | 8.2 psia | 34% | µg | **OOD** | **OOD** | **OOD** | **OOD** | **OOD** | C4, NTRS 20240003211 |
 | Lunar surface habitat | 8.2 psia | 34% | 1/6 g | **OOD** | **OOD** | **OOD** | **OOD** | **OOD** | C4 + C10 |
 

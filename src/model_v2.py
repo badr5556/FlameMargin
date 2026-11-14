@@ -54,7 +54,7 @@ METRICS_V2 = MODELS_DIR / "metrics_v2.json"
 METRICS_V1 = MODELS_DIR / "metrics.json"
 HISTORY = MODELS_DIR / "metrics_history.json"
 
-ARTIFACT_VERSION = "2.0"
+ARTIFACT_VERSION = "2.1"
 SEED = 42
 N_BOOTSTRAP = 300
 INTERVAL_LEVEL = 0.90
@@ -71,6 +71,11 @@ SIZE_KIND = {"SIBAL_fabric": "width_cm", "PMMA_film": "width_cm", "PMMA_slab": "
 BASE_FEATURES = (["o2_pct", "log10_flow", "log10_flow_sq", "log10_thickness", "thickness_missing", "size_z"]
                  + [f"fam_{f}" for f in FAMILIES] + [f"cfg_{c}" for c in CONFIGS])
 INTERACTIONS = [f"o2_x_{f}" for f in FAMILIES]
+# Engine v2.1 (pre-registered in docs/model_card.md section 5b): per-material flow shape, only for the families with
+# both classes and >= 8 extinguished training points. All other families keep the shared global flow terms.
+FLOW_SHAPE_FAMILIES = ["SIBAL_fabric", "PMMA_slab"]
+FLOW_INTERACTIONS = [f"{t}_x_{f}" for f in FLOW_SHAPE_FAMILIES for t in ("log10_flow", "log10_flow_sq")]
+V2_CANDIDATES = ["logreg", "gpc", "hgb"]  # the v2 comparison; "logreg21" is the single pre-registered v2.1 variant
 DIST_FEATURES = ["o2_pct", "log10_flow", "size_z", "log10_thickness"]
 
 MODEL_LABELS = {
@@ -78,8 +83,10 @@ MODEL_LABELS = {
     "logreg": "Logistic regression (L2, o2 x material interaction)",
     "gpc": "Gaussian process classifier (RBF + White)",
     "hgb": "Gradient boosting (depth <= 3, monotone increasing in O2)",
+    "logreg21": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
 }
-MODEL_FEATURES = {"baseline": BASE_FEATURES, "logreg": BASE_FEATURES + INTERACTIONS, "gpc": BASE_FEATURES, "hgb": BASE_FEATURES}
+MODEL_FEATURES = {"baseline": BASE_FEATURES, "logreg": BASE_FEATURES + INTERACTIONS, "gpc": BASE_FEATURES, "hgb": BASE_FEATURES,
+                  "logreg21": BASE_FEATURES + INTERACTIONS + FLOW_INTERACTIONS}
 
 
 # --------------------------------------------------------------------------- #
@@ -141,6 +148,9 @@ def feature_frame_v2(o2, flow, family, configuration, thickness_mm=None, size=No
         out[f"cfg_{c}"] = (cfg == c).astype(float)
     for f in FAMILIES:
         out[f"o2_x_{f}"] = o2 * out[f"fam_{f}"]
+    for f in FLOW_SHAPE_FAMILIES:
+        out[f"log10_flow_x_{f}"] = lf * out[f"fam_{f}"]
+        out[f"log10_flow_sq_x_{f}"] = lf ** 2 * out[f"fam_{f}"]
     return pd.DataFrame(out)
 
 
@@ -155,7 +165,7 @@ def features_of_points(pts: pd.DataFrame, stats: dict[str, list[float]]) -> pd.D
 def make_model(name: str):
     if name == "baseline":
         return DummyClassifier(strategy="prior")
-    if name == "logreg":
+    if name in ("logreg", "logreg21"):  # same C = 1.0 for v2.1 (pre-registered: no new tuning)
         return make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000))
     if name == "gpc":
         kernel = ConstantKernel(1.0) * RBF(length_scale=1.0) + WhiteKernel(noise_level=1e-2)
@@ -350,8 +360,11 @@ def train(n_bootstrap: int = N_BOOTSTRAP, verbose: bool = True) -> tuple[dict[st
             print(f"{name:9} acc={r['accuracy']:.3f} bal={r['balanced_accuracy']} brier={r['brier']:.3f} "
                   f"logloss={r['log_loss']:.3f} auc={r['auc']}")
     candidates = [n for n in MODEL_LABELS if n != "baseline"]
-    best = min(candidates, key=lambda n: results[n]["brier"])
-    chosen = best if results[best]["brier"] < results["baseline"]["brier"] else "logreg"
+    best = min(V2_CANDIDATES, key=lambda n: results[n]["brier"])
+    chosen_v2 = best if results[best]["brier"] < results["baseline"]["brier"] else "logreg"
+    # Pre-registered v2.1 ship rule: ship only if its overall LOTO Brier (3 decimals) is <= v2's.
+    ship_v21 = results["logreg21"]["brier"] <= results[chosen_v2]["brier"]
+    chosen = "logreg21" if ship_v21 else chosen_v2
 
     # Sensitivity: high-confidence points only (LOTO on those points) vs high+medium scored on the same points.
     hi = pts[pts["label_confidence"] == "high"].reset_index(drop=True)
@@ -379,9 +392,13 @@ def train(n_bootstrap: int = N_BOOTSTRAP, verbose: bool = True) -> tuple[dict[st
     sibal = fam == "SIBAL_fabric"
 
     po = oof[chosen]
+    ext = y == 0
+    extinguished_below = {name: {"n_extinguished": int(ext.sum()),
+                                 "in_sample_final_model": int((finals[name].proba(features_of_points(pts, finals[name].stats))[ext] < 0.5).sum()),
+                                 "out_of_fold": int((oof[name][ext] < 0.5).sum())} for name in ("logreg", "logreg21")}
     metrics = {
         "generated_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d"),
-        "engine_version": "v2",
+        "engine_version": "v2.1" if chosen == "logreg21" else "v2",
         "data": {
             "points_file": str(POINTS_V2.relative_to(ROOT)), "points_sha256": _sha256(POINTS_V2),
             "source": "NASA/TM-20210011385: Appendix A Tables A.1-A.6 (all BASS-II tests), Table 7.1 (SIBAL), Table 5.1 (Miller)",
@@ -398,6 +415,16 @@ def train(n_bootstrap: int = N_BOOTSTRAP, verbose: bool = True) -> tuple[dict[st
         "selection_rule": "lowest LOTO Brier score; if none beats the baseline, ship logreg",
         "chosen_model": chosen, "chosen_beats_baseline": bool(results[chosen]["brier"] < results["baseline"]["brier"]),
         "selection_note": f"Lowest LOTO Brier: {best} ({results[best]['brier']}) vs baseline ({results['baseline']['brier']}).",
+        "v21_preregistered": {
+            "spec": "docs/model_card.md section 5b (committed before fitting)",
+            "change": "material x log10(flow) and x log10(flow)^2 for " + ", ".join(FLOW_SHAPE_FAMILIES) + "; C = 1.0 unchanged",
+            "ship_rule": "ship v2.1 only if its overall LOTO Brier (3 decimals) <= v2's",
+            "v2_model": chosen_v2, "v2_brier": results[chosen_v2]["brier"], "v21_brier": results["logreg21"]["brier"],
+            "v2_brier_5dp": round(float(brier_score_loss(y, oof[chosen_v2])), 5),
+            "v21_brier_5dp": round(float(brier_score_loss(y, oof["logreg21"])), 5),
+            "shipped": bool(ship_v21),
+            "extinguished_points_below_p_0_5": extinguished_below,
+        },
         "calibration_oof": {"model": chosen, "table": reliability_table(y, po),
                             "mean_predicted_p_burn": round(float(po.mean()), 3), "observed_burn_rate": round(float(y.mean()), 3)},
         "stress_test_leave_one_family_out": stress,
@@ -434,17 +461,29 @@ def train(n_bootstrap: int = N_BOOTSTRAP, verbose: bool = True) -> tuple[dict[st
 
 def history(metrics_v2: dict[str, Any]) -> dict[str, Any]:
     v1 = json.loads(METRICS_V1.read_text(encoding="utf-8"))
-    c1, c2 = v1["chosen_model"], metrics_v2["chosen_model"]
+    c1 = v1["chosen_model"]
+    pre = metrics_v2["v21_preregistered"]
+    c2 = pre["v2_model"]  # the v2 model (always reported, shipped or not)
     pick = lambda r: {k: r.get(k) for k in ("accuracy", "balanced_accuracy", "brier", "log_loss", "auc", "n_points")}  # noqa: E731
+    per = lambda name: {f: r["brier"] for f, r in metrics_v2["per_family"][name].items()}  # noqa: E731
     return {
         "note": "LOTO metrics. v1 = 21 SIBAL points from 12 tests (Table 7.1). v2 = all BASS-II families "
-                "(Appendix A + Tables 7.1 and 5.1). 'v2 on the v1 points' scores v2's out-of-fold predictions on the same 21 points.",
+                "(Appendix A + Tables 7.1 and 5.1). v2.1 = v2 + per-material flow shape for SIBAL fabric and PMMA slab "
+                "(pre-registered, docs/model_card.md section 5b). 'on the v1 points' scores out-of-fold predictions on the same 21 points.",
+        "shipped": metrics_v2["chosen_model"], "engine_version": metrics_v2["engine_version"],
         "v1": {"chosen_model": c1, "n_points": v1["data"]["n_points"], "n_tests": v1["data"]["n_tests"], "materials": ["SIBAL_fabric"],
                "baseline": pick(v1["models"]["baseline"]), "chosen": pick(v1["models"][c1])},
         "v2": {"chosen_model": c2, "n_points": metrics_v2["data"]["n_points"], "n_tests": metrics_v2["data"]["n_tests"],
-               "materials": FAMILIES, "baseline": pick(metrics_v2["models"]["baseline"]), "chosen": pick(metrics_v2["models"][c2])},
+               "materials": FAMILIES, "baseline": pick(metrics_v2["models"]["baseline"]), "chosen": pick(metrics_v2["models"][c2]),
+               "per_family_brier": per(c2)},
         "v2_on_v1_points": {"baseline": pick(metrics_v2["on_v1_points"]["models"]["baseline"]),
                             "chosen": pick(metrics_v2["on_v1_points"]["models"][c2])},
+        "v2_1": {"model": "logreg21", "shipped": pre["shipped"], "ship_rule": pre["ship_rule"],
+                 "n_points": metrics_v2["data"]["n_points"], "chosen": pick(metrics_v2["models"]["logreg21"]),
+                 "per_family_brier": per("logreg21"),
+                 "on_v1_points": pick(metrics_v2["on_v1_points"]["models"]["logreg21"]),
+                 "monotonicity": metrics_v2["monotonicity_check"]["logreg21"],
+                 "extinguished_points_below_p_0_5": pre["extinguished_points_below_p_0_5"]},
     }
 
 
@@ -500,4 +539,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    # Run through the importable module so FittedModel pickles as src.model_v2.FittedModel (not __main__.FittedModel),
+    # otherwise the API cannot unpickle the artifact and falls back to an in-process rebuild at every cold start.
+    from src import model_v2 as _module
+
+    _module.main()

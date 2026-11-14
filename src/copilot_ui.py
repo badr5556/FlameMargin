@@ -42,7 +42,7 @@ def _badges(res: dict[str, Any]) -> str:
     ood = "⚠️ `Out of distribution`" if res.get("ood") else "🟢 `In distribution`"
     grounding = "✅ `All numbers grounded`" if res.get("grounding_ok") else "❌ `LLM draft failed grounding → tool outputs shown`"
     data = {"mock": "🧪 `Data: mock API (test fixture)`", "unavailable": "⛔ `Prediction Engine unavailable`"}.get(
-        res.get("backend"), "📡 `Data: Prediction Engine v2 (NASA BASS-II, 5 materials)`")
+        res.get("backend"), "📡 `Data: Prediction Engine v2.x (NASA BASS-II, 5 materials)`")
     return "  ".join([mode, ood, grounding, data, f"⏱️ `{res.get('latency_ms', 0)} ms`"])
 
 

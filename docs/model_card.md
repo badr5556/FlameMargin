@@ -1,9 +1,12 @@
-# Model card: FlameMargin Prediction Engine v2 (Layer 1)
+# Model card: FlameMargin Prediction Engine v2.1 (Layer 1)
 
 > **Proof of pipeline on real NASA data, not a flight-qualification tool.**
 > Every number here comes from `models/metrics_v2.json` (written by `python -m src.model_v2`), `models/metrics_history.json`,
 > `models/spread_rate_v1.json` (written by `python -m src.spread_rate`) or the data files named below.
 > v1 (SIBAL only, 21 points) is kept unchanged in `models/metrics.json` for the before/after table.
+> **Shipped: v2.1** = the v2 logistic regression + a pre-registered per-material flow shape for SIBAL fabric and PMMA slab
+> (section 5b). It ties v2 on the selection metric (LOTO Brier 0.087 at 3 decimals) and shipped under the rule written
+> before fitting; it is **not** better overall (log-loss 0.320 vs 0.306, AUC 0.803 vs 0.820). Both are reported throughout.
 
 ## 1. What it predicts
 - **P(burn)**: the probability that a flame is sustained, for five BASS-II material families, at a given O2 and forced-flow speed,
@@ -60,57 +63,61 @@ Model settings were fixed before training; nothing was tuned on these folds.
 | Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | AUC¹ |
 |---|---|---|---|---|---|
 | Prior baseline (training class rate) | 0.865 | 0.500 | 0.118 | 0.401 | 0.061 |
-| **Logistic regression (L2, o2 × material)** ← shipped | **0.891** | **0.612** | **0.087** | **0.306** | **0.820** |
+| Logistic regression (L2, o2 × material) = v2 | 0.891 | 0.612 | 0.087 | 0.306 | 0.820 |
 | Gaussian process classifier (RBF + White) | 0.865 | 0.500 | 0.117 | 0.398 | 0.100 |
 | Gradient boosting (depth ≤ 3, monotone ↑ in O2) | 0.870 | 0.568 | 0.100 | 0.340 | 0.775 |
+| **v2.1: logistic regression + per-material flow shape (pre-registered, section 5b)** ← shipped | **0.891** | **0.612** | **0.087** | **0.320** | **0.803** |
 
 ¹ Prior baseline and GP are near-constant predictors under leave-one-test-out; their AUC is degenerate (<0.5) because the held-out test shifts the training prior. Compare on Brier and log-loss.
 
-- **Selection rule (fixed before training):** lowest LOTO Brier. Logistic regression: 0.087 vs baseline 0.118, a Brier skill
-  score of 1 − 0.087 / 0.118 = **+26%** (shown in the app header, computed from `metrics_v2.json`).
+- **Selection rule (fixed before training):** lowest LOTO Brier among the v2 candidates → logistic regression, 0.087 vs baseline
+  0.118, a Brier skill score of 1 − 0.087 / 0.118 = **+26%** (shown in the app header, computed from `metrics_v2.json`). Then the
+  pre-registered v2.1 rule (section 5b): ship v2.1 if its Brier (3 decimals) is ≤ v2's. Both are 0.087, so v2.1 ships; unrounded
+  they are 0.0871 (v2.1) vs 0.0866 (v2), a difference far inside fold-to-fold noise. The header AUC is the shipped model's.
 - **Accuracy is not informative here:** 86% of the points are burns, so "always burn" is 0.865 accurate. Read Brier, log-loss and AUC.
 - The GP collapses to the prior (its AUC 0.100 is no better than the baseline's 0.061 ordering), because one isotropic length
   scale over 13 standardized dimensions, most of them one-hots, does not fit; it is reported, not shipped.
 
-### Per material (shipped model vs baseline, out of fold)
-| Material | n | Brier (logreg) | Brier (baseline) | AUC (logreg) | Note |
-|---|---|---|---|---|---|
-| SIBAL fabric | 31 | 0.208 | 0.256 | 0.648 | the only family with a two-sided flow boundary (quench and blowoff) |
-| PMMA slab | 81 | 0.097 | 0.118 | 0.744 | the family with the most extinctions (11) |
-| PMMA rod | 50 | 0.046 | 0.048 | 0.271 | 2 extinctions only: no real signal |
-| PMMA film | 27 | 0.000 | 0.019 | n/a | every point is a burn |
-| Nomex | 3 | 0.001 | 0.755 | n/a | every point is non-sustained; learned from the other 2 Nomex tests |
+### Per material (v2 and shipped v2.1 vs baseline, out of fold)
+| Material | n | Brier v2 | Brier v2.1 | Brier baseline | AUC v2 | AUC v2.1 | Note |
+|---|---|---|---|---|---|---|---|
+| SIBAL fabric | 31 | 0.208 | 0.204 | 0.256 | 0.648 | 0.681 | the only family with a two-sided flow boundary (quench and blowoff) |
+| PMMA slab | 81 | 0.097 | 0.100 | 0.118 | 0.744 | 0.744 | the family with the most extinctions (11) |
+| PMMA rod | 50 | 0.046 | 0.047 | 0.048 | 0.271 | 0.240 | 2 extinctions only: no real signal |
+| PMMA film | 27 | 0.000 | 0.000 | 0.019 | n/a | n/a | every point is a burn |
+| Nomex | 3 | 0.001 | 0.001 | 0.755 | n/a | n/a | every point is non-sustained; learned from the other 2 Nomex tests |
 
-### Calibration (reliability table, shipped model, out of fold)
+### Calibration (reliability table, shipped v2.1, out of fold)
 | Predicted P(burn) | n | Mean predicted | Observed burn rate |
 |---|---|---|---|
 | 0.0–0.2 | 3 | 0.026 | 0.000 |
 | 0.2–0.4 | 0 | – | – |
-| 0.4–0.6 | 13 | 0.516 | 0.462 |
-| 0.6–0.8 | 30 | 0.689 | 0.767 |
-| 0.8–1.0 | 146 | 0.945 | 0.938 |
+| 0.4–0.6 | 18 | 0.537 | 0.500 |
+| 0.6–0.8 | 26 | 0.698 | 0.769 |
+| 0.8–1.0 | 145 | 0.949 | 0.945 |
 
-Mean predicted 0.861 vs observed 0.865. The model is reasonably calibrated where it has data; the 0.6–0.8 bin is under-confident.
+Mean predicted 0.862 vs observed 0.865. The model is reasonably calibrated where it has data; the 0.6–0.8 bin is under-confident.
+(v2's table was 3 / 0 / 13 / 30 / 146 points with observed rates 0.000 / – / 0.462 / 0.767 / 0.938.)
 
 ### Stress test: leave-one-material-family-out (reported only, not used for selection)
-| Held-out family | Brier (logreg) | AUC |
-|---|---|---|
-| SIBAL fabric | 0.315 | 0.633 |
-| PMMA film | 0.001 | n/a |
-| PMMA slab | 0.124 | 0.697 |
-| PMMA rod | 0.704 | 0.740 |
-| Nomex | 0.996 | n/a |
+| Held-out family | Brier v2 | AUC v2 | Brier v2.1 | AUC v2.1 |
+|---|---|---|---|---|
+| SIBAL fabric | 0.315 | 0.633 | 0.316 | 0.633 |
+| PMMA film | 0.001 | n/a | 0.004 | n/a |
+| PMMA slab | 0.124 | 0.697 | 0.120 | 0.719 |
+| PMMA rod | 0.704 | 0.740 | 0.668 | 0.708 |
+| Nomex | 0.996 | n/a | 0.996 | n/a |
 
 **What it means:** the model does **not** transfer to an unseen material. Without rod data it calls rods non-flammable
-(Brier 0.704); without Nomex data it calls Nomex flammable (0.996). That is exactly why any material outside the five is a hard OOD.
+(Brier 0.668 for v2.1); without Nomex data it calls Nomex flammable (0.996). That is exactly why any material outside the five is a hard OOD.
 
 ### Monotonicity in O2
 On 18 O2 curves (each family × tested configuration × 10th/50th/90th-percentile flow), **no model decreases** as O2 rises
-(logreg 0 / 18, GP 0 / 18, boosting 0 / 18 by construction). v1's GP violated it (`models/metrics.json`).
+(v2 0 / 18, v2.1 0 / 18, GP 0 / 18, boosting 0 / 18 by construction). v1's GP violated it (`models/metrics.json`).
 
 ### Sensitivity: high-confidence points only
-Logistic regression trained and scored on the 137 high-confidence points: Brier 0.116, AUC 0.802. The shipped model (trained on
-high + medium) scored on the same 137 points: Brier 0.109, AUC 0.813. Adding the 55 medium points does not hurt the
+v2 trained and scored on the 137 high-confidence points: Brier 0.116, AUC 0.802; trained on high + medium and scored on the
+same 137 points: Brier 0.109, AUC 0.813. Shipped v2.1: 0.117 / 0.781 (high only) and 0.109 / 0.796 (high + medium). Adding the 55 medium points does not hurt the
 high-confidence points.
 
 ## 5. Before / after (v1 → v2), `models/metrics_history.json`
@@ -119,13 +126,15 @@ high-confidence points.
 | v1 | 21 / 12 | SIBAL | GP | 0.229 | 0.263 |
 | v2 | 192 / 85 | 5 families | logistic regression | 0.087 | 0.118 |
 | v2 scored on the same 21 v1 points | 21 | SIBAL | logistic regression | **0.269** | 0.369 |
+| v2.1 | 192 / 85 | 5 families | logistic regression + per-material flow shape | 0.087 | 0.118 |
+| v2.1 scored on the same 21 v1 points | 21 | SIBAL | v2.1 | **0.258** | 0.369 |
 
 **Honest reading:** v2 is a much broader and better-verified screen (5 materials, ISS O2 covered for 4 of them), and it beats
 its baseline overall. **On SIBAL's own v1 points it is worse than v1 (0.269 vs 0.229).** The cause is structural: the flow terms
 are shared by all materials, so the model cannot bend into SIBAL's low-flow quenching branch (it gives P(burn) 0.78 at 18.7% O2
 and 2.2 cm/s, where GMT45-T4 quenched). The boosting model does better on SIBAL (Brier 0.187 on the 31 SIBAL points) but worse
-overall (0.100), and the selection rule picks the lowest overall Brier. Per-material flow terms are the obvious next step; we did
-not add them after seeing these results.
+overall (0.100), and the selection rule picks the lowest overall Brier. Per-material flow terms were the obvious next step: we
+pre-registered exactly one such variant (5b) before fitting it. It narrows the SIBAL gap (0.258 on the v1 points) but does not close it.
 
 ## 5b. Pre-registered variant: engine v2.1 (per-material flow shape)
 *Written and committed before v2.1 was fitted or scored. Nothing below this spec is tuned after seeing its results.*
@@ -144,6 +153,26 @@ not add them after seeing these results.
 - **Ship rule:** ship v2.1 only if its overall LOTO Brier (3 decimals, as stored in `metrics_v2.json`) is ≤ v2's 0.087.
   Either way both are reported here, in the Data & Method tab and in `models/metrics_history.json`.
 
+### 5b results (`models/metrics_v2.json` → `v21_preregistered`; `models/metrics_history.json` → `v2_1`)
+| Leave-one-test-out, 192 points | v2 (logistic regression) | v2.1 (pre-registered) |
+|---|---|---|
+| Brier ↓ (3 decimals, the ship metric) | 0.087 | 0.087 |
+| Brier, 5 decimals | 0.08657 | 0.08710 |
+| Log-loss ↓ | 0.306 | 0.320 |
+| AUC | 0.820 | 0.803 |
+| Brier on SIBAL fabric (31 points) | 0.208 | 0.204 |
+| Brier on PMMA slab (81 points) | 0.097 | 0.100 |
+| Brier on the 21 v1 points (v1 GP: 0.229) | 0.269 | 0.258 |
+| O2 curves that decrease (monotonicity) | 0 / 18 | 0 / 18 |
+| NASA "extinguished" points with P(burn) < 0.5, final model (what the map shows) | 7 / 26 | 7 / 26 |
+| NASA "extinguished" points with P(burn) < 0.5, out of fold | 6 / 26 | 6 / 26 |
+
+**Verdict:** the rule written before fitting says ship (0.087 ≤ 0.087), so **v2.1 is shipped**, and we keep to that rule rather
+than re-deciding after seeing the numbers. Read it as a **tie, not an improvement**: v2.1 is slightly better on SIBAL and on the v1
+points, slightly worse on log-loss and AUC, and moves **no** extinguished NASA point below P = 0.5. The hypothesis is only weakly
+supported: with 10 SIBAL extinctions the extra flow terms bend the boundary a little (P(burn) at GMT45-T4's quench condition,
+18.7% O2 and 2.2 cm/s, goes from 0.78 to 0.71) but not across 0.5. No further variant was fitted.
+
 ## 6. Uncertainty
 - **Interval:** 90% percentile interval of P(burn) over **300 bootstrap resamples of whole tests** (seed 42; 0 single-class
   resamples redrawn).
@@ -161,7 +190,7 @@ threshold = 95th percentile of the leave-one-test-out nearest-neighbour distance
 
 | Preset | SIBAL fabric | PMMA film | PMMA slab | PMMA rod | Nomex |
 |---|---|---|---|---|---|
-| ISS cabin (14.7 psia, 21% O2, µg) at 10 cm/s | in distribution: burn, P 0.96 | in distribution: burn, P 1.00 | in distribution: burn, P 0.93 | **OOD** (rods tested only up to 20.8% O2) | in distribution: does not sustain, P 0.02 |
+| ISS cabin (14.7 psia, 21% O2, µg) at 10 cm/s | in distribution: burn, P 0.97 | in distribution: burn, P 1.00 | in distribution: burn, P 0.94 | **OOD** (rods tested only up to 20.8% O2) | in distribution: does not sustain, P 0.02 |
 | Artemis EA (8.2 psia, 34% O2) | **OOD** | **OOD** | **OOD** | **OOD** | **OOD** |
 | Lunar habitat (8.2 psia, 34% O2, 1/6 g) | **OOD** | **OOD** | **OOD** | **OOD** | **OOD** |
 
