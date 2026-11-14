@@ -127,6 +127,23 @@ and 2.2 cm/s, where GMT45-T4 quenched). The boosting model does better on SIBAL 
 overall (0.100), and the selection rule picks the lowest overall Brier. Per-material flow terms are the obvious next step; we did
 not add them after seeing these results.
 
+## 5b. Pre-registered variant: engine v2.1 (per-material flow shape)
+*Written and committed before v2.1 was fitted or scored. Nothing below this spec is tuned after seeing its results.*
+
+- **Hypothesis (physics):** each material has its own low-flow quenching branch and high-flow blowoff branch, so flow terms
+  shared by all materials cannot fit SIBAL's quench branch. This is v2's known weakness: on the 21 SIBAL v1 points v2 scores
+  Brier 0.269 vs v1's 0.229, and blue "extinguished" NASA points sit inside the orange zone of the SIBAL map.
+- **Change (the only one):** the v2 logistic regression (all v2 features, `o2 × material` interactions, standardized, L2) plus
+  `material × log10(flow)` and `material × log10(flow)²` interaction terms **only for families with both classes and ≥ 8
+  extinguished training points**: SIBAL_fabric (10 extinguished) and PMMA_slab (11). PMMA film (0), PMMA rod (2) and Nomex
+  (0 burn) keep only the shared global flow terms.
+- **Regularization:** the current value, C = 1.0 (no nested CV, so no new tuning freedom).
+- **Validation:** the same leave-one-test-out protocol on the same 192 points. Reported: overall Brier, log-loss and AUC;
+  per-material Brier; Brier on the 21 v1 points; the O2 monotonicity check; and how many of the 26 NASA "extinguished"
+  training points get P(burn) < 0.5, both in-sample (the final model, i.e. what the map shows) and out-of-fold, for v2 and v2.1.
+- **Ship rule:** ship v2.1 only if its overall LOTO Brier (3 decimals, as stored in `metrics_v2.json`) is ≤ v2's 0.087.
+  Either way both are reported here, in the Data & Method tab and in `models/metrics_history.json`.
+
 ## 6. Uncertainty
 - **Interval:** 90% percentile interval of P(burn) over **300 bootstrap resamples of whole tests** (seed 42; 0 single-class
   resamples redrawn).
