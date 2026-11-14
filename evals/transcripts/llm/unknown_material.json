@@ -6,7 +6,7 @@
   "checks": {
     "tool called": {
       "ok": true,
-      "detail": "2 calls"
+      "detail": "1 calls"
     },
     "OOD first line": {
       "ok": true,
@@ -26,14 +26,14 @@
     },
     "latency": {
       "ok": true,
-      "detail": "5603 ms ≤ 25000"
+      "detail": "5537 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: material 'Kapton tape' not in training data\n\n**Verdict**\nNo prediction can be made for Kapton tape.\n\n**Key numbers**\n- Material requested: Kapton tape\n- Atmosphere preset: Artemis Exploration Atmosphere ($O_2$ 34%, pressure 8.2 psi, 56.5 kPa)\n- Flow velocity: 10 cm/s\n\n**Evidence**\nNone. Kapton tape is not in the training data. The known materials are: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, and Nomex.\n\n**Operational recommendation**\nDo not rely on this system to evaluate Kapton tape. Consult official NASA material flammability databases to verify its safety for the Artemis atmosphere.\n\n**Limits**\n- The model has no data for Kapton tape. \n- This is decision support, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: material 'Kapton tape' not in training data\n\n**Verdict**\nThere is no prediction available for Kapton tape. The FlameMargin engine is only trained on data for SIBAL fabric, PMMA film, PMMA slab, PMMA rod, and Nomex.\n\n**Key numbers**\n*   **Material:** Kapton tape (not in training data)\n*   **Atmosphere:** Artemis Exploration Atmosphere (34% O2, 8.2 psia)\n*   **Flow velocity:** 10 cm/s\n\n**Evidence**\nNone. No experiments exist in the training database for this material.\n\n**Operational recommendation**\nConsult official NASA-STD-6001 flammability testing data for Kapton tape. Do not rely on this model for materials outside the five listed above.\n\n**Limits**\nThe model is limited to SIBAL fabric, PMMA film, PMMA slab, PMMA rod, and Nomex. Any other material is out of distribution. This is decision support, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
     {
       "name": "predict",
@@ -71,45 +71,7 @@
         },
         "backend": "real"
       },
-      "ms": 0.3
-    },
-    {
-      "name": "predict",
-      "args": {
-        "flow_velocity_cm_s": 10,
-        "material": "Kapton tape",
-        "preset": "Artemis Exploration Atmosphere"
-      },
-      "result": {
-        "value": null,
-        "interval": null,
-        "evidence": [],
-        "ood_flag": true,
-        "ood_reason": "material 'Kapton tape' not in training data",
-        "known_materials": [
-          "SIBAL fabric",
-          "PMMA film",
-          "PMMA slab",
-          "PMMA rod",
-          "Nomex"
-        ],
-        "note": "No prediction is available for this material. Do not estimate one.",
-        "ood_reasons": [
-          "material 'Kapton tape' not in training data"
-        ],
-        "inputs_normalized": {
-          "material": "Kapton tape",
-          "o2_percent": 34.0,
-          "pressure_psia": 8.2,
-          "pressure_kpa": 56.5,
-          "flow_velocity_cm_s": 10.0,
-          "gravity": "micro",
-          "gravity_g": 0.0,
-          "preset": "Artemis Exploration Atmosphere"
-        },
-        "backend": "real"
-      },
-      "ms": 0.3
+      "ms": 0.4
     }
   ],
   "ood": true,
@@ -118,15 +80,16 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 5603,
-  "model": "gemini-3.5-flash-lite",
+  "latency_ms": 5537,
+  "model": "gemini-3.1-flash-lite",
   "backend": "real",
   "ungrounded": [],
   "notes": [
+    "grounding failed on first draft: 2, 90%",
     "gemini-3.5-flash-lite: ClientError 429 (retrying)",
-    "grounding failed on first draft: 126",
-    "answer regenerated after grounding feedback"
+    "LLM unavailable (primary key): gemini-3.5-flash-lite: ClientError 429"
   ],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.3"
+  "prompt_version": "2026-11-14.4",
+  "suggestions": []
 }

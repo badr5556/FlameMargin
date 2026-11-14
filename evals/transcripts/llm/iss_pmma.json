@@ -34,31 +34,31 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2137 ms ≤ 25000"
+      "detail": "2713 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nBurn (P(burn) 0.93, 90% interval 0.87–0.98). This is decision support, not a replacement for NASA-STD-6001 material testing.\n\n**Key numbers**\n- Material: PMMA slab\n- Environment: ISS cabin (21% O2, 14.7 psia, microgravity)\n- Flow velocity: 10 cm/s\n- Spread rate: 0.0335 mm/s (90% interval 0.0161–0.0627 mm/s)\n\n**Evidence**\n- Supporting NASA BASS-II experiment IDs: M15, M3, M2 (NASA/TM-20210011385, Appendix A Tables A.4 and Table 5.1).\n\n**Operational recommendation**\nLimit the amount of exposed PMMA slab material, isolate potential ignition sources, maintain proper ventilation control, and ensure fire detection and suppression systems are ready.\n\n**Limits**\n- The predictions apply strictly to opposed flow configurations under microgravity at the specified ISS cabin conditions.",
+  "answer": "**Verdict**\nBurn (sustained flame). \n\n**Key numbers**\n- Material: PMMA slab\n- Cabin preset: ISS cabin ($O_2 = 21\\%$, Pressure = 14.7 psia / 101.4 kPa, Gravity = micro)\n- Ventilation flow velocity: 10 cm/s\n- P(burn): 0.94, 90% interval 0.87–0.98\n- Experimental flame spread rate: 0.0335 mm/s (90% interval 0.0161–0.0627 mm/s; note that this spread rate is experimental and its flow effect is not resolved).\n\n**Evidence**\nSupported by BASS-II NASA test IDs **M15**, **M3**, and **M2** (NASA/TM-20210011385, Appendix A, Table A.4 and Table 5.1).\n\n**Operational recommendation**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. Exercise strict flammability controls: limit the amount of exposed PMMA slab material, isolate ignition sources, and ensure fire detection and suppression systems are active and ready.\n\n**Limits**\nThe prediction is in-distribution for the tested PMMA slab configurations in microgravity at normal ISS cabin atmosphere. The experimental flame spread rate has an unresolved flow effect in the model.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "material": "PMMA slab",
         "preset": "ISS cabin",
-        "flow_velocity_cm_s": 10
+        "flow_velocity_cm_s": 10,
+        "material": "PMMA slab"
       },
       "result": {
         "label": "burn",
-        "burn_probability": 0.93,
+        "burn_probability": 0.94,
         "burn_probability_interval": [
           0.87,
           0.98
         ],
         "interval_level": 0.9,
-        "value": 0.93,
+        "value": 0.94,
         "interval": [
           0.87,
           0.98
@@ -170,7 +170,7 @@
             "distance": 0.53
           }
         ],
-        "model": "Logistic regression (L2, o2 x material interaction)",
+        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
         "inputs": {
           "material": "PMMA slab",
           "o2_percent": 21.0,
@@ -189,7 +189,7 @@
             "width_cm": 2.2
           }
         },
-        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "PMMA slab",
           "o2_percent": 21.0,
@@ -202,13 +202,13 @@
         },
         "backend": "real"
       },
-      "ms": 287.5
+      "ms": 395.1
     },
     {
       "name": "nearest_experiments",
       "args": {
-        "flow_velocity_cm_s": 10,
         "preset": "ISS cabin",
+        "flow_velocity_cm_s": 10,
         "material": "PMMA slab"
       },
       "result": {
@@ -301,7 +301,7 @@
         ],
         "material_family": "PMMA_slab",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
-        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "PMMA slab",
           "o2_percent": 21.0,
@@ -314,18 +314,19 @@
         },
         "backend": "real"
       },
-      "ms": 3.2
+      "ms": 2.8
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2137,
+  "latency_ms": 2713,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],
   "notes": [],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.3"
+  "prompt_version": "2026-11-14.4",
+  "suggestions": []
 }

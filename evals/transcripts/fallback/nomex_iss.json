@@ -30,7 +30,7 @@
     },
     "latency": {
       "ok": true,
-      "detail": "276 ms ≤ 3000"
+      "detail": "531 ms ≤ 3000"
     }
   },
   "answer": "**Verdict**\n**Nomex is predicted to EXTINGUISH** at 21% O2, 14.7 psia, 10 cm/s flow, µg.\n\n**Key numbers**\n- Burn probability P(burn): 0.02 (90% interval 0.01–0.03)\n- Flame spread rate: not predicted (spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material).\n\n**Evidence**\n- F3 (Ferkul, Table A.2, p. 105; Nomex, 21.7% O2, 14.7 psia, 8 cm/s) → extinguish\n- F2 (Ferkul, Table A.2, p. 105; Nomex, 21% O2, 14.7 psia, 15 cm/s) → extinguish\n- F1 (Ferkul, Table A.2, p. 105; Nomex, 22.2% O2, 14.7 psia, 9.5 cm/s) → extinguish\n\n**Operational recommendation**\n- Predicted to self-extinguish under these conditions; margin shrinks if O2 rises or pressure drops, so re-check after any atmosphere change.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
@@ -160,7 +160,7 @@
             "distance": 0.63
           }
         ],
-        "model": "Logistic regression (L2, o2 x material interaction)",
+        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
         "inputs": {
           "material": "Nomex",
           "o2_percent": 21.0,
@@ -177,7 +177,7 @@
             "flow_configuration": "concurrent"
           }
         },
-        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "Nomex",
           "o2_percent": 21.0,
@@ -189,7 +189,7 @@
         },
         "backend": "real"
       },
-      "ms": 271.4
+      "ms": 527.1
     },
     {
       "name": "nearest_experiments",
@@ -290,7 +290,7 @@
         ],
         "material_family": "Nomex",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
-        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "Nomex",
           "o2_percent": 21.0,
@@ -309,11 +309,12 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 276,
+  "latency_ms": 531,
   "model": null,
   "backend": "real",
   "ungrounded": [],
   "notes": [],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.3"
+  "prompt_version": "2026-11-14.4",
+  "suggestions": []
 }

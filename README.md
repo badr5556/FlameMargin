@@ -4,7 +4,7 @@
 
 Team IGNISPHERE · NASA Space Apps Cairo 2026 · Challenge: *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity Combustion Data*
 
-![tests](https://img.shields.io/badge/tests-271%20passing-brightgreen) ![evals](https://img.shields.io/badge/Copilot%20evals-LLM%2015%2F15%20%C2%B7%20fallback%2015%2F15-blue) ![data](https://img.shields.io/badge/data-NASA%20BASS--II%20(TM--20210011385)-orange) ![python](https://img.shields.io/badge/python-3.11%2B-blue) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+![tests](https://img.shields.io/badge/tests-329%20passing-brightgreen) ![evals](https://img.shields.io/badge/Copilot%20evals-LLM%2014%2F15%20%C2%B7%20fallback%2015%2F15-blue) ![data](https://img.shields.io/badge/data-NASA%20BASS--II%20(TM--20210011385)-orange) ![python](https://img.shields.io/badge/python-3.11%2B-blue) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ## [▶ Live demo: flamemargin.streamlit.app](https://flamemargin.streamlit.app/)
 
@@ -112,7 +112,8 @@ sequenceDiagram
    the model tried to call `predict` with `flow_velocity_cm_s = 10 cm/s`; the code rejected it with *"was not given by the
    operator. Do not assume a flow."* (`evals/transcripts/llm/rough_number_skip_tools.json` at commit `1dd1d8c`; the same guard
    rejected an assumed 5 cm/s in today's `compare_iss_artemis` run).
-5. **Deterministic fallback.** No key, rate limit, or exhausted per-session budget → the same tools and guards, rule-based. Fallback passed 15/15 in all three v2 eval runs.
+5. **Deterministic fallback.** No key, rate limit, or exhausted per-session budget → the same tools and guards, rule-based. Fallback passed 15/15 in every v2 eval run, including the v2.1 run (where the LLM passed 14/15: on "Is it safe?" its draft failed
+   grounding twice, so the code withheld it and showed the deterministic tool outputs; see `evals/results.md`).
 6. **Leave-one-test-out validation.** Every point of a NASA test is held out together, and metrics are reported next to a baseline,
    per material, with a calibration table and a leave-one-material-out stress test.
 7. **Traceable data.** Every training point carries the rule that made it, a verbatim quote that the tests check is an exact

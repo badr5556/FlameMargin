@@ -82,5 +82,6 @@
   "ungrounded": [],
   "notes": [],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.3"
+  "prompt_version": "2026-11-14.4",
+  "suggestions": []
 }

@@ -26,14 +26,14 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2071 ms ≤ 25000"
+      "detail": "2073 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Answer**\n\nFire in microgravity behaves differently from fire on Earth primarily because of the absence of natural buoyancy-driven convection. \n\nOn Earth, hot combustion gases expand, become less dense, and rise, drawing fresh oxygen into the base of the flame. This gives typical Earth flames their familiar, elongated teardrop shape and creates a steady supply of oxidizer driven by gravity. \n\nWithout gravity, there is no buoyant flow. In still air or low-ventilation microgravity environments, a flame tends to become spherical (round) rather than teardrop-shaped. Without active ventilation to supply fresh oxygen, a flame in microgravity relies solely on molecular diffusion, which is much slower, causing the flame to suffocate in its own combustion products and extinguish much more easily than on Earth.\n\n**Sources**\n- NASA SVS 31394 (NASA Studies Fire in Microgravity) (source pending team verification)",
+  "answer": "**Answer**\n\nFire in microgravity behaves differently primarily because of the absence of buoyancy. On Earth, hot, combustion-generated gases are less dense than the surrounding air and rise due to gravity, creating a buoyant upward flow that draws in fresh oxygen and gives flames their familiar teardrop shape. \n\nWithout gravity, this buoyant flow is absent, so a flame in still air becomes spherical (round) rather than teardrop-shaped. Instead of a strong convective draft feeding the flame, combustion relies heavily on slower molecular diffusion to transport oxygen to the flame and heat away from it. This changes how flames spread, the oxygen limits at which materials can sustain combustion, and how ventilation flows interact with burning materials.\n\n**Sources**\n- NASA SVS 31394 (NASA Studies Fire in Microgravity) *(source pending team verification)*",
   "tool_calls": [
     {
       "name": "get_background_fact",
@@ -62,11 +62,12 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2071,
+  "latency_ms": 2073,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],
   "notes": [],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.3"
+  "prompt_version": "2026-11-14.4",
+  "suggestions": []
 }

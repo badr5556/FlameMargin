@@ -26,14 +26,14 @@
     },
     "latency": {
       "ok": true,
-      "detail": "3392 ms ≤ 25000"
+      "detail": "2899 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside the tested range for SIBAL fabric (16.4–21%); O2 34% outside training range 14.5–22.2%\n\n**Verdict**\nOut of distribution: The Artemis Exploration Atmosphere (8.2 psia, 34% $\\text{O}_2$) and zero-flow conditions are entirely outside the training envelope of the BASS-II dataset (which covers 14.4–15 psia, 14.5–22.2% $\\text{O}_2$, and active flow). Consequently, the engine cannot provide a reliable safety verdict for SIBAL fabric under these conditions.\n\n**Key numbers**\n- **Pressure:** 8.2 psia (56.5 kPa)\n- **Oxygen concentration:** 34% $\\text{O}_2$\n- **Flow velocity:** Fans off (zero forced flow)\n- **Training ranges:** Pressure (14.4–15 psia), SIBAL fabric $\\text{O}_2$ (16.4–21%), total $\\text{O}_2$ training range (14.5–22.2%)\n\n**Evidence**\nNearest available BASS-II baseline tests for SIBAL fabric (conducted at 1 atm, 21% or 18.8% $\\text{O}_2$ with active flow):\n- **GMT96-T7:** 14.7 psia, 21% $\\text{O}_2$, 10 cm/s flow — burn\n- **GMT96-T8:** 14.7 psia, 21% $\\text{O}_2$, 5 cm/s flow — burn\n- **GMT100-T5:** 14.7 psia, 18.8% $\\text{O}_2$, 2.4 cm/s flow — burn\n\n**Operational recommendation**\nBecause this scenario is significantly out of distribution (higher $\\text{O}_2$ concentration combined with lower pressure and zero ventilation), standard microgravity flame data cannot guarantee safety. Operational controls must rely on conservative measures: restrict exposed flammable materials, isolate potential ignition sources, maintain rigorous fire detection and suppression readiness, and adhere to strict NASA-STD-6001 material flammability test protocols for Artemis-specific conditions.\n\n**Limits**\n- This is decision support, not a replacement for NASA-STD-6001 material testing.\n- The prediction engine contains no data points at 34% $\\text{O}_2$ or 8.2 psia, making extrapolation unreliable.",
+  "answer": "⚠️ Out of distribution: pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside the tested range for SIBAL fabric (16.4–21%); O2 34% outside training range 14.5–22.2%\n\n**Verdict**\nOut of distribution: No reliable prediction can be made. Both the Artemis cabin pressure (8.2 psia) and oxygen concentration (34%) are far outside the training data envelope of the NASA BASS-II experiments (which were conducted at ~1 atm and 14.5%–22.2% O2 for SIBAL fabric). \n\n**Key numbers**\n- Cabin pressure: 8.2 psia (56.5 kPa)\n- Oxygen concentration: 34%\n- Training range for pressure: 14.4–15 psia\n- Training range for O2 on SIBAL fabric: 16.4–21%\n\n**Evidence**\nNearest historical tests from the BASS-II campaign (none of which match the Artemis atmosphere conditions):\n- `GMT96-T7`: SIBAL fabric, 14.7 psia, 21% O2, 10 cm/s flow (outcome: burn)\n- `GMT96-T8`: SIBAL fabric, 14.7 psia, 21% O2, 5 cm/s flow (outcome: burn)\n- `GMT100-T5`: SIBAL fabric, 14.7 psia, 18.8% O2, 2.4 cm/s flow (outcome: burn)\n\n**Operational recommendation**\nBecause this condition is completely out of distribution, treat SIBAL fabric as potentially extremely flammable at 34% O2 due to the highly oxygen-enriched environment. Do not rely on microgravity quenching assumptions or model extrapolations. Limit exposed quantities of SIBAL fabric, enforce strict ignition source controls, verify that fire detection and suppression systems are active, and perform dedicated NASA-STD-6001 testing under actual Artemis atmosphere conditions before flight approval.\n\n**Limits**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. The prediction engine cannot extrapolate to 34% O2 and 8.2 psia. All nearest-neighbor evidence comes from standard 1 atm tests with much lower oxygen levels (18.8%–21% O2).",
   "tool_calls": [
     {
       "name": "get_mission_preset",
@@ -54,14 +54,16 @@
         "ood_reasons": [],
         "ood_reason": null
       },
-      "ms": 0.0
+      "ms": 0.1
     },
     {
       "name": "flammability_boundary",
       "args": {
-        "material": "SIBAL fabric",
-        "gravity": "micro",
-        "preset": "Artemis Exploration Atmosphere"
+        "preset": "Artemis Exploration Atmosphere",
+        "flow_velocities_cm_s": [
+          0
+        ],
+        "material": "SIBAL fabric"
       },
       "result": {
         "label": null,
@@ -95,7 +97,7 @@
           "gravity": "micro",
           "o2_percent": 34.0
         },
-        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 34.0,
@@ -107,14 +109,14 @@
         },
         "backend": "real"
       },
-      "ms": 0.2
+      "ms": 0.5
     },
     {
       "name": "nearest_experiments",
       "args": {
-        "preset": "Artemis Exploration Atmosphere",
+        "flow_velocity_cm_s": "fans off",
         "material": "SIBAL fabric",
-        "gravity": "micro"
+        "preset": "Artemis Exploration Atmosphere"
       },
       "result": {
         "value": [
@@ -136,7 +138,7 @@
             "outcome": "burn",
             "derivation_rule": "text_reports_steady_spread__unique_condition_match",
             "label_confidence": "high",
-            "evidence_quote": "Figure 7.2 shows flame development stages of a 2.2-cm sample in 10-cm/s flow and 21 percent O2. Figure 7.2(a) shows side-view flame tracking of flame tip, flame base, and flame length.",
+            "evidence_quote": "Figure 7.2 shows flame development stages of a 2.2-cm sample in 10-cm/s flow and 21 percent O2. Figure 7.2(a) shows side-view flame tracking of flame tip, flame base, and flame length. Figure 7.2(b) shows flame edge-view video still images at different stages. Note in the figure, flow is from right to left. After the igniter was turned on, a strong flame was initiated on both sides of the solid fuel. The flame was stabilized and started to grow and move downstream. At about 19 s, the flame reached a limiting constant length and a steady spread rate relative to the laboratory",
             "source_page": 95,
             "source": "NASA/TM-20210011385, Table 7.1 / Table A.6",
             "distance": 6.74
@@ -159,7 +161,7 @@
             "outcome": "burn",
             "derivation_rule": "text_reports_steady_spread__unique_condition_match",
             "label_confidence": "high",
-            "evidence_quote": "Figure 7.3 shows flame development stages of a 2.2-cm sample in 5-cm/s flow and 21 percent O2.",
+            "evidence_quote": "Figure 7.3 shows flame development stages of a 2.2-cm sample in 5-cm/s flow and 21 percent O2. Unlike the flame in 10-cm/s flow in Figure 7.2, the flame from the side-view video is very dim in this case. Figure 7.3 thus shows the top-view images and tracking from those images. Because the flow speed is lower, it took more than 60 s to burn the whole sample. Steady spread time lasts for about 21 s",
             "source_page": 95,
             "source": "NASA/TM-20210011385, Table 7.1 / Table A.6",
             "distance": 6.74
@@ -213,7 +215,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness (no flow given: O2, size and thickness only).",
-        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 34.0,
@@ -223,9 +225,12 @@
           "gravity_g": 0.0,
           "preset": "Artemis Exploration Atmosphere"
         },
+        "unit_conversions": [
+          "'fans off' flow undefined: neighbours searched without a flow constraint"
+        ],
         "backend": "real"
       },
-      "ms": 3.3
+      "ms": 70.0
     }
   ],
   "ood": true,
@@ -236,11 +241,12 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 3392,
+  "latency_ms": 2899,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],
   "notes": [],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.3"
+  "prompt_version": "2026-11-14.4",
+  "suggestions": []
 }

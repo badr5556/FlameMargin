@@ -6,7 +6,7 @@
   "checks": {
     "tool called": {
       "ok": true,
-      "detail": "3 calls"
+      "detail": "1 calls"
     },
     "OOD first line": {
       "ok": true,
@@ -22,79 +22,20 @@
     },
     "latency": {
       "ok": true,
-      "detail": "6767 ms ≤ 25000"
+      "detail": "2102 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: O2 40% outside training range 14.5–22.2%; pressure 5 psia outside training range 14.4–15 psia\n\n**Verdict**\nAssumption: No material was specified, and no ventilation flow was given. Because your requested atmosphere is completely outside the training range of the FlameMargin engine v2, **no reliable safety verdict can be given**. Known materials include SIBAL fabric, PMMA film, PMMA slab, PMMA rod, and Nomex, but all are out of distribution.\n\n**Key numbers**\n- O2 concentration: 40% (Training range: 14.5%–22.2%)\n- Pressure: 5 psia (Training range: 14.4–15 psia)\n\n**Evidence**\n- None available from the tools for these conditions.\n\n**Operational recommendation**\n- Do not rely on this prediction tool for 40% O2 at 5 psia.\n- Implement strict hazard controls: minimize exposed combustible materials, isolate potential ignition sources, and ensure active fire detection and suppression systems are fully operational.\n- This is decision support, not a replacement for NASA-STD-6001 material testing.\n\n**Limits**\n- The prediction engine is strictly limited to the tested parameters. Extrapolating to hyperoxic or hypobaric conditions is unsupported by the underlying NASA test data.",
+  "answer": "⚠️ Out of distribution: O2 40% outside training range 14.5–22.2%; pressure 5 psia outside training range 14.4–15 psia\n\n**Verdict**\n⚠️ Out of distribution: O2 40% outside training range 14.5–22.2%; pressure 5 psia outside training range 14.4–15 psia.\n\n**Key numbers**\n- O2: 40%\n- Pressure: 5 psia\n\n**Evidence**\n- None available (the conditions and material are out of distribution).\n\n**Operational recommendation**\n- Because no material was given and the atmospheric conditions are far outside the training range of the FlameMargin engine (which covers ISS-like conditions around 14.5–22.2% O2 and 14.4–15 psia), no safety verdict can be provided. \n- To ensure safety under such high-oxygen, reduced-pressure conditions (similar to an Artemis Exploration Atmosphere), rely on standard NASA-STD-6001 material testing and rigorous fire-prevention protocols. Keep fire detection, isolation, and suppression ready.\n\n**Limits**\n- The question did not specify a material (known materials: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex). Furthermore, both the 40% O2 concentration and the 5 psia pressure are entirely outside the model's training range. This is decision support, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "o2_percent": 40,
-        "pressure_psia": 5
-      },
-      "result": {
-        "value": null,
-        "interval": null,
-        "evidence": [],
-        "label": null,
-        "burn_probability": null,
-        "burn_probability_interval": null,
-        "ood_flag": true,
-        "ood_reason": "O2 40% outside training range 14.5–22.2%; pressure 5 psia outside training range 14.4–15 psia",
-        "known_materials": [
-          "SIBAL fabric",
-          "PMMA film",
-          "PMMA slab",
-          "PMMA rod",
-          "Nomex"
-        ],
-        "note": "No material was given, but this atmosphere is outside the NASA data for every material in the model (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex): no prediction is possible for any of them. Do not estimate one.",
-        "ood_reasons": [
-          "O2 40% outside training range 14.5–22.2%",
-          "pressure 5 psia outside training range 14.4–15 psia"
-        ],
-        "inputs_normalized": {
-          "o2_percent": 40.0,
-          "pressure_psia": 5.0,
-          "pressure_kpa": 34.5,
-          "gravity": "micro",
-          "gravity_g": 0.0
-        },
-        "backend": "real"
-      },
-      "ms": 0.1
-    },
-    {
-      "name": "get_mission_preset",
-      "args": {
-        "name": "Artemis Exploration Atmosphere"
-      },
-      "result": {
-        "name": "Artemis Exploration Atmosphere",
-        "short": "Artemis EA",
-        "pressure_psia": 8.2,
-        "o2_percent": 34.0,
-        "gravity": "micro",
-        "gravity_g": 0.0,
-        "source": "Layer 1 API presets",
-        "data_status": "out of distribution for every material: 8.2 psia and 34% O2 are both outside the BASS-II data",
-        "note": "Presets do not include a ventilation flow. Ask for it, or use flammability_boundary to cover all flows.",
-        "ood_flag": false,
-        "ood_reasons": [],
-        "ood_reason": null
-      },
-      "ms": 0.1
-    },
-    {
-      "name": "predict",
-      "args": {
-        "o2_percent": 40,
-        "pressure_psia": 5
+        "pressure_psia": 5,
+        "o2_percent": 40
       },
       "result": {
         "value": null,
@@ -136,15 +77,14 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 6767,
+  "latency_ms": 2102,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],
   "notes": [
-    "grounding failed on first draft: 10, 126",
-    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
-    "answer regenerated after grounding feedback"
+    "OOD warning prepended by code guard"
   ],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.3"
+  "prompt_version": "2026-11-14.4",
+  "suggestions": []
 }
