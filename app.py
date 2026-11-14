@@ -55,8 +55,10 @@ def _history() -> dict:
 
 
 def _header() -> None:
-    st.markdown("## 🔥 FlameMargin")
-    st.caption(f"{TAGLINE}  ·  Team IGNISPHERE · NASA Space Apps Cairo 2026 · *Flame in Freefall*")
+    from src import visual_ui
+
+    st.markdown(visual_ui.CSS, unsafe_allow_html=True)
+    st.markdown(visual_ui.hero_html(TAGLINE), unsafe_allow_html=True)
     m = _metrics()
     best, base = m["models"][m["chosen_model"]], m["models"]["baseline"]
     c1, c2, c3, c4, c5 = st.columns(5)

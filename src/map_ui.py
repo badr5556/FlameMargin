@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-from src import api
+from src import api, visual_ui
 from src.model_v2 import SIZE_KIND, load_points_v2
 
 # Fire palette for P(burn): cool (extinguish) -> hot (burn).
@@ -267,15 +267,20 @@ def render_map_tab(st: Any, grid_loader, predict_fn) -> None:
             "(missing where the band never reaches 0.5). Darkened = inside the tested ranges but far from labelled tests. "
             "Grey = outside this material's tested range. Hover any NASA point for its test ID, PI, outcome, quote and page."
         )
+        with st.expander("🧊 3D view: the same model as a surface (drag to rotate)"):
+            p3 = res.get("burn_probability")
+            st.plotly_chart(visual_ui.build_3d_figure(
+                grid, all_points(), {"flow": sc["flow"], "o2": sc["o2_percent"], "p": p3, "text": label}
+                if p3 is not None and res.get("ood_level") != "out_of_envelope" else None),
+                use_container_width=True, key="flammability_3d")
+            st.caption("Surface = P(burn) from the shipped model, drawn only inside this material's tested O2 x flow ranges "
+                       "(no surface = no NASA data, no prediction). White line = P(burn) 0.5. Dots = NASA tests at "
+                       "P = 1 (burned) or 0 (went out). Your scenario is the yellow stick when it is inside the data.")
 
     with right:
         st.markdown("##### Readout")
-        if res.get("burn_probability") is None:
-            st.metric("P(burn)", "no prediction")
-        else:
-            lo, hi = res["burn_probability_interval"]
-            st.metric("P(burn)", f"{res['burn_probability']:.2f}", help="Probability that a flame is sustained (1 atm, µg).")
-            st.markdown(f"90% interval **{lo:.2f}–{hi:.2f}** · verdict **{str(res['label']).upper()}**")
+        st.markdown(visual_ui.result_card_html(res, sc["name"], material), unsafe_allow_html=True)
+        if res.get("burn_probability") is not None:
             st.caption(verdict_note())
         level = {"in_distribution": "🟢 in distribution", "extrapolation": "🟠 extrapolation", "out_of_envelope": "🔴 out of distribution"}
         st.markdown(f"Data coverage: **{level.get(res.get('ood_level'), '?')}**")
