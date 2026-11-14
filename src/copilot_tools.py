@@ -99,13 +99,18 @@ PRESET_ALIASES = {
 # Materials
 # =========================================================================== #
 MATERIAL_ALIASES = {
-    # Real engine (src/api.py): SIBAL cotton-fiberglass fabric from BASS-II. Listed first so "cotton"/"fabric" resolve to it.
-    "SIBAL": [
+    # Real engine (src/api.py v2): the five BASS-II material families. Specific names first, generic PMMA last.
+    "SIBAL fabric": [
         "sibal", "sibal fabric", "sibal cotton-fiberglass fabric", "cotton-fiberglass", "cotton fiberglass", "cotton/fiberglass",
         "cotton-fiberglass fabric", "cotton", "fabric", "قطن", "سيبال",
     ],
+    "PMMA film": ["pmma film", "thin pmma", "thin pmma film", "acrylic film", "pmma thin film", "فيلم أكريليك"],
+    "PMMA rod": ["pmma rod", "pmma rods", "acrylic rod", "pmma cylinder", "قضيب أكريليك"],
+    "PMMA slab": ["pmma slab", "pmma sheet", "pmma plate", "acrylic sheet", "acrylic slab", "pmma", "acrylic", "plexiglass",
+                  "plexiglas", "perspex", "lucite", "polymethyl methacrylate", "polymethylmethacrylate", "أكريليك", "اكريليك"],
+    "Nomex": ["nomex", "nomex iii", "nomex 3", "nomex®", "nomex natural", "nomex ht90-40", "aramid", "meta-aramid", "نومكس", "نوميكس"],
+    # Synthetic mock backend (unit-test fixture only) uses these names.
     "PMMA": ["pmma", "acrylic", "plexiglass", "plexiglas", "perspex", "lucite", "polymethyl methacrylate", "أكريليك", "اكريليك"],
-    "Nomex": ["nomex", "nomex ht90-40", "aramid", "meta-aramid", "نومكس", "نوميكس"],
     "Cotton-fiberglass": [
         "cotton-fiberglass", "cotton fiberglass", "cotton/fiberglass", "cotton", "sibal fabric", "fabric", "قطن",
     ],
@@ -860,7 +865,8 @@ _GRAVITY = {
 def _material_desc() -> str:
     mats = known_materials()
     listed = f" Known: {', '.join(mats)}." if mats else ""
-    return "Material name. Aliases (e.g. 'cotton-fiberglass', 'SIBAL fabric') are resolved automatically; any other material has no data." + listed
+    return ("Material name. Aliases (e.g. 'cotton-fiberglass' -> SIBAL fabric, 'acrylic' -> PMMA slab, 'Nomex III' -> Nomex) "
+            "are resolved automatically; any other material has no data." + listed)
 
 
 def _scenario_props() -> dict[str, Any]:

@@ -652,8 +652,8 @@ def _limits(trace: list[dict[str, Any]], extra: list[str] | None = None, verdict
     if any(r.get("coverage") == "extrapolation" or r.get("ood_level") == "extrapolation" for r in results):
         out.append("Extrapolation: the condition is far from the labelled NASA tests, so P(burn) is not supported by data there.")
     if any(r.get("backend") == "real" for r in results):
-        out.append("Model scope: SIBAL cotton-fiberglass fabric only, ISS microgravity at 1 atm (NASA BASS-II tests); "
-                   "no flame spread-rate data, and the extraction is pending row-by-row verification.")
+        out.append("Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS "
+                   "microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).")
     if verdict:
         out.append(SAFETY_DISCLAIMER)
     return [f"- {x}" for x in out]

@@ -64,7 +64,7 @@ IN_DATA_Q = "Will SIBAL fabric keep burning at 17.5% O2 and 14.7 psia with 4 cm/
 # --------------------------------------------------------------------------- #
 def test_real_engine_is_picked_up_automatically():
     assert copilot_tools.backend_name() == "real"
-    assert copilot_tools.known_materials() == ["SIBAL"]
+    assert copilot_tools.known_materials() == ["SIBAL fabric", "PMMA film", "PMMA slab", "PMMA rod", "Nomex"]
 
 
 def test_engine_unavailable_is_an_error_not_synthetic_numbers(monkeypatch):
@@ -84,16 +84,20 @@ def test_engine_unavailable_is_an_error_not_synthetic_numbers(monkeypatch):
     assert r["error"]["type"] == "engine_unavailable"
 
 
-def test_material_aliases_resolve_to_sibal_and_others_are_unknown():
-    assert copilot_tools.dispatch("predict", {**IN_DATA, "material": "cotton-fiberglass"})["inputs_normalized"]["material"] == "SIBAL"
-    r = copilot_tools.dispatch("predict", {**IN_DATA, "material": "Nomex"})
+def test_material_aliases_resolve_and_others_are_unknown():
+    assert copilot_tools.dispatch("predict", {**IN_DATA, "material": "cotton-fiberglass"})["inputs_normalized"]["material"] == "SIBAL fabric"
+    assert copilot_tools.dispatch("predict", {**IN_DATA, "material": "acrylic"})["inputs_normalized"]["material"] == "PMMA slab"
+    assert copilot_tools.dispatch("predict", {**IN_DATA, "material": "Nomex III"})["inputs_normalized"]["material"] == "Nomex"
+    r = copilot_tools.dispatch("predict", {**IN_DATA, "material": "Kapton"})
     assert r["ood_flag"] and r["value"] is None and "not in training data" in r["ood_reason"]
 
 
-def test_iss_boundary_is_flagged_and_gives_no_verdict():
+def test_iss_boundary_is_now_answerable_from_data():
+    # v2: GMT96-T7 / GMT96-T8 (21% O2, p. 95) put the ISS cabin O2 inside the SIBAL data.
     r = copilot_tools.dispatch("flammability_boundary", {"material": "SIBAL", "preset": "ISS"})
-    assert r["ood_flag"] and r["flammable_at_some_flow"] is None
-    assert r["flows_extrapolated_cm_s"]
+    assert not r["ood_flag"] and r["flammable_at_some_flow"] is True
+    rod = copilot_tools.dispatch("flammability_boundary", {"material": "PMMA rod", "preset": "ISS"})
+    assert rod["ood_flag"]  # rods were tested only up to 20.8% O2
 
 
 def test_artemis_and_lunar_presets_are_ood():
@@ -108,8 +112,12 @@ def test_fallback_on_real_engine_is_grounded_and_in_distribution():
     assert "GMT" in res.answer and "spread" in res.answer.lower()
 
 
+def test_fallback_iss_sibal_is_in_distribution_with_numbers():
+    res = copilot.ask("Is SIBAL fabric flammable in the ISS cabin atmosphere?", force_fallback=True)
+    assert not res.ood and res.grounding_ok and res.claims_consistent and "GMT96" in res.answer
+
+
 @pytest.mark.parametrize("q", [
-    "Is SIBAL fabric flammable in the ISS cabin atmosphere?",
     "Is SIBAL fabric safe in the Artemis atmosphere with fans off?",
     "Is SIBAL fabric safe in the lunar surface habitat at 10 cm/s?",
     "Is Kapton tape safe in the Artemis atmosphere at 10 cm/s?",
@@ -237,12 +245,13 @@ def test_claim_consistency(answer, label, ok):
 
 def test_inconsistent_llm_verdict_is_regenerated_then_withheld(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "dummy")
-    r = copilot_tools.dispatch("predict", {**IN_DATA, "o2_percent": 16.5, "flow_velocity_cm_s": 7})
+    args = {**IN_DATA, "material": "Nomex", "o2_percent": 21.0, "flow_velocity_cm_s": 10}
+    r = copilot_tools.dispatch("predict", args)
     assert r["label"] == "extinguish"
-    bad = "**Verdict**\nSIBAL will burn.\n**Key numbers**\nnone"
-    client = _Client([_calls(("predict", {**IN_DATA, "o2_percent": 16.5, "flow_velocity_cm_s": 7})), _text(bad), _text(bad)])
+    bad = "**Verdict**\nNomex will burn.\n**Key numbers**\nnone"
+    client = _Client([_calls(("predict", args)), _text(bad), _text(bad)])
     monkeypatch.setattr(copilot, "_get_client", lambda key: client)
-    res = copilot.ask("Will SIBAL burn at 16.5% O2, 14.7 psia and 7 cm/s?")
+    res = copilot.ask("Will Nomex burn at 21% O2, 14.7 psia and 10 cm/s?")
     assert res.mode == "fallback" and not res.grounding_ok and not res.claims_consistent
     assert any("claim-consistency" in n for n in res.notes)
 

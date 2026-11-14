@@ -29,6 +29,7 @@ from src.copilot import CopilotResult, ask, get_api_key, get_model, session_llm_
 SUGGESTED_QUESTIONS = [
     ("🧪 In the data", "Will SIBAL fabric keep burning at 17.5% O2 and 14.7 psia with 4 cm/s flow?"),
     ("🛰️ ISS cabin", "Is SIBAL fabric flammable in the ISS cabin atmosphere?"),
+    ("🧯 Nomex at ISS air", "Does Nomex sustain a flame at 21% O2, 14.7 psia and 10 cm/s?"),
     ("🚀 Artemis + fans off", "Is SIBAL fabric safe in the Artemis atmosphere with fans off?"),
     ("🌕 Lunar habitat (OOD)", "Is SIBAL fabric safe in the lunar surface habitat at 10 cm/s?"),
 ]
@@ -39,7 +40,7 @@ def _badges(res: dict[str, Any]) -> str:
     ood = "⚠️ `Out of distribution`" if res.get("ood") else "🟢 `In distribution`"
     grounding = "✅ `All numbers grounded`" if res.get("grounding_ok") else "❌ `LLM draft failed grounding → tool outputs shown`"
     data = {"mock": "🧪 `Data: mock API (test fixture)`", "unavailable": "⛔ `Prediction Engine unavailable`"}.get(
-        res.get("backend"), "📡 `Data: Prediction Engine (NASA BASS-II SIBAL)`")
+        res.get("backend"), "📡 `Data: Prediction Engine v2 (NASA BASS-II, 5 materials)`")
     return "  ".join([mode, ood, grounding, data, f"⏱️ `{res.get('latency_ms', 0)} ms`"])
 
 

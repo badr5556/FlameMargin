@@ -1,0 +1,73 @@
+{
+  "note": "LOTO metrics. v1 = 21 SIBAL points from 12 tests (Table 7.1). v2 = all BASS-II families (Appendix A + Tables 7.1 and 5.1). 'v2 on the v1 points' scores v2's out-of-fold predictions on the same 21 points.",
+  "v1": {
+    "chosen_model": "gpc",
+    "n_points": 21,
+    "n_tests": 12,
+    "materials": [
+      "SIBAL_fabric"
+    ],
+    "baseline": {
+      "accuracy": 0.333,
+      "balanced_accuracy": 0.318,
+      "brier": 0.263,
+      "log_loss": 0.719,
+      "auc": null,
+      "n_points": 21
+    },
+    "chosen": {
+      "accuracy": 0.667,
+      "balanced_accuracy": 0.668,
+      "brier": 0.229,
+      "log_loss": 0.651,
+      "auc": null,
+      "n_points": 21
+    }
+  },
+  "v2": {
+    "chosen_model": "logreg",
+    "n_points": 192,
+    "n_tests": 85,
+    "materials": [
+      "SIBAL_fabric",
+      "PMMA_film",
+      "PMMA_slab",
+      "PMMA_rod",
+      "Nomex"
+    ],
+    "baseline": {
+      "accuracy": 0.865,
+      "balanced_accuracy": 0.5,
+      "brier": 0.118,
+      "log_loss": 0.401,
+      "auc": 0.061,
+      "n_points": 192
+    },
+    "chosen": {
+      "accuracy": 0.891,
+      "balanced_accuracy": 0.612,
+      "brier": 0.087,
+      "log_loss": 0.306,
+      "auc": 0.82,
+      "n_points": 192
+    }
+  },
+  "v2_on_v1_points": {
+    "baseline": {
+      "accuracy": 0.524,
+      "balanced_accuracy": 0.5,
+      "brier": 0.369,
+      "log_loss": 1.042,
+      "auc": 0.223,
+      "n_points": 21
+    },
+    "chosen": {
+      "accuracy": 0.476,
+      "balanced_accuracy": 0.455,
+      "brier": 0.269,
+      "log_loss": 0.746,
+      "auc": 0.627,
+      "n_points": 21
+    }
+  }
+}
