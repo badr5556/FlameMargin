@@ -30,23 +30,23 @@
     },
     "latency": {
       "ok": true,
-      "detail": "3591 ms ≤ 25000"
+      "detail": "11418 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nExtinguish (P(burn) 0.02, 90% interval 0.01–0.03). This is decision support, not a replacement for NASA-STD-6001 material testing.\n\n**Key numbers**\n- Material: Nomex\n- Oxygen concentration: 21% O2\n- Pressure: 14.7 psia\n- Flow velocity: 10 cm/s\n- Gravity: micro\n\n**Evidence**\nSupported by nearest NASA BASS-II test experiments:\n- **F3** (NASA/TM-20210011385, Table A.2): \"Brief ignition flash, no sustained flame\" at 8 cm/s and 21.7% O2.\n- **F2** (Table A.2): \"Tried to ignite, flame would not sustain\" at 15 cm/s and 21% O2.\n- **F1** (Table A.2): \"Ignited briefly but did not spread at all and extinguished while the igniter was still on\" at 9.5 cm/s and 22.2% O2.\n\n**Operational recommendation**\nNomex exhibits strong flame resistance under these conditions in microgravity. Standard operational protocols for stowage and usage apply; ensure ignition sources are separated from combustible materials as standard practice.\n\n**Limits**\nEvery labelled Nomex point in the data is non-sustained: the model cannot locate a boundary for this material, only repeat what its tests showed.",
+  "answer": "**Verdict**\nExtinguish (P(burn) 0.02, 90% interval 0.01–0.03). Nomex does not sustain a flame under these conditions. This is decision support, not a replacement for NASA-STD-6001 material testing.\n\n**Key numbers**\n- Oxygen: 21%\n- Pressure: 14.7 psia\n- Flow velocity: 10 cm/s\n- Gravity: micro\n- P(burn): 0.02 (90% interval 0.01–0.03)\n\n**Evidence**\nSupported by nearest NASA BASS-II experiments F3, F2, and F1 (NASA/TM-20210011385, Table A.2).\n\n**Operational recommendation**\nStandard operational protocols apply; Nomex exhibits non-sustained ignition at these conditions.\n\n**Limits**\nEvery labelled Nomex point in the data is non-sustained: the model cannot locate a boundary for this material, only repeat what its tests showed.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "material": "Nomex",
-        "o2_percent": 21,
         "pressure_psia": 14.7,
+        "o2_percent": 21,
+        "gravity": "micro",
         "flow_velocity_cm_s": 10,
-        "gravity": "micro"
+        "material": "Nomex"
       },
       "result": {
         "label": "extinguish",
@@ -165,7 +165,7 @@
             "distance": 0.63
           }
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
         "inputs": {
           "material": "Nomex",
           "o2_percent": 21.0,
@@ -182,7 +182,7 @@
             "flow_configuration": "concurrent"
           }
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "Nomex",
           "o2_percent": 21.0,
@@ -194,16 +194,17 @@
         },
         "backend": "real"
       },
-      "ms": 412.6
+      "ms": 496.3
     },
     {
       "name": "nearest_experiments",
       "args": {
         "gravity": "micro",
-        "material": "Nomex",
         "o2_percent": 21,
-        "flow_velocity_cm_s": 10,
-        "pressure_psia": 14.7
+        "k": 3,
+        "pressure_psia": 14.7,
+        "material": "Nomex",
+        "flow_velocity_cm_s": 10
       },
       "result": {
         "value": [
@@ -295,7 +296,7 @@
         ],
         "material_family": "Nomex",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "Nomex",
           "o2_percent": 21.0,
@@ -307,14 +308,14 @@
         },
         "backend": "real"
       },
-      "ms": 2.5
+      "ms": 3.7
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 3591,
+  "latency_ms": 11418,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

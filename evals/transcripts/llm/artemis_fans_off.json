@@ -26,90 +26,30 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2899 ms ≤ 25000"
+      "detail": "11123 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside the tested range for SIBAL fabric (16.4–21%); O2 34% outside training range 14.5–22.2%\n\n**Verdict**\nOut of distribution: No reliable prediction can be made. Both the Artemis cabin pressure (8.2 psia) and oxygen concentration (34%) are far outside the training data envelope of the NASA BASS-II experiments (which were conducted at ~1 atm and 14.5%–22.2% O2 for SIBAL fabric). \n\n**Key numbers**\n- Cabin pressure: 8.2 psia (56.5 kPa)\n- Oxygen concentration: 34%\n- Training range for pressure: 14.4–15 psia\n- Training range for O2 on SIBAL fabric: 16.4–21%\n\n**Evidence**\nNearest historical tests from the BASS-II campaign (none of which match the Artemis atmosphere conditions):\n- `GMT96-T7`: SIBAL fabric, 14.7 psia, 21% O2, 10 cm/s flow (outcome: burn)\n- `GMT96-T8`: SIBAL fabric, 14.7 psia, 21% O2, 5 cm/s flow (outcome: burn)\n- `GMT100-T5`: SIBAL fabric, 14.7 psia, 18.8% O2, 2.4 cm/s flow (outcome: burn)\n\n**Operational recommendation**\nBecause this condition is completely out of distribution, treat SIBAL fabric as potentially extremely flammable at 34% O2 due to the highly oxygen-enriched environment. Do not rely on microgravity quenching assumptions or model extrapolations. Limit exposed quantities of SIBAL fabric, enforce strict ignition source controls, verify that fire detection and suppression systems are active, and perform dedicated NASA-STD-6001 testing under actual Artemis atmosphere conditions before flight approval.\n\n**Limits**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. The prediction engine cannot extrapolate to 34% O2 and 8.2 psia. All nearest-neighbor evidence comes from standard 1 atm tests with much lower oxygen levels (18.8%–21% O2).",
+  "answer": "⚠️ Out of distribution: pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside training range 14.5–22.2%\n\n**Verdict**\nOut of distribution: The Artemis Exploration Atmosphere (8.2 psia, 34% O₂) is entirely outside the training data envelope of the NASA BASS-II experiments (which were conducted at 1 atm and 16.4–21% O₂ for SIBAL fabric). Furthermore, \"fans off\" has no agreed flow value yet in the flammability map. Therefore, no prediction can be trusted.\n\n**Key numbers**\n- Cabin pressure: 8.2 psia (56.5 kPa)\n- Oxygen concentration: 34%\n- Flow velocity: \"fans off\" (undefined flow value)\n- Training envelope limits for SIBAL fabric: 14.4–15 psia pressure, 16.4–21% O₂.\n\n**Evidence**\nNearest historical BASS-II experiments for SIBAL fabric (though evaluated at 1 atm and lower O₂ levels):\n- `GMT96-T7` (21% O₂, 14.7 psia, 10 cm/s flow, outcome: burn)\n- `GMT96-T8` (21% O₂, 14.7 psia, 5 cm/s flow, outcome: burn)\n- `GMT100-T5` (18.8% O₂, 14.7 psia, 2.4 cm/s flow, outcome: burn)\n\n**Operational recommendation**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. Because the Artemis atmosphere combination of 34% O₂ and 8.2 psia is un-modelled and heavily oxygen-enriched relative to the test database, treat SIBAL fabric as an unknown flammability risk. Isolate ignition sources, minimize exposed material, and verify compliance via official NASA-STD-6001 test methods rather than relying on microgravity extrapolation.\n\n**Limits**\n- The prediction engine contains zero test points at 34% O₂ or 8.2 psia for SIBAL fabric.\n- The \"fans off\" ventilation state cannot be evaluated numerically because a residual low-flow cutoff has not been defined in the map.",
   "tool_calls": [
     {
-      "name": "get_mission_preset",
+      "name": "predict",
       "args": {
-        "name": "Artemis Exploration Atmosphere"
+        "material": "SIBAL fabric",
+        "flow_velocity_cm_s": "fans off",
+        "preset": "Artemis Exploration Atmosphere"
       },
       "result": {
-        "name": "Artemis Exploration Atmosphere",
-        "short": "Artemis EA",
-        "pressure_psia": 8.2,
-        "o2_percent": 34.0,
-        "gravity": "micro",
-        "gravity_g": 0.0,
-        "source": "Layer 1 API presets",
-        "data_status": "out of distribution for every material: 8.2 psia and 34% O2 are both outside the BASS-II data",
-        "note": "Presets do not include a ventilation flow. Ask for it, or use flammability_boundary to cover all flows.",
-        "ood_flag": false,
-        "ood_reasons": [],
-        "ood_reason": null
+        "error": {
+          "type": "fans_off_undefined",
+          "message": "'fans off' has no agreed flow value yet: the Flammability Map does not define FANS_OFF_FLOW_CM_S.",
+          "hint": "Do not guess a flow. Call flammability_boundary to show the limit across low flows, or ask the operator for the residual flow in cm/s."
+        }
       },
-      "ms": 0.1
-    },
-    {
-      "name": "flammability_boundary",
-      "args": {
-        "preset": "Artemis Exploration Atmosphere",
-        "flow_velocities_cm_s": [
-          0
-        ],
-        "material": "SIBAL fabric"
-      },
-      "result": {
-        "label": null,
-        "burn_probability": null,
-        "burn_probability_interval": null,
-        "interval_level": null,
-        "value": null,
-        "interval": null,
-        "unit": "probability",
-        "quantity": "P(burn)",
-        "spread_rate_mm_s": null,
-        "spread_rate_reason": "spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material or condition",
-        "ood_flag": true,
-        "ood_reason": "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside training range 14.5–22.2%",
-        "ood_reasons": [
-          "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)",
-          "O2 34% outside training range 14.5–22.2%"
-        ],
-        "ood_level": "out_of_envelope",
-        "coverage": "out_of_envelope",
-        "hard_rule_reasons": [
-          "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)"
-        ],
-        "note": "No boundary outside the tested conditions.",
-        "material_family": "SIBAL_fabric",
-        "evidence": [],
-        "nearest_experiments": [],
-        "inputs": {
-          "material": "SIBAL fabric",
-          "pressure_psia": 8.2,
-          "gravity": "micro",
-          "o2_percent": 34.0
-        },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
-        "inputs_normalized": {
-          "material": "SIBAL fabric",
-          "o2_percent": 34.0,
-          "pressure_psia": 8.2,
-          "pressure_kpa": 56.5,
-          "gravity": "micro",
-          "gravity_g": 0.0,
-          "preset": "Artemis Exploration Atmosphere"
-        },
-        "backend": "real"
-      },
-      "ms": 0.5
+      "ms": 63.8
     },
     {
       "name": "nearest_experiments",
@@ -215,7 +155,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness (no flow given: O2, size and thickness only).",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 34.0,
@@ -230,18 +170,70 @@
         ],
         "backend": "real"
       },
-      "ms": 70.0
+      "ms": 60.2
+    },
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "material": "SIBAL fabric",
+        "preset": "Artemis Exploration Atmosphere"
+      },
+      "result": {
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "interval_level": null,
+        "value": null,
+        "interval": null,
+        "unit": "probability",
+        "quantity": "P(burn)",
+        "spread_rate_mm_s": null,
+        "spread_rate_reason": "spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material or condition",
+        "ood_flag": true,
+        "ood_reason": "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside training range 14.5–22.2%",
+        "ood_reasons": [
+          "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)",
+          "O2 34% outside training range 14.5–22.2%"
+        ],
+        "ood_level": "out_of_envelope",
+        "coverage": "out_of_envelope",
+        "hard_rule_reasons": [
+          "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)"
+        ],
+        "note": "No boundary outside the tested conditions.",
+        "material_family": "SIBAL_fabric",
+        "evidence": [],
+        "nearest_experiments": [],
+        "inputs": {
+          "material": "SIBAL fabric",
+          "pressure_psia": 8.2,
+          "gravity": "micro",
+          "o2_percent": 34.0
+        },
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "inputs_normalized": {
+          "material": "SIBAL fabric",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "real"
+      },
+      "ms": 0.5
     }
   ],
   "ood": true,
   "ood_reasons": [
     "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)",
-    "O2 34% outside training range 14.5–22.2%",
-    "O2 34% outside the tested range for SIBAL fabric (16.4–21%)"
+    "O2 34% outside the tested range for SIBAL fabric (16.4–21%)",
+    "O2 34% outside training range 14.5–22.2%"
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2899,
+  "latency_ms": 11123,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

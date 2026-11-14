@@ -26,14 +26,14 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2073 ms ≤ 25000"
+      "detail": "7849 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Answer**\n\nFire in microgravity behaves differently primarily because of the absence of buoyancy. On Earth, hot, combustion-generated gases are less dense than the surrounding air and rise due to gravity, creating a buoyant upward flow that draws in fresh oxygen and gives flames their familiar teardrop shape. \n\nWithout gravity, this buoyant flow is absent, so a flame in still air becomes spherical (round) rather than teardrop-shaped. Instead of a strong convective draft feeding the flame, combustion relies heavily on slower molecular diffusion to transport oxygen to the flame and heat away from it. This changes how flames spread, the oxygen limits at which materials can sustain combustion, and how ventilation flows interact with burning materials.\n\n**Sources**\n- NASA SVS 31394 (NASA Studies Fire in Microgravity) *(source pending team verification)*",
+  "answer": "**Answer**\n\nFire in microgravity behaves differently primarily because of the absence of buoyancy. On Earth, hot, combustion-generated gases are less dense than the surrounding air and rise due to gravity, creating a buoyant upward flow that draws in fresh oxygen and gives flames their familiar teardrop shape. \n\nWithout gravity, there is no buoyant flow. In still air, a microgravity flame forms a slow, spherical shape and relies entirely on molecular diffusion to transport oxygen to the flame and combustion products away from it. This makes microgravity flames more sensitive to low-speed forced ventilation flows, which can supply oxygen more effectively than diffusion alone, yet can also extinguish flames if the flow velocity becomes too high (blow-off) or too low to sustain combustion.\n\n**Sources**\n- NASA SVS 31394 (NASA Studies Fire in Microgravity) (source pending team verification)",
   "tool_calls": [
     {
       "name": "get_background_fact",
@@ -62,7 +62,7 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2073,
+  "latency_ms": 7849,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

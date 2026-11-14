@@ -211,8 +211,10 @@ def test_metrics_report_models_baseline_and_selection():
     v2 = min(model_v2.V2_CANDIDATES, key=lambda n: m["models"][n]["brier"])
     pre = m["v21_preregistered"]
     assert pre["v2_model"] == v2 and m["models"][v2]["brier"] < m["models"]["baseline"]["brier"]
-    # Pre-registered v2.1 ship rule (docs/model_card.md section 5b): ship only if Brier (3 decimals) <= v2's.
-    assert pre["shipped"] == (m["models"]["logreg21"]["brier"] <= m["models"][v2]["brier"])
+    # Pre-registered v2.1 ship rule (docs/model_card.md section 5b), applied on UNROUNDED Brier.
+    assert "unrounded" in pre["ship_rule"] and pre["rule_amendment"]
+    assert pre["shipped"] == (pre["v21_brier_5dp"] <= pre["v2_brier_5dp"])
+    assert pre["v2_brier_5dp"] < pre["v21_brier_5dp"] and not pre["shipped"], "v2 stays in production"
     assert m["chosen_model"] == ("logreg21" if pre["shipped"] else v2)
     assert m["engine_version"] == ("v2.1" if pre["shipped"] else "v2")
     assert "leave-one-test-out" in m["validation"] and m["bootstrap"]["n_resamples"] >= 200

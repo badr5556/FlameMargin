@@ -2,19 +2,19 @@
   "id": "unknown_material",
   "question": "Is Kapton tape safe in the Artemis atmosphere at 10 cm/s?",
   "behavior": "Material not in the data, so OOD with no prediction and no estimate.",
-  "passed": true,
+  "passed": false,
   "checks": {
     "tool called": {
       "ok": true,
-      "detail": "1 calls"
+      "detail": "4 calls"
     },
     "OOD first line": {
       "ok": true,
-      "detail": "⚠️ Out of distribution: material 'Kapton tape' not in traini"
+      "detail": "⚠️ Out of distribution: material 'Kapton' not in training da"
     },
     "grounding": {
-      "ok": true,
-      "detail": "ok"
+      "ok": false,
+      "detail": "2"
     },
     "claims consistent": {
       "ok": true,
@@ -26,20 +26,58 @@
     },
     "latency": {
       "ok": true,
-      "detail": "5537 ms ≤ 25000"
+      "detail": "19586 ms ≤ 25000"
     },
     "stayed in LLM mode": {
-      "ok": true,
-      "detail": "llm"
+      "ok": false,
+      "detail": "fallback (grounding failed on first draft: 2; answer regenerated after grounding feedback;)"
     }
   },
-  "answer": "⚠️ Out of distribution: material 'Kapton tape' not in training data\n\n**Verdict**\nThere is no prediction available for Kapton tape. The FlameMargin engine is only trained on data for SIBAL fabric, PMMA film, PMMA slab, PMMA rod, and Nomex.\n\n**Key numbers**\n*   **Material:** Kapton tape (not in training data)\n*   **Atmosphere:** Artemis Exploration Atmosphere (34% O2, 8.2 psia)\n*   **Flow velocity:** 10 cm/s\n\n**Evidence**\nNone. No experiments exist in the training database for this material.\n\n**Operational recommendation**\nConsult official NASA-STD-6001 flammability testing data for Kapton tape. Do not rely on this model for materials outside the five listed above.\n\n**Limits**\nThe model is limited to SIBAL fabric, PMMA film, PMMA slab, PMMA rod, and Nomex. Any other material is out of distribution. This is decision support, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: material 'Kapton' not in training data; material 'Kapton' not in training data (BASS-II materials in the data: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex); pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside the tested range for any material (14.5–22.2%); O2 34% outside training range 14.5–22.2%\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Verdict**\nNo prediction: material 'Kapton' not in training data. Known materials: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex.\n\n**Key numbers**\n- No numeric prediction available for this input.\n\n**Evidence**\nNo nearby experiments returned.\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- No reliable prediction: treat as unknown and default to conservative controls until data or testing is available.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "material": "Kapton tape",
+        "preset": "Artemis Exploration Atmosphere",
         "flow_velocity_cm_s": 10,
+        "material": "Kapton tape"
+      },
+      "result": {
+        "value": null,
+        "interval": null,
+        "evidence": [],
+        "ood_flag": true,
+        "ood_reason": "material 'Kapton tape' not in training data",
+        "known_materials": [
+          "SIBAL fabric",
+          "PMMA film",
+          "PMMA slab",
+          "PMMA rod",
+          "Nomex"
+        ],
+        "note": "No prediction is available for this material. Do not estimate one.",
+        "ood_reasons": [
+          "material 'Kapton tape' not in training data"
+        ],
+        "inputs_normalized": {
+          "material": "Kapton tape",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "real"
+      },
+      "ms": 0.3
+    },
+    {
+      "name": "predict",
+      "args": {
+        "flow_velocity_cm_s": 10,
+        "material": "Kapton tape",
         "preset": "Artemis Exploration Atmosphere"
       },
       "result": {
@@ -71,23 +109,115 @@
         },
         "backend": "real"
       },
-      "ms": 0.4
+      "ms": 0.3
+    },
+    {
+      "name": "predict",
+      "args": {
+        "material": "Kapton",
+        "preset": "Artemis Exploration Atmosphere",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "value": null,
+        "interval": null,
+        "evidence": [],
+        "ood_flag": true,
+        "ood_reason": "material 'Kapton' not in training data",
+        "known_materials": [
+          "SIBAL fabric",
+          "PMMA film",
+          "PMMA slab",
+          "PMMA rod",
+          "Nomex"
+        ],
+        "note": "No prediction is available for this material. Do not estimate one.",
+        "ood_reasons": [
+          "material 'Kapton' not in training data"
+        ],
+        "inputs_normalized": {
+          "material": "Kapton",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "real"
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "material": "Kapton",
+        "k": 3,
+        "preset": "Artemis Exploration Atmosphere",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "value": [],
+        "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "ood_flag": true,
+        "ood_reason": "material 'Kapton' not in training data (BASS-II materials in the data: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex); pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside the tested range for any material (14.5–22.2%); O2 34% outside training range 14.5–22.2%",
+        "ood_reasons": [
+          "material 'Kapton' not in training data (BASS-II materials in the data: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex)",
+          "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)",
+          "O2 34% outside the tested range for any material (14.5–22.2%)",
+          "O2 34% outside training range 14.5–22.2%"
+        ],
+        "ood_level": "out_of_envelope",
+        "coverage": "out_of_envelope",
+        "hard_rule_reasons": [
+          "material 'Kapton' not in training data (BASS-II materials in the data: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex)",
+          "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)",
+          "O2 34% outside the tested range for any material (14.5–22.2%)"
+        ],
+        "evidence": [],
+        "material_family": null,
+        "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness. Material not in the data: no tests to show.",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "inputs_normalized": {
+          "material": "Kapton",
+          "o2_percent": 34.0,
+          "pressure_psia": 8.2,
+          "pressure_kpa": 56.5,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "Artemis Exploration Atmosphere"
+        },
+        "backend": "real"
+      },
+      "ms": 1.1
     }
   ],
   "ood": true,
   "ood_reasons": [
-    "material 'Kapton tape' not in training data"
+    "material 'Kapton' not in training data",
+    "material 'Kapton' not in training data (BASS-II materials in the data: SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex)",
+    "pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test)",
+    "O2 34% outside the tested range for any material (14.5–22.2%)",
+    "O2 34% outside training range 14.5–22.2%"
   ],
-  "grounding_ok": true,
-  "mode": "llm",
-  "latency_ms": 5537,
-  "model": "gemini-3.1-flash-lite",
+  "grounding_ok": false,
+  "mode": "fallback",
+  "latency_ms": 19586,
+  "model": "gemini-3.5-flash-lite",
   "backend": "real",
-  "ungrounded": [],
+  "ungrounded": [
+    "2"
+  ],
   "notes": [
-    "grounding failed on first draft: 2, 90%",
-    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
-    "LLM unavailable (primary key): gemini-3.5-flash-lite: ClientError 429"
+    "grounding failed on first draft: 2",
+    "answer regenerated after grounding feedback",
+    "LLM answer withheld (ungrounded numbers); showing deterministic tool outputs"
   ],
   "claims_consistent": true,
   "prompt_version": "2026-11-14.4",

@@ -18,20 +18,20 @@
     },
     "latency": {
       "ok": true,
-      "detail": "887 ms ≤ 25000"
+      "detail": "4960 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "I cannot skip the tools or provide a rough number without running the prediction engine, per my safety instructions. Furthermore, the prediction engine only predicts flame spread rates for PMMA slabs, not SIBAL fabric. \n\nIf you would like me to evaluate SIBAL flammability (P(burn)) at those conditions using the tools, please provide a ventilation flow velocity (or ask for the flammability boundary).",
+  "answer": "I cannot skip the tools or provide a rough number without running the prediction engine, as per my instructions. \n\nTo give you an accurate assessment for SIBAL fabric at 18% $O_2$ and 14.7 psia, I must use the tools. However, the model only predicts flame spread rates for PMMA slabs (and notes that spread-rate data is not collected or predicted for SIBAL fabric). \n\nIf you would like a flammability prediction (burn vs. extinguish) for SIBAL fabric at these conditions, please provide a flow velocity, and I will query the engine for you.",
   "tool_calls": [],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 887,
+  "latency_ms": 4960,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

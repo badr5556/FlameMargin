@@ -14,13 +14,14 @@ Yes. Every number comes from `src/api.py`, the model trained on those 192 points
 Copilot answer exists in a tool result. The old placeholder engine is now only a unit-test fixture.
 
 ### 3. How good is the model?
-Leave-one-test-out (all points of a test held out together): Brier **0.087** for the shipped v2.1 vs **0.118** for the
-baseline, a Brier skill of **+26%**; log-loss 0.320 vs 0.401; AUC 0.80. On SIBAL's own 21 v1 points it is still worse than v1
-(0.258 vs 0.229), and we say so. v2.1 was one pre-registered fix for that (per-material flow terms); it tied v2 overall. It's a proof of pipeline on real NASA data, not a flight-qualification tool.
+Leave-one-test-out (all points of a test held out together): Brier **0.087** for the logistic regression (v2) vs **0.118** for the
+baseline, a Brier skill of **+26%**; log-loss 0.306 vs 0.401; AUC 0.82. On SIBAL's own 21 v1 points it is worse than v1
+(0.269 vs 0.229), and we say so. We pre-registered one fix for that (v2.1, per-material flow terms): it lost to v2 on unrounded
+Brier (0.08710 vs 0.08657) and on log-loss and AUC, so it is reported as an experiment, not shipped. It's a proof of pipeline on real NASA data, not a flight-qualification tool.
 
 ### 4. Why is accuracy 0.89 for the model and 0.865 for the baseline?
 Because 86% of the points are burns, so "always burn" is already 0.865 accurate. That's why we pick models by Brier and
-log-loss and also report AUC (0.80 vs 0.06; the baseline's AUC is degenerate, see the model card footnote). It's explained in the model card.
+log-loss and also report AUC (0.82 vs 0.06; the baseline's AUC is degenerate, see the model card footnote). It's explained in the model card.
 
 ### 5. Is the ISS cabin (21% oxygen) covered?
 Now yes, for four of the five materials. The report says two SIBAL tests at 21% O2 reached steady spread (GMT96-T7 and -T8,
@@ -55,7 +56,7 @@ the guard blocking a citation the model took from its prompt instead of a tool).
 
 ### 11. Does your model respect physics?
 On oxygen, yes: P(burn) never falls as oxygen rises at fixed flow (0 of 18 checked curves). Where it doesn't: it cannot bend
-into SIBAL's low-flow quenching branch (it says 0.71 at 18.7% O2 and 2.2 cm/s, where GMT45-T4 quenched; v2 said 0.78). It's in the model
+into SIBAL's low-flow quenching branch (it says 0.78 at 18.7% O2 and 2.2 cm/s, where GMT45-T4 quenched; the v2.1 experiment said 0.71). It's in the model
 card and tested.
 
 ### 12. Do you predict flame spread rate?
@@ -82,16 +83,16 @@ the PIs' raw data instead of digitizing them. 3. Add pressure as a feature once 
 ### 16. Your own map shows NASA "extinguished" points inside the orange zone. Doesn't your model contradict NASA?
 On some points, yes, and we show them instead of hiding them. Of the 26 extinguished NASA points, the final model gives only 7 a
 P(burn) below 0.5 (6 when each test is held out), and 3 of those 7 are the Nomex tests it simply repeats. Of the other 19,
-10 sit just above the line (P 0.5–0.65), among them 6 SIBAL quenches at 2.2–5 cm/s: the low-flow quench edge is where the
+9 sit just above the line (P 0.5–0.65), among them 6 SIBAL quenches at 2.2–5 cm/s: the low-flow quench edge is where the
 model is weakest. A few PMMA slab extinctions at 19–21.6% O2 get P(burn) above 0.75: oxygen, flow and thickness alone do not
 explain them. (Recompute: `api.get_engine()` scored on its own training points.) We pre-registered one physics-motivated fix before fitting it (v2.1:
-per-material flow terms for SIBAL and PMMA slab), with a ship rule written in advance. It tied v2 on Brier (0.087) and shipped
-by that rule, but it moved none of those points below 0.5, and we report that (model card section 5b). The model is a
+per-material flow terms for SIBAL and PMMA slab), with a ship rule written in advance. It lost to v2 on unrounded Brier, so
+v2 stays in production, and it moved no extra point below 0.5; we report all of it (model card section 5b). The model is a
 conservative screen: at the 0.5 line it misses 1 of 166 NASA burns, and the price is that it rarely says "won't burn".
 
 ### 17. Isn't your accuracy high only because 86% of the points are burns?
 Yes, accuracy alone would be meaningless: "always burn" scores 0.865. That's why we never headline accuracy. The header shows
-leave-one-test-out AUC 0.80 (ranking burns above extinctions on tests the model never saw) and a Brier skill of +26% over that
+leave-one-test-out AUC 0.82 (ranking burns above extinctions on tests the model never saw) and a Brier skill of +26% over that
 "always the burn rate" baseline (1 − 0.087 / 0.118, computed from `models/metrics_v2.json`). We also report balanced accuracy
 (0.612), log-loss, per-material scores, a reliability plot, and the safety operating point: burn recall 0.994 at the 0.5 line.
 
@@ -106,6 +107,6 @@ stress test shows the honest picture: without Nomex data the model calls Nomex f
 |---|---|
 | 192 points, five materials, one pressure | Leave-one-test-out metrics next to a baseline; per-material OOD rules; nearest NASA tests (with quote and page) shown with every answer |
 | One-sided labels: PMMA film all burns, Nomex 3 non-sustained tests | Said in every answer for those materials; the model only repeats those tests |
-| The engine is worse than v1 on SIBAL's own points (v2.1 0.258, v2 0.269, v1 0.229) | Reported in the model card and README; the pre-registered per-material flow fix (v2.1) narrowed it, did not close it |
+| v2 is worse than v1 on SIBAL's own points (0.269 vs 0.229) | Reported in the model card and README; the pre-registered per-material flow fix (v2.1) only narrowed it (0.258) and lost overall, so it is not shipped |
 | 55 of 192 points are medium-confidence | Labelled per point; a high-confidence-only run is reported (Brier 0.116 vs 0.109) |
 | No fans-off flow value | Not invented; slider labelled "Fans OFF / near-quiescent" with verified context only (C3, C8b) |

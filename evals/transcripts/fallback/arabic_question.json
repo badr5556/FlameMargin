@@ -22,10 +22,10 @@
     },
     "latency": {
       "ok": true,
-      "detail": "402 ms ≤ 3000"
+      "detail": "488 ms ≤ 3000"
     }
   },
-  "answer": "_(Fallback mode: deterministic template, English only.)_\n\n**Verdict**\n**SIBAL fabric is predicted to BURN** at 17.5% O2, 14.7 psia, 4 cm/s flow, µg.\n\n**Key numbers**\n- Burn probability P(burn): 0.63 (90% interval 0.47–0.77)\n- Flame spread rate: not predicted (spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material).\n\n**Evidence**\n- GMT100-T13 (T'ien, Table 7.1/A.6, p. 96; SIBAL fabric, 17.5% O2, 14.7 psia, 4 cm/s) → burn\n- GMT100-T16 (T'ien, Table 7.1/A.6, p. 112; SIBAL fabric, 17.6% O2, 14.7 psia, 4 cm/s) → burn\n- GMT178-T11 (T'ien, Table 7.1/A.6, p. 112; SIBAL fabric, 17.1% O2, 14.7 psia, 4 cm/s) → burn\n\n**Operational recommendation**\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "_(Fallback mode: deterministic template, English only.)_\n\n**Verdict**\n**SIBAL fabric is predicted to BURN** at 17.5% O2, 14.7 psia, 4 cm/s flow, µg.\n\n**Key numbers**\n- Burn probability P(burn): 0.65 (90% interval 0.52–0.78)\n- Flame spread rate: not predicted (spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material).\n\n**Evidence**\n- GMT100-T13 (T'ien, Table 7.1/A.6, p. 96; SIBAL fabric, 17.5% O2, 14.7 psia, 4 cm/s) → burn\n- GMT100-T16 (T'ien, Table 7.1/A.6, p. 112; SIBAL fabric, 17.6% O2, 14.7 psia, 4 cm/s) → burn\n- GMT178-T11 (T'ien, Table 7.1/A.6, p. 112; SIBAL fabric, 17.1% O2, 14.7 psia, 4 cm/s) → burn\n\n**Operational recommendation**\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
     {
       "name": "predict",
@@ -37,22 +37,22 @@
       },
       "result": {
         "label": "burn",
-        "burn_probability": 0.63,
+        "burn_probability": 0.65,
         "burn_probability_interval": [
-          0.47,
-          0.77
+          0.52,
+          0.78
         ],
         "interval_level": 0.9,
-        "value": 0.63,
+        "value": 0.65,
         "interval": [
-          0.47,
-          0.77
+          0.52,
+          0.78
         ],
         "unit": "probability",
         "interval_note": "90% bootstrap interval over NASA tests",
         "bootstrap_interval_raw": [
-          0.47,
-          0.77
+          0.52,
+          0.78
         ],
         "quantity": "P(burn): probability that a flame is sustained",
         "spread_rate_mm_s": null,
@@ -150,7 +150,7 @@
             "distance": 0.21
           }
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
         "inputs": {
           "material": "SIBAL fabric",
           "o2_percent": 17.5,
@@ -169,7 +169,7 @@
             "width_cm": 2.2
           }
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 17.5,
@@ -181,7 +181,7 @@
         },
         "backend": "real"
       },
-      "ms": 397.7
+      "ms": 483.5
     },
     {
       "name": "nearest_experiments",
@@ -282,7 +282,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 17.5,
@@ -294,14 +294,14 @@
         },
         "backend": "real"
       },
-      "ms": 2.4
+      "ms": 2.8
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 402,
+  "latency_ms": 488,
   "model": null,
   "backend": "real",
   "ungrounded": [],

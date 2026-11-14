@@ -362,8 +362,9 @@ def train(n_bootstrap: int = N_BOOTSTRAP, verbose: bool = True) -> tuple[dict[st
     candidates = [n for n in MODEL_LABELS if n != "baseline"]
     best = min(V2_CANDIDATES, key=lambda n: results[n]["brier"])
     chosen_v2 = best if results[best]["brier"] < results["baseline"]["brier"] else "logreg"
-    # Pre-registered v2.1 ship rule: ship only if its overall LOTO Brier (3 decimals) is <= v2's.
-    ship_v21 = results["logreg21"]["brier"] <= results[chosen_v2]["brier"]
+    # Pre-registered v2.1 ship rule: ship only if its overall LOTO Brier is <= v2's, compared UNROUNDED (amended
+    # 2026-11-14: the spec said "3 decimals", which turned a 0.08710 vs 0.08657 loss into a tie; see model card 5b).
+    ship_v21 = brier_score_loss(y, oof["logreg21"]) <= brier_score_loss(y, oof[chosen_v2])
     chosen = "logreg21" if ship_v21 else chosen_v2
 
     # Sensitivity: high-confidence points only (LOTO on those points) vs high+medium scored on the same points.
@@ -418,7 +419,10 @@ def train(n_bootstrap: int = N_BOOTSTRAP, verbose: bool = True) -> tuple[dict[st
         "v21_preregistered": {
             "spec": "docs/model_card.md section 5b (committed before fitting)",
             "change": "material x log10(flow) and x log10(flow)^2 for " + ", ".join(FLOW_SHAPE_FAMILIES) + "; C = 1.0 unchanged",
-            "ship_rule": "ship v2.1 only if its overall LOTO Brier (3 decimals) <= v2's",
+            "ship_rule": "ship v2.1 only if its overall LOTO Brier (unrounded) <= v2's",
+            "rule_amendment": "the pre-registered text said '3 decimals'; after the first run (both 0.087) the team "
+                              "decided to compare unrounded values, the stricter reading, so v2.1 (0.08710) does not "
+                              "beat v2 (0.08657) and v2 stays in production. Model card section 5b.",
             "v2_model": chosen_v2, "v2_brier": results[chosen_v2]["brier"], "v21_brier": results["logreg21"]["brier"],
             "v2_brier_5dp": round(float(brier_score_loss(y, oof[chosen_v2])), 5),
             "v21_brier_5dp": round(float(brier_score_loss(y, oof["logreg21"])), 5),

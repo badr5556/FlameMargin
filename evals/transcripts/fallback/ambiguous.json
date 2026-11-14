@@ -2,7 +2,7 @@
   "id": "ambiguous",
   "question": "Is it safe?",
   "behavior": "Asks a clarifying question or states its assumptions; must not invent numbers.",
-  "passed": true,
+  "passed": false,
   "checks": {
     "grounding": {
       "ok": true,
@@ -17,11 +17,11 @@
       "detail": ""
     },
     "latency": {
-      "ok": true,
-      "detail": "1683 ms ≤ 3000"
+      "ok": false,
+      "detail": "3416 ms ≤ 3000"
     }
   },
-  "answer": "⚠️ Out of distribution: O2 21% outside the tested range for PMMA rod (14.5–20.8%)\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Assumptions**\n- No material specified: showing every material in the model.\n- No atmosphere specified: assuming the ISS cabin preset.\n\n**Verdict**\n**SIBAL fabric is FLAMMABLE** at 21% O2 for modeled flows from 3 to 30 cm/s.\n**PMMA film is FLAMMABLE** at 21% O2 for modeled flows from 1 to 10 cm/s.\n**PMMA slab is FLAMMABLE** at 21% O2 for modeled flows from 2 to 20 cm/s.\n**No verdict for PMMA rod at 21% O2**: every modeled flow is outside or far from the labelled NASA data.\n**Nomex is not flammable at any modeled flow**: P(burn) < 0.5 at 21% O2 at every modeled flow inside its data.\n\n**Key numbers**\n- At 8 cm/s, P(burn) is already ≥ 0.5 at the lowest modeled O2 (16.4%).\n- At 1 cm/s, P(burn) is already ≥ 0.5 at the lowest modeled O2 (17.3%).\n- Lowest O2 where P(burn) ≥ 0.5 for PMMA slab: 17% at 2 cm/s, 14.7 psia.\n- At 1 cm/s, P(burn) is already ≥ 0.5 at the lowest modeled O2 (14.5%).\n\n**Evidence**\n- GMT96-T7 (T'ien, Table 7.1/A.6, p. 95; SIBAL fabric, 21% O2, 14.7 psia, 10 cm/s) → burn\n- GMT96-T8 (T'ien, Table 7.1/A.6, p. 95; SIBAL fabric, 21% O2, 14.7 psia, 5 cm/s) → burn\n- GMT100-T5 (T'ien, Table 7.1/A.6, p. 113; SIBAL fabric, 18.8% O2, 14.7 psia, 2.4 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: O2 21% outside the tested range for PMMA rod (14.5–20.8%)\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Assumptions**\n- No material specified: showing every material in the model.\n- No atmosphere specified: assuming the ISS cabin preset.\n\n**Verdict**\n**SIBAL fabric is FLAMMABLE** at 21% O2 for modeled flows from 3 to 30 cm/s.\n**PMMA film is FLAMMABLE** at 21% O2 for modeled flows from 1 to 10 cm/s.\n**PMMA slab is FLAMMABLE** at 21% O2 for modeled flows from 2 to 20 cm/s.\n**No verdict for PMMA rod at 21% O2**: every modeled flow is outside or far from the labelled NASA data.\n**Nomex is not flammable at any modeled flow**: P(burn) < 0.5 at 21% O2 at every modeled flow inside its data.\n\n**Key numbers**\n- At 8 cm/s, P(burn) is already ≥ 0.5 at the lowest modeled O2 (16.4%).\n- At 1 cm/s, P(burn) is already ≥ 0.5 at the lowest modeled O2 (17.3%).\n- Lowest O2 where P(burn) ≥ 0.5 for PMMA slab: 17.25% at 20 cm/s, 14.7 psia.\n- At 1 cm/s, P(burn) is already ≥ 0.5 at the lowest modeled O2 (14.5%).\n\n**Evidence**\n- GMT96-T7 (T'ien, Table 7.1/A.6, p. 95; SIBAL fabric, 21% O2, 14.7 psia, 10 cm/s) → burn\n- GMT96-T8 (T'ien, Table 7.1/A.6, p. 95; SIBAL fabric, 21% O2, 14.7 psia, 5 cm/s) → burn\n- GMT100-T5 (T'ien, Table 7.1/A.6, p. 113; SIBAL fabric, 18.8% O2, 14.7 psia, 2.4 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- Treat the material as flammable in this atmosphere: minimize exposed quantity and keep it away from ignition sources.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
   "tool_calls": [
     {
       "name": "flammability_boundary",
@@ -34,13 +34,13 @@
         "value": [
           {
             "flow_velocity_cm_s": 3.0,
-            "o2_percent_limit": 17.05,
+            "o2_percent_limit": 16.7,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.93,
+            "p_burn_at_o2": 0.95,
             "p_burn_interval_at_o2": [
-              0.83,
+              0.88,
               0.99
             ],
             "knn_distance_at_o2": 0.67,
@@ -68,7 +68,7 @@
             "in_distribution_at_limit": true,
             "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.92,
+              0.9,
               0.99
             ],
             "knn_distance_at_o2": 0.29,
@@ -80,10 +80,10 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.97,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.93,
-              1.0
+              0.9,
+              0.99
             ],
             "knn_distance_at_o2": 0.0,
             "extrapolation_at_o2": false
@@ -94,10 +94,10 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.97,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.93,
-              1.0
+              0.9,
+              0.99
             ],
             "knn_distance_at_o2": 0.54,
             "extrapolation_at_o2": false
@@ -108,10 +108,10 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.97,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.93,
-              1.0
+              0.89,
+              0.99
             ],
             "knn_distance_at_o2": 0.91,
             "extrapolation_at_o2": false
@@ -122,9 +122,9 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.98,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.9,
+              0.86,
               1.0
             ],
             "knn_distance_at_o2": 1.19,
@@ -136,7 +136,7 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.98,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
               0.0,
               1.0
@@ -148,7 +148,7 @@
         "interval": [
           [
             16.4,
-            18.35
+            17.7
           ],
           [
             16.4,
@@ -156,19 +156,15 @@
           ],
           [
             16.4,
-            17.1
+            17.3
           ],
           [
             16.4,
-            17.1
+            17.3
           ],
           [
             16.4,
-            17.15
-          ],
-          [
-            16.4,
-            17.4
+            17.6
           ],
           [
             16.4,
@@ -176,7 +172,11 @@
           ],
           [
             16.4,
-            18.65
+            18.2
+          ],
+          [
+            16.4,
+            18.85
           ]
         ],
         "interval_level": 0.9,
@@ -226,11 +226,11 @@
           "GMT96-T8",
           "GMT100-T5"
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "o2_limit_range_percent": [
           16.4,
-          17.05
+          16.7
         ],
         "inputs_normalized": {
           "material": "SIBAL fabric",
@@ -243,7 +243,7 @@
         },
         "backend": "real"
       },
-      "ms": 394.1
+      "ms": 494.9
     },
     {
       "name": "flammability_boundary",
@@ -408,8 +408,8 @@
           "B13",
           "B9"
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "o2_limit_range_percent": [
           17.3,
           17.3
@@ -425,7 +425,7 @@
         },
         "backend": "real"
       },
-      "ms": 392.9
+      "ms": 996.5
     },
     {
       "name": "flammability_boundary",
@@ -438,11 +438,11 @@
         "value": [
           {
             "flow_velocity_cm_s": 1.0,
-            "o2_percent_limit": 17.05,
+            "o2_percent_limit": 18.15,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": false,
-            "p_burn_at_o2": 0.95,
+            "p_burn_at_o2": 0.89,
             "p_burn_interval_at_o2": [
               0.0,
               1.0
@@ -452,55 +452,55 @@
           },
           {
             "flow_velocity_cm_s": 2.0,
-            "o2_percent_limit": 17.0,
+            "o2_percent_limit": 17.85,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.95,
+            "p_burn_at_o2": 0.91,
             "p_burn_interval_at_o2": [
-              0.85,
-              0.99
+              0.77,
+              0.97
             ],
             "knn_distance_at_o2": 0.71,
             "extrapolation_at_o2": false
           },
           {
             "flow_velocity_cm_s": 3.0,
-            "o2_percent_limit": 17.05,
+            "o2_percent_limit": 17.75,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.95,
+            "p_burn_at_o2": 0.91,
             "p_burn_interval_at_o2": [
-              0.87,
-              0.99
+              0.81,
+              0.97
             ],
             "knn_distance_at_o2": 0.39,
             "extrapolation_at_o2": false
           },
           {
             "flow_velocity_cm_s": 5.0,
-            "o2_percent_limit": 17.15,
+            "o2_percent_limit": 17.55,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.95,
+            "p_burn_at_o2": 0.92,
             "p_burn_interval_at_o2": [
-              0.87,
-              0.99
+              0.84,
+              0.97
             ],
             "knn_distance_at_o2": 0.1,
             "extrapolation_at_o2": false
           },
           {
             "flow_velocity_cm_s": 8.0,
-            "o2_percent_limit": 17.35,
+            "o2_percent_limit": 17.45,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.94,
+            "p_burn_at_o2": 0.93,
             "p_burn_interval_at_o2": [
-              0.87,
+              0.85,
               0.98
             ],
             "knn_distance_at_o2": 0.0,
@@ -508,13 +508,13 @@
           },
           {
             "flow_velocity_cm_s": 10.0,
-            "o2_percent_limit": 17.45,
+            "o2_percent_limit": 17.4,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.94,
+            "p_burn_at_o2": 0.93,
             "p_burn_interval_at_o2": [
-              0.87,
+              0.86,
               0.98
             ],
             "knn_distance_at_o2": 0.0,
@@ -522,13 +522,13 @@
           },
           {
             "flow_velocity_cm_s": 15.0,
-            "o2_percent_limit": 17.7,
+            "o2_percent_limit": 17.3,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.92,
+            "p_burn_at_o2": 0.93,
             "p_burn_interval_at_o2": [
-              0.84,
+              0.86,
               0.98
             ],
             "knn_distance_at_o2": 0.09,
@@ -536,14 +536,14 @@
           },
           {
             "flow_velocity_cm_s": 20.0,
-            "o2_percent_limit": 17.9,
+            "o2_percent_limit": 17.25,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.91,
+            "p_burn_at_o2": 0.94,
             "p_burn_interval_at_o2": [
-              0.78,
-              0.98
+              0.84,
+              0.99
             ],
             "knn_distance_at_o2": 0.0,
             "extrapolation_at_o2": false
@@ -552,23 +552,19 @@
         "interval": [
           [
             16.8,
-            19.1
+            19.9
           ],
           [
             16.8,
-            18.8
+            19.3
           ],
           [
             16.8,
-            18.65
+            18.9
           ],
           [
             16.8,
-            18.3
-          ],
-          [
-            16.8,
-            18.2
+            18.5
           ],
           [
             16.8,
@@ -576,11 +572,15 @@
           ],
           [
             16.8,
-            18.7
+            18.25
           ],
           [
             16.8,
-            19.15
+            18.35
+          ],
+          [
+            16.8,
+            18.5
           ]
         ],
         "interval_level": 0.9,
@@ -597,8 +597,8 @@
           "width_cm": 2.2
         },
         "notes": [],
-        "min_o2_percent_limit": 17.0,
-        "flow_at_min_limit_cm_s": 2.0,
+        "min_o2_percent_limit": 17.25,
+        "flow_at_min_limit_cm_s": 20.0,
         "spread_rate_mm_s": null,
         "spread_rate_reason": "spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material or condition",
         "note": "o2_percent_limit = None means P(burn) < 0.5 at every O2 from 16.8% to 22.2% at that flow. Limit statuses: crossing | burns_at_all_tested_o2 | no_burn_in_tested_o2.",
@@ -626,15 +626,15 @@
         "coverage": "in_distribution",
         "hard_rule_reasons": [],
         "evidence": [
-          "M4",
-          "M13",
-          "M17"
+          "M15",
+          "M3",
+          "M2"
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "o2_limit_range_percent": [
-          17.0,
-          17.9
+          17.25,
+          18.15
         ],
         "inputs_normalized": {
           "material": "PMMA slab",
@@ -647,7 +647,7 @@
         },
         "backend": "real"
       },
-      "ms": 467.2
+      "ms": 463.7
     },
     {
       "name": "flammability_boundary",
@@ -718,15 +718,11 @@
         "interval": [
           [
             14.5,
+            15.65
+          ],
+          [
+            14.5,
             15.35
-          ],
-          [
-            14.5,
-            15.25
-          ],
-          [
-            14.5,
-            15.25
           ],
           [
             14.5,
@@ -734,19 +730,23 @@
           ],
           [
             14.5,
-            15.3
+            15.1
           ],
           [
             14.5,
-            15.4
+            14.95
           ],
           [
             14.5,
-            15.6
+            14.85
           ],
           [
             14.5,
-            15.8
+            15.0
+          ],
+          [
+            14.5,
+            15.1
           ]
         ],
         "interval_level": 0.9,
@@ -786,8 +786,8 @@
           "P19",
           "P2"
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "o2_limit_range_percent": [
           14.5,
           14.5
@@ -803,7 +803,7 @@
         },
         "backend": "real"
       },
-      "ms": 9.5
+      "ms": 531.5
     },
     {
       "name": "flammability_boundary",
@@ -906,8 +906,8 @@
           "F2",
           "F1"
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "Nomex",
           "o2_percent": 21.0,
@@ -919,7 +919,7 @@
         },
         "backend": "real"
       },
-      "ms": 412.0
+      "ms": 923.4
     },
     {
       "name": "nearest_experiments",
@@ -1018,7 +1018,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness (no flow given: O2, size and thickness only).",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 21.0,
@@ -1030,7 +1030,7 @@
         },
         "backend": "real"
       },
-      "ms": 2.8
+      "ms": 2.4
     }
   ],
   "ood": true,
@@ -1039,7 +1039,7 @@
   ],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 1683,
+  "latency_ms": 3416,
   "model": null,
   "backend": "real",
   "ungrounded": [],

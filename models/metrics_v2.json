@@ -1,6 +1,6 @@
 {
   "generated_utc": "2026-11-14",
-  "engine_version": "v2.1",
+  "engine_version": "v2",
   "data": {
     "points_file": "data/processed/flame_points_v2.csv",
     "points_sha256": "6cb15b94ee4b5ae776bc7e8763d358053cebc6633165c0d385005232f4ac9ba4",
@@ -529,19 +529,20 @@
     }
   },
   "selection_rule": "lowest LOTO Brier score; if none beats the baseline, ship logreg",
-  "chosen_model": "logreg21",
+  "chosen_model": "logreg",
   "chosen_beats_baseline": true,
   "selection_note": "Lowest LOTO Brier: logreg (0.087) vs baseline (0.118).",
   "v21_preregistered": {
     "spec": "docs/model_card.md section 5b (committed before fitting)",
     "change": "material x log10(flow) and x log10(flow)^2 for SIBAL_fabric, PMMA_slab; C = 1.0 unchanged",
-    "ship_rule": "ship v2.1 only if its overall LOTO Brier (3 decimals) <= v2's",
+    "ship_rule": "ship v2.1 only if its overall LOTO Brier (unrounded) <= v2's",
+    "rule_amendment": "the pre-registered text said '3 decimals'; after the first run (both 0.087) the team decided to compare unrounded values, the stricter reading, so v2.1 (0.08710) does not beat v2 (0.08657) and v2 stays in production. Model card section 5b.",
     "v2_model": "logreg",
     "v2_brier": 0.087,
     "v21_brier": 0.087,
     "v2_brier_5dp": 0.08657,
     "v21_brier_5dp": 0.0871,
-    "shipped": true,
+    "shipped": false,
     "extinguished_points_below_p_0_5": {
       "logreg": {
         "n_extinguished": 26,
@@ -556,7 +557,7 @@
     }
   },
   "calibration_oof": {
-    "model": "logreg21",
+    "model": "logreg",
     "table": [
       {
         "bin": "0.0-0.2",
@@ -572,24 +573,24 @@
       },
       {
         "bin": "0.4-0.6",
-        "n": 18,
-        "mean_predicted": 0.537,
-        "observed_burn_rate": 0.5
+        "n": 13,
+        "mean_predicted": 0.516,
+        "observed_burn_rate": 0.462
       },
       {
         "bin": "0.6-0.8",
-        "n": 26,
-        "mean_predicted": 0.698,
-        "observed_burn_rate": 0.769
+        "n": 30,
+        "mean_predicted": 0.689,
+        "observed_burn_rate": 0.767
       },
       {
         "bin": "0.8-1.0",
-        "n": 145,
-        "mean_predicted": 0.949,
-        "observed_burn_rate": 0.945
+        "n": 146,
+        "mean_predicted": 0.945,
+        "observed_burn_rate": 0.938
       }
     ],
-    "mean_predicted_p_burn": 0.862,
+    "mean_predicted_p_burn": 0.861,
     "observed_burn_rate": 0.865
   },
   "stress_test_leave_one_family_out": {

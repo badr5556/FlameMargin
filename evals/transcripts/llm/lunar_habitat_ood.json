@@ -26,22 +26,21 @@
     },
     "latency": {
       "ok": true,
-      "detail": "2766 ms ≤ 25000"
+      "detail": "14508 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside the tested range for SIBAL fabric (16.4–21%).\n\n**Verdict**\nThe prediction engine returns an out-of-distribution warning, so no definitive safety verdict can be established. SIBAL fabric tests in the training database are limited to ISS microgravity (1 g gravity level is unsupported), near-ambient pressure (14.4–15 psia), and lower oxygen concentrations (16.4–21% O₂). \n\n**Key numbers**\n- Flow velocity: 10 cm/s\n- Oxygen concentration: 34% (Preset: Lunar surface habitat)\n- Pressure: 8.2 psia (56.5 kPa)\n- Gravity: lunar (0.166 g)\n- Tested O₂ range for SIBAL fabric: 16.4–21% O₂\n- Training pressure range: 14.4–15 psia\n\n**Evidence**\nNearest matching BASS-II baseline experiments (tested at 1 atm, microgravity, 21% O₂):\n- **GMT96-T7**: SIBAL fabric, 10 cm/s flow, 21% O₂, 14.7 psia, microgravity — **burn** (steady spread rate observed)\n- **GMT96-T8**: SIBAL fabric, 5 cm/s flow, 21% O₂, 14.7 psia, microgravity — **burn**\n- **GMT100-T5**: SIBAL fabric, 10 cm/s flow, 18.8% O₂, 14.7 psia, microgravity — **burn**\n\n**Operational recommendation**\nBecause this condition falls entirely outside the validated envelope (higher oxygen and reduced pressure in lunar gravity), apply conservative margin controls: limit the amount of exposed SIBAL fabric, strictly isolate potential ignition sources, and ensure fire detection and suppression systems remain active. This is decision support, not a replacement for NASA-STD-6001 material testing.\n\n**Limits**\nAll training data for SIBAL fabric comes exclusively from ISS microgravity tests at ambient 1 atm pressure and lower oxygen percentages. No long-duration fire experiments have been conducted in partial lunar gravity.",
+  "answer": "⚠️ Out of distribution: no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first); O2 34% outside the tested range for SIBAL fabric (16.4–21%); O2 34% outside training range 14.5–22.2%\n\n**Verdict**\nOut of distribution: The model cannot provide a reliable prediction because the requested lunar habitat conditions (lunar gravity, 8.2 psia pressure, and 34% O₂ using the lunar surface habitat preset) are entirely outside the training envelope of the BASS-II dataset, which contains only ISS microgravity data at ~14.7 psia and 16.4–21% O₂ for SIBAL fabric.\n\n**Key numbers**\n- Flow velocity: 10 cm/s\n- Pressure: 8.2 psia (outside training range 14.4–15 psia)\n- Oxygen concentration: 34% (outside tested range for SIBAL fabric of 16.4–21%)\n- Gravity: lunar (0.166 g; dataset is microgravity only)\n\n**Evidence**\nNearest reference experiments from BASS-II (though performed in microgravity at 14.7 psia and 21% or 18.8% O₂):\n- **GMT96-T7**: SIBAL fabric, 10 cm/s flow, 21% O₂, 14.7 psia — Burn (NASA/TM-20210011385, Table 7.1 / Table A.6)\n- **GMT96-T8**: SIBAL fabric, 5 cm/s flow, 21% O₂, 14.7 psia — Burn (NASA/TM-20210011385, Table 7.1 / Table A.6)\n- **GMT100-T5**: SIBAL fabric, 10 cm/s flow, 18.8% O₂, 14.7 psia — Burn (NASA/TM-20210011385, Table 7.1 / Table A.6)\n\n**Operational recommendation**\nBecause this scenario is strictly out of distribution, do not rely on this prediction for safety margins. Exercise conservative mission controls: limit exposed material quantities, isolate ignition sources, maintain ready fire detection and suppression systems, and adhere strictly to formal NASA-STD-6001 material testing. (This is decision support, not a replacement for NASA-STD-6001 material testing.)\n\n**Limits**\nAll parameters (lunar gravity, 8.2 psia pressure, and 34% O₂) fall well outside the validated envelope of the underlying BASS-II training dataset. No predictions or safety verdicts can be reliably established from the available data for these specific conditions.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "gravity": "lunar",
         "material": "SIBAL fabric",
-        "preset": "Lunar surface habitat",
-        "flow_velocity_cm_s": 10
+        "flow_velocity_cm_s": 10,
+        "preset": "Lunar surface habitat"
       },
       "result": {
         "label": null,
@@ -166,7 +165,7 @@
             "width_cm": 2.2
           }
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 34.0,
@@ -179,15 +178,14 @@
         },
         "backend": "real"
       },
-      "ms": 4.2
+      "ms": 3.7
     },
     {
       "name": "nearest_experiments",
       "args": {
-        "flow_velocity_cm_s": 10,
         "material": "SIBAL fabric",
-        "preset": "Lunar surface habitat",
-        "gravity": "lunar"
+        "flow_velocity_cm_s": 10,
+        "preset": "Lunar surface habitat"
       },
       "result": {
         "value": [
@@ -289,7 +287,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 34.0,
@@ -315,7 +313,7 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 2766,
+  "latency_ms": 14508,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

@@ -22,7 +22,7 @@
     },
     "latency": {
       "ok": true,
-      "detail": "6 ms ≤ 3000"
+      "detail": "8 ms ≤ 3000"
     }
   },
   "answer": "⚠️ Out of distribution: pressure 5 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 40% outside training range 14.5–22.2%; O2 40% outside the tested range for SIBAL fabric (16.4–21%)\nTreat every number below as an extrapolation, not a validated prediction.\n\n**Assumptions**\n- No material specified: showing every material in the model.\n\n**Verdict**\nNo prediction: pressure 5 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 40% outside training range 14.5–22.2%. Known materials: .\nNo prediction: pressure 5 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 40% outside training range 14.5–22.2%. Known materials: .\nNo prediction: pressure 5 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 40% outside training range 14.5–22.2%. Known materials: .\nNo prediction: pressure 5 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 40% outside training range 14.5–22.2%. Known materials: .\nNo prediction: pressure 5 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 40% outside training range 14.5–22.2%. Known materials: .\n\n**Key numbers**\n- No numeric prediction available for this input.\n\n**Evidence**\n- GMT96-T7 (T'ien, Table 7.1/A.6, p. 95; SIBAL fabric, 21% O2, 14.7 psia, 10 cm/s) → burn\n- GMT96-T8 (T'ien, Table 7.1/A.6, p. 95; SIBAL fabric, 21% O2, 14.7 psia, 5 cm/s) → burn\n- GMT100-T5 (T'ien, Table 7.1/A.6, p. 113; SIBAL fabric, 18.8% O2, 14.7 psia, 2.4 cm/s) → burn\n\n**Operational recommendation**\n- Do not use this output for a go/no-go decision; it is outside the validated data. Apply the most conservative material controls and request testing.\n- No reliable prediction: treat as unknown and default to conservative controls until data or testing is available.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
@@ -66,7 +66,7 @@
           "gravity": "micro",
           "o2_percent": 40.0
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 40.0,
@@ -118,7 +118,7 @@
           "gravity": "micro",
           "o2_percent": 40.0
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "PMMA film",
           "o2_percent": 40.0,
@@ -170,7 +170,7 @@
           "gravity": "micro",
           "o2_percent": 40.0
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "PMMA slab",
           "o2_percent": 40.0,
@@ -222,7 +222,7 @@
           "gravity": "micro",
           "o2_percent": 40.0
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "PMMA rod",
           "o2_percent": 40.0,
@@ -274,7 +274,7 @@
           "gravity": "micro",
           "o2_percent": 40.0
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "Nomex",
           "o2_percent": 40.0,
@@ -285,7 +285,7 @@
         },
         "backend": "real"
       },
-      "ms": 0.1
+      "ms": 0.4
     },
     {
       "name": "nearest_experiments",
@@ -392,7 +392,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness (no flow given: O2, size and thickness only).",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 40.0,
@@ -403,7 +403,7 @@
         },
         "backend": "real"
       },
-      "ms": 2.3
+      "ms": 2.9
     }
   ],
   "ood": true,
@@ -414,7 +414,7 @@
   ],
   "grounding_ok": true,
   "mode": "fallback",
-  "latency_ms": 6,
+  "latency_ms": 8,
   "model": null,
   "backend": "real",
   "ungrounded": [],

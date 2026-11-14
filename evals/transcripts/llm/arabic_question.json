@@ -26,41 +26,41 @@
     },
     "latency": {
       "ok": true,
-      "detail": "3696 ms ≤ 25000"
+      "detail": "4788 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Verdict**\nburn (P(burn) 0.63, 90% interval 0.47–0.77). \nهذا القرار هو للدعم في اتخاذ القرار فقط وليس بديلًا لاختبارات المواد طبقا لـ NASA-STD-6001.\n\n**Key numbers**\n- تركيز الأكسجين: 17.5%\n- الضغط: 14.7 psia\n- سرعة الهواء: 4 cm/s\n- احتمالية الاشتعال P(burn): 0.63 مع فترة ثقة 90% تتراوح بين 0.47 و 0.77.\n\n**Evidence**\nتستند هذه التوقعات إلى تجارب ناسا التالية:\n- GMT100-T13\n- GMT100-T16\n- GMT178-T11\n\n**Operational recommendation**\nبما أن النتيجة تشير إلى احتمالية اشتعال معتبرة، يجب تقليل كمية القماش المكشوف، عزل مصادر الاشتعال بدقة، الحفاظ على جاهزية أنظمة كشف وإخماد الحريق، وخفض نسبة الأكسجين إذا كانت متطلبات المهمة تسمح بذلك. تجنب الاعتماد على سرعات الهواء الحدية (المنخفضة أو العالية جداً) كإجراء أمان.\n\n**Limits**\n- النطاق مغطى ضمن بيانات ناسا (in_distribution).\n- لا توجد بيانات لمعدل انتشار اللهب (spread rate) لقماش SIBAL، حيث يقتصر نموذج معدل الانتشار على ألواح PMMA.",
+  "answer": "**Verdict**\nburn (P(burn) 0.65, 90% interval 0.52–0.78). \n*(هذه أداة دعم قرار وليست بديلاً لاختبار المواد طبقاً لـ NASA-STD-6001).*\n\n**Key numbers**\n- Oxygen: 17.5%\n- Pressure: 14.7 psia\n- Flow velocity: 4 cm/s\n- P(burn): 0.65\n- 90% interval: 0.52–0.78\n\n**Evidence**\nGMT100-T13, GMT100-T16, GMT178-T11\n\n**Operational recommendation**\nيقدم هذا النظام دعمًا لتقييم المخاطر ولا يعد بديلاً لاختبارات اعتماد المواد الرسمية. يوصى بتقليل كمية المواد المعرضة، عزل مصادر الاشتعال المحتملة، خفض تركيز الأكسجين حيثما أمكن، وجاهزية أنظمة كشف وإطفاء الحرائق وعدم الاعتماد على حدود الإطفاء القريبة.\n\n**Limits**\nلا توجد ملاحظات أو قيود خاصة مسجلة لهذه الحالة (In-distribution).",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
         "pressure_psia": 14.7,
-        "material": "SIBAL fabric",
-        "flow_velocity_cm_s": 4,
-        "o2_percent": 17.5
+        "flow_velocity_cm_s": "4 cm/s",
+        "o2_percent": 17.5,
+        "material": "SIBAL fabric"
       },
       "result": {
         "label": "burn",
-        "burn_probability": 0.63,
+        "burn_probability": 0.65,
         "burn_probability_interval": [
-          0.47,
-          0.77
+          0.52,
+          0.78
         ],
         "interval_level": 0.9,
-        "value": 0.63,
+        "value": 0.65,
         "interval": [
-          0.47,
-          0.77
+          0.52,
+          0.78
         ],
         "unit": "probability",
         "interval_note": "90% bootstrap interval over NASA tests",
         "bootstrap_interval_raw": [
-          0.47,
-          0.77
+          0.52,
+          0.78
         ],
         "quantity": "P(burn): probability that a flame is sustained",
         "spread_rate_mm_s": null,
@@ -158,7 +158,7 @@
             "distance": 0.21
           }
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
         "inputs": {
           "material": "SIBAL fabric",
           "o2_percent": 17.5,
@@ -177,7 +177,7 @@
             "width_cm": 2.2
           }
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 17.5,
@@ -189,14 +189,14 @@
         },
         "backend": "real"
       },
-      "ms": 424.6
+      "ms": 503.7
     },
     {
       "name": "nearest_experiments",
       "args": {
+        "flow_velocity_cm_s": "4 cm/s",
         "material": "SIBAL fabric",
         "o2_percent": 17.5,
-        "flow_velocity_cm_s": 4,
         "pressure_psia": 14.7
       },
       "result": {
@@ -289,7 +289,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 17.5,
@@ -301,14 +301,14 @@
         },
         "backend": "real"
       },
-      "ms": 3.3
+      "ms": 2.7
     }
   ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 3696,
+  "latency_ms": 4788,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

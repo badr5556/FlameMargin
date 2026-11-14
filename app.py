@@ -148,7 +148,7 @@ def _render_method_tab() -> None:
 
 
 def _render_v21_section(m: dict, h: dict) -> None:
-    """Engine v2.1: the single pre-registered variant, reported next to v2 whether or not it shipped."""
+    """Engine v2.1: the single pre-registered experiment, reported next to the production v2 whether or not it shipped."""
     pre = m.get("v21_preregistered")
     if not pre:
         return
@@ -157,8 +157,8 @@ def _render_v21_section(m: dict, h: dict) -> None:
     pf2, pf21 = m["per_family"][pre["v2_model"]], m["per_family"]["logreg21"]
     on1 = m["on_v1_points"]["models"]
     rows = [
-        ("Brier ↓ (3 decimals: the ship metric)", v2["brier"], v21["brier"]),
-        ("Brier ↓ (5 decimals)", pre.get("v2_brier_5dp"), pre.get("v21_brier_5dp")),
+        ("Brier ↓ (unrounded, 5 decimals: the ship metric)", f"{pre.get('v2_brier_5dp', 0):.5f}", f"{pre.get('v21_brier_5dp', 0):.5f}"),
+        ("Brier ↓ (3 decimals)", v2["brier"], v21["brier"]),
         ("Log-loss ↓", v2["log_loss"], v21["log_loss"]),
         ("AUC", v2["auc"], v21["auc"]),
         ("Brier on SIBAL fabric", pf2["SIBAL_fabric"]["brier"], pf21["SIBAL_fabric"]["brier"]),
@@ -170,16 +170,19 @@ def _render_v21_section(m: dict, h: dict) -> None:
          f"{ext['logreg']['in_sample_final_model']} / {ext['logreg']['out_of_fold']} of {ext['logreg']['n_extinguished']}",
          f"{ext['logreg21']['in_sample_final_model']} / {ext['logreg21']['out_of_fold']} of {ext['logreg21']['n_extinguished']}"),
     ]
-    st.markdown("### Engine v2.1: one pre-registered variant (per-material flow shape)")
+    st.markdown("### Engine v2.1: a pre-registered experiment that did not beat v2")
     st.markdown(
         f"Written and committed before fitting: add `material × log10(flow)` and `× log10(flow)²` terms only for SIBAL fabric "
         f"and PMMA slab (both classes, ≥ 8 extinctions), same C = 1.0, same leave-one-test-out protocol. Ship rule: "
-        f"*{pre['ship_rule']}*. Result: **{'shipped' if pre['shipped'] else 'not shipped'}**."
+        f"*{pre['ship_rule']}*. Result: **{'shipped' if pre['shipped'] else 'not shipped: v2 stays in production'}**. "
+        f"Rule note: {pre.get('rule_amendment', '')}"
     )
-    st.dataframe(pd.DataFrame([{"leave-one-test-out": r[0], "v2": str(r[1]), "v2.1": str(r[2])} for r in rows]),
+    st.dataframe(pd.DataFrame([{"leave-one-test-out": r[0], "v2 (production)": str(r[1]), "v2.1 (experiment)": str(r[2])}
+                               for r in rows]),
                  hide_index=True, use_container_width=True)
-    st.caption("A tie on the ship metric, not an improvement: v2.1 is slightly better on SIBAL and the v1 points, slightly worse "
-               "on log-loss and AUC, and moves no extinguished NASA point below P = 0.5. No other variant was fitted.")
+    st.caption("v2.1 loses on the ship metric (unrounded Brier) and on log-loss and AUC. It is slightly better on SIBAL and "
+               "the v1 points, slightly worse on PMMA slab, and moves no extra extinguished NASA point below P = 0.5. "
+               "No other variant was fitted.")
 
 
 def _render_safety_section() -> None:

@@ -6,7 +6,7 @@
   "checks": {
     "tool called": {
       "ok": true,
-      "detail": "4 calls"
+      "detail": "3 calls"
     },
     "right tool": {
       "ok": true,
@@ -30,74 +30,58 @@
     },
     "latency": {
       "ok": true,
-      "detail": "5045 ms ≤ 25000"
+      "detail": "7888 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside training range 14.5–22.2%\n\n**Verdict**\n- ISS cabin: **burn** (in distribution; SIBAL fabric is flammable at 21% O2 across flows from 3 cm/s to 30 cm/s with P(burn) ≥ 0.93, 90% interval [0.83, 0.99] to [0.9, 1]).\n- Artemis Exploration Atmosphere (8.2 psia, 34% O2): **Out of distribution** (cannot be reliably predicted by the model because the pressure and oxygen percentage fall completely outside the BASS-II training data range of 14.4–15 psia and 14.5–22.2% O2).\n\n**Key numbers**\n- ISS cabin: 14.7 psia, 21% O2, microgravity. Flow velocities tested: 3 cm/s to 30 cm/s. P(burn) ranges from 0.93 to 0.98, with 90% intervals ranging from [0.83, 0.99] up to [0.9, 1].\n- Artemis Exploration Atmosphere: 8.2 psia, 34% O2, microgravity (both pressure and O2 are OOD).\n\n**Evidence**\n- ISS cabin evidence: BASS-II experiments **GMT96-T7**, **GMT96-T8**, **GMT100-T5**.\n\n**Operational recommendation**\n- Treat SIBAL fabric as highly flammable under ISS cabin conditions (21% O2). Restrict exposed material quantities, isolate ignition sources, and ensure smoke detection and suppression systems remain active.\n- For Artemis Exploration Atmosphere conditions, because the environment is out of distribution for the engine's training data, rely on physical NASA-STD-6001 material flammability testing rather than model predictions. Never exploit low-flow or quench boundaries as safety margins.\n\n**Limits**\n- This is decision support, not a replacement for NASA-STD-6001 material testing.\n- Artemis Exploration Atmosphere results are flagged OOD due to pressure (8.2 psia) and oxygen (34%) lying outside the BASS-II database range (14.4–15 psia, 14.5–22.2% O2).",
+  "answer": "⚠️ Out of distribution: pressure 8.2 psia outside training range 14.4–15 psia (1 atm ± 0.3 psia, every BASS-II test); O2 34% outside training range 14.5–22.2%\n\n**Verdict**\nThe Artemis Exploration Atmosphere (34% $\\text{O}_2$, 8.2 psia) is out of distribution for the prediction engine because its pressure and oxygen concentration lie outside the tested BASS-II range (1 atm, 14.5%–22.2% $\\text{O}_2$). Therefore, no reliable comparison can be made for Artemis. For the ISS cabin (21% $\\text{O}_2$, 14.7 psia, microgravity), SIBAL fabric sustains a flame across the tested flow velocities (3 cm/s to 30 cm/s) with limiting $\\text{O}_2$ between 16.4% and 16.7%, meaning it will burn under standard ISS cabin conditions.\n\n**Key numbers**\n- **ISS cabin**: 21% $\\text{O}_2$, 14.7 psia, microgravity. Limiting $\\text{O}_2$: 16.4%–16.7%. P(burn) at 21% $\\text{O}_2$: 0.95–0.96 (90% interval [0.88, 1]).\n- **Artemis Exploration Atmosphere**: 34% $\\text{O}_2$, 8.2 psia, microgravity. (Out of distribution — no prediction available).\n\n**Evidence**\nSupported by NASA BASS-II tests `GMT96-T7`, `GMT96-T8`, and `GMT100-T5`.\n\n**Operational recommendation**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. Because SIBAL fabric is flammable under standard ISS conditions, maintain strict margins: limit exposed fabric areas, isolate ignition sources, and ensure fire detection and suppression systems remain active.\n\n**Limits**\n- The Artemis atmosphere conditions (34% $\\text{O}_2$, 8.2 psia) exceed the training envelope of the underlying BASS-II dataset (which covers normal ambient pressure ~14.7 psia and $\\text{O}_2$ up to 22.2%). Predictions for Artemis cannot be trusted.",
   "tool_calls": [
     {
-      "name": "get_mission_preset",
+      "name": "compare_scenarios",
       "args": {
-        "name": "ISS cabin"
+        "scenarios": [
+          {
+            "label": "ISS",
+            "preset": "ISS cabin",
+            "flow_velocity_cm_s": "10 cm/s"
+          },
+          {
+            "preset": "Artemis Exploration Atmosphere",
+            "label": "Artemis",
+            "flow_velocity_cm_s": "10 cm/s"
+          }
+        ],
+        "material": "SIBAL fabric"
       },
       "result": {
-        "name": "ISS cabin",
-        "short": "ISS",
-        "pressure_psia": 14.7,
-        "o2_percent": 21.0,
-        "gravity": "micro",
-        "gravity_g": 0.0,
-        "source": "Layer 1 API presets",
-        "data_status": "in distribution for SIBAL fabric, PMMA film, PMMA slab and Nomex near their tested flows (O2 21% is inside their tested ranges); out of distribution for PMMA rods (tested only up to 20.8% O2)",
-        "note": "Presets do not include a ventilation flow. Ask for it, or use flammability_boundary to cover all flows.",
-        "ood_flag": false,
-        "ood_reasons": [],
-        "ood_reason": null
+        "error": {
+          "type": "unsupported_assumption",
+          "message": "flow_velocity_cm_s=10 cm/s was not given by the operator. Do not assume a flow.",
+          "hint": "Call flammability_boundary (covers all flows) or ask the operator for the flow."
+        }
       },
       "ms": 0.1
     },
     {
-      "name": "get_mission_preset",
-      "args": {
-        "name": "Artemis Exploration Atmosphere"
-      },
-      "result": {
-        "name": "Artemis Exploration Atmosphere",
-        "short": "Artemis EA",
-        "pressure_psia": 8.2,
-        "o2_percent": 34.0,
-        "gravity": "micro",
-        "gravity_g": 0.0,
-        "source": "Layer 1 API presets",
-        "data_status": "out of distribution for every material: 8.2 psia and 34% O2 are both outside the BASS-II data",
-        "note": "Presets do not include a ventilation flow. Ask for it, or use flammability_boundary to cover all flows.",
-        "ood_flag": false,
-        "ood_reasons": [],
-        "ood_reason": null
-      },
-      "ms": 0.0
-    },
-    {
       "name": "flammability_boundary",
       "args": {
-        "preset": "ISS cabin",
-        "material": "SIBAL fabric"
+        "material": "SIBAL fabric",
+        "preset": "ISS cabin"
       },
       "result": {
         "value": [
           {
             "flow_velocity_cm_s": 3.0,
-            "o2_percent_limit": 17.05,
+            "o2_percent_limit": 16.7,
             "limit_status": "crossing",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.93,
+            "p_burn_at_o2": 0.95,
             "p_burn_interval_at_o2": [
-              0.83,
+              0.88,
               0.99
             ],
             "knn_distance_at_o2": 0.67,
@@ -125,7 +109,7 @@
             "in_distribution_at_limit": true,
             "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.92,
+              0.9,
               0.99
             ],
             "knn_distance_at_o2": 0.29,
@@ -137,10 +121,10 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.97,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.93,
-              1.0
+              0.9,
+              0.99
             ],
             "knn_distance_at_o2": 0.0,
             "extrapolation_at_o2": false
@@ -151,10 +135,10 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.97,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.93,
-              1.0
+              0.9,
+              0.99
             ],
             "knn_distance_at_o2": 0.54,
             "extrapolation_at_o2": false
@@ -165,10 +149,10 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.97,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.93,
-              1.0
+              0.89,
+              0.99
             ],
             "knn_distance_at_o2": 0.91,
             "extrapolation_at_o2": false
@@ -179,9 +163,9 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.98,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
-              0.9,
+              0.86,
               1.0
             ],
             "knn_distance_at_o2": 1.19,
@@ -193,7 +177,7 @@
             "limit_status": "burns_at_all_tested_o2",
             "inside_hard_envelope": true,
             "in_distribution_at_limit": true,
-            "p_burn_at_o2": 0.98,
+            "p_burn_at_o2": 0.96,
             "p_burn_interval_at_o2": [
               0.0,
               1.0
@@ -205,7 +189,7 @@
         "interval": [
           [
             16.4,
-            18.35
+            17.7
           ],
           [
             16.4,
@@ -213,19 +197,15 @@
           ],
           [
             16.4,
-            17.1
+            17.3
           ],
           [
             16.4,
-            17.1
+            17.3
           ],
           [
             16.4,
-            17.15
-          ],
-          [
-            16.4,
-            17.4
+            17.6
           ],
           [
             16.4,
@@ -233,7 +213,11 @@
           ],
           [
             16.4,
-            18.65
+            18.2
+          ],
+          [
+            16.4,
+            18.85
           ]
         ],
         "interval_level": 0.9,
@@ -283,11 +267,11 @@
           "GMT96-T8",
           "GMT100-T5"
         ],
-        "model": "v2.1: logistic regression + per-material flow shape (SIBAL fabric, PMMA slab)",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "o2_limit_range_percent": [
           16.4,
-          17.05
+          16.7
         ],
         "inputs_normalized": {
           "material": "SIBAL fabric",
@@ -300,13 +284,13 @@
         },
         "backend": "real"
       },
-      "ms": 425.6
+      "ms": 531.0
     },
     {
       "name": "flammability_boundary",
       "args": {
-        "preset": "Artemis Exploration Atmosphere",
-        "material": "SIBAL fabric"
+        "material": "SIBAL fabric",
+        "preset": "Artemis Exploration Atmosphere"
       },
       "result": {
         "label": null,
@@ -340,7 +324,7 @@
           "gravity": "micro",
           "o2_percent": 34.0
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 34.0,
@@ -352,7 +336,7 @@
         },
         "backend": "real"
       },
-      "ms": 0.2
+      "ms": 0.3
     }
   ],
   "ood": true,
@@ -362,7 +346,7 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 5045,
+  "latency_ms": 7888,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

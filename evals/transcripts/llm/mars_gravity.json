@@ -22,20 +22,20 @@
     },
     "latency": {
       "ok": true,
-      "detail": "3980 ms ≤ 25000"
+      "detail": "14081 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "⚠️ Out of distribution: no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)\n\n**Verdict**\nOut of distribution: gravity other than microgravity has no training data in the FlameMargin engine. No prediction can be made.\n\n**Key numbers**\n- Oxygen concentration: 18%\n- Cabin pressure: 14.7 psia\n- Ventilation flow velocity: 10 cm/s\n- Gravity: Mars gravity\n\n**Evidence**\nNearest microgravity experiments for SIBAL fabric at 18.7% to 18.8% O2, 14.7 psia, and 10 cm/s flow (NASA/TM-20210011385, Table 7.1 / Table A.6):\n- GMT45-T15 (18.7% O2, burn)\n- GMT45-T4 (18.7% O2, burn)\n- GMT100-T5 (18.8% O2, burn)\n\n**Operational recommendation**\nBecause this scenario is out of distribution (Mars gravity), do not rely on these model estimates. Follow standard spacecraft safety protocols, ensure strict controls on ignition sources, and rely on certified NASA-STD-6001 material testing.\n\n**Limits**\nThe prediction engine contains data solely from ISS microgravity tests. Gravity levels other than microgravity are out of distribution. This is decision support, not a replacement for NASA-STD-6001 material testing.",
+  "answer": "⚠️ Out of distribution: no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)\n\n**Verdict**\nOut of distribution: No prediction can be made because Mars gravity is outside the training data envelope (the engine is trained solely on ISS microgravity data).\n\n**Key numbers**\n- O2 concentration: 18%\n- Cabin pressure: 14.7 psia\n- Ventilation flow velocity: 10 cm/s\n- Gravity: Mars (0.38 g)\n\n**Evidence**\nNearest ground/microgravity experiments from the training dataset (though at microgravity):\n- GMT45-T15 (SIBAL fabric, 18.7% O2, 14.7 psia, 10 cm/s flow)\n- GMT45-T4 (SIBAL fabric, 18.7% O2, 14.7 psia, 10 cm/s flow)\n- GMT100-T5 (SIBAL fabric, 18.8% O2, 14.7 psia, 10 cm/s flow)\n\n**Operational recommendation**\nTreat this condition as unverified. Because partial gravity environments alter buoyant flows and flame stability compared to microgravity, rely on conservative safety margins, isolate ignition sources, limit exposed SIBAL fabric, and ensure active fire detection and suppression systems are operational.\n\n**Limits**\nThis is decision support, not a replacement for NASA-STD-6001 material testing. Predictions cannot be trusted outside of microgravity due to lack of partial-gravity combustion training data.",
   "tool_calls": [
     {
       "name": "predict",
       "args": {
-        "o2_percent": 18,
         "gravity": "mars",
+        "o2_percent": 18,
         "flow_velocity_cm_s": 10,
         "material": "SIBAL fabric",
         "pressure_psia": 14.7
@@ -158,7 +158,7 @@
             "width_cm": 2.2
           }
         },
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 18.0,
@@ -170,16 +170,16 @@
         },
         "backend": "real"
       },
-      "ms": 3.2
+      "ms": 3.7
     },
     {
       "name": "nearest_experiments",
       "args": {
+        "material": "SIBAL fabric",
+        "gravity": "mars",
         "flow_velocity_cm_s": 10,
         "o2_percent": 18,
-        "pressure_psia": 14.7,
-        "material": "SIBAL fabric",
-        "gravity": "mars"
+        "pressure_psia": 14.7
       },
       "result": {
         "value": [
@@ -276,7 +276,7 @@
         ],
         "material_family": "SIBAL_fabric",
         "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
-        "source": "FlameMargin Prediction Engine v2.1: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
         "inputs_normalized": {
           "material": "SIBAL fabric",
           "o2_percent": 18.0,
@@ -288,7 +288,7 @@
         },
         "backend": "real"
       },
-      "ms": 3.1
+      "ms": 5.5
     }
   ],
   "ood": true,
@@ -298,7 +298,7 @@
   ],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 3980,
+  "latency_ms": 14081,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],

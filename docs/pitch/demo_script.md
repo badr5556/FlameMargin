@@ -30,8 +30,8 @@ Claim IDs refer to `docs/science/claims_sheet.md` (do not read them aloud). Ever
 ## Act 2: Product (0:35 – 2:05), tab 🧭 Evidence Gap, then 🔥 Flammability Map, then 🤖 Copilot
 | Time | On screen | Say | Plan B |
 |---|---|---|---|
-| 0:35 | App header (leave-one-test-out AUC **0.80**, Brier skill **+26%**, **192** points, **5** materials, Artemis **OOD**) and tab **🧭 Evidence Gap** | "This is built on all 126 tests of NASA's BASS-II report: here they are, every one at about one atmosphere. Artemis is up here, outside all of them. We turned them into 192 burn-or-extinguish observations from 85 tests, for five materials." | App asleep → local tab; then the video. |
-| 0:50 | Tab **🔥 Flammability Map**, preset **Custom**, O2 slider **17.5**, ventilation slider down to **4** | "Colour is the probability that a flame survives. Every dot is a real NASA test: hover one and you get its test ID, the crew's words and the page in the report. At 17.5% oxygen and 4 cm/s, the model gives P(burn) 0.63, with a 90% interval of 0.47 to 0.77." | Readout card shows the same numbers. |
+| 0:35 | App header (leave-one-test-out AUC **0.82**, Brier skill **+26%**, **192** points, **5** materials, Artemis **OOD**) and tab **🧭 Evidence Gap** | "This is built on all 126 tests of NASA's BASS-II report: here they are, every one at about one atmosphere. Artemis is up here, outside all of them. We turned them into 192 burn-or-extinguish observations from 85 tests, for five materials." | App asleep → local tab; then the video. |
+| 0:50 | Tab **🔥 Flammability Map**, preset **Custom**, O2 slider **17.5**, ventilation slider down to **4** | "Colour is the probability that a flame survives. Every dot is a real NASA test: hover one and you get its test ID, the crew's words and the page in the report. At 17.5% oxygen and 4 cm/s, the model gives P(burn) 0.65, with a 90% interval of 0.52 to 0.78." | Readout card shows the same numbers. |
 | 1:05 | Slide the ventilation down to **2** | "Slow the air almost to fans-off and we leave the tested flows: grey, no number. NASA saw SIBAL flames quench at 1 to 5 cm/s [C3]; our data's own quench flows were 2.2 to 5 cm/s, the blue crosses. Our model does not draw that quench edge well yet, and the model card says so." | — |
 | 1:20 | Click preset **Artemis EA** | "Now Artemis. Red banner: out of distribution. 8.2 psia and 34% oxygen are both outside NASA's data here, so the tool gives **no number**. The star sits far above the data. That's our key finding: the data needed for this cabin don't exist in this dataset." | — |
 | 1:35 | Tab **🤖 Copilot**, button **🧪 In the data** (prompt 1) | "An engineer can just ask. The Copilot calls the same model and cites the NASA tests it used: GMT100-T13, GMT100-T16, GMT178-T11." Open **🔧 Tool-call trace**. "Every number is checked by code against these tool results." | 429 or slow → toggle **Offline mode**, click again (same tools, same template). |
@@ -42,13 +42,13 @@ Claim IDs refer to `docs/science/claims_sheet.md` (do not read them aloud). Ever
 |---|---|---|---|
 | 2:05 | Button **🧯 Nomex at ISS air** | "Nomex, the ISS fire barrier: three BASS-II tests at 21 to 22% oxygen, and none sustained a flame (F1, F2, F3). The Copilot cites them. Kapton is not in the data, so it gets no prediction and no estimate." | Offline mode. |
 | 2:15 | Paste prompt 4 (injection) | "Ask it to guess from its own knowledge: it won't. Every number must come from a tool, and no tool gives a SIBAL spread rate, so it gives none." | Offline mode answers from tools only. |
-| 2:25 | Tab **📚 Data & Method** | "Leave-one-test-out: AUC 0.80, and a Brier score of 0.087 against 0.118 for a baseline, 26% better, shown per material, with a reliability plot. We pre-registered one model change before fitting it and report it even though it only tied. And where we are worse, on SIBAL's own early points, we show that too." | — |
+| 2:25 | Tab **📚 Data & Method** | "Leave-one-test-out: AUC 0.82, and a Brier score of 0.087 against 0.118 for a baseline, 26% better, shown per material, with a reliability plot. We pre-registered one model change before fitting it; it did not beat our model, so we did not ship it, and we report it anyway. And where we are worse, on SIBAL's own early points, we show that too." | — |
 | 2:45 | Slide: next steps | "Next: give each material its own flow behaviour, and add lunar data when FM2, the first combustion experiment on another world, flies. [C10] FlameMargin: know your margin, and know when you don't." | — |
 | 3:00 | End | | |
 
 ## Plan B summary
 | Failure | Action |
 |---|---|
-| Gemini 429 / timeout / budget used | Toggle **Offline mode**: same tools, same answer template, OOD first. Fallback passed 15/15 in every eval run. |
+| Gemini 429 / timeout / budget used | Toggle **Offline mode**: same tools, same answer template, OOD first. Fallback answers come from the same tools and guards (latest eval: 14/15, the miss was latency). |
 | Live app asleep or down | Local `streamlit run app.py`; else the backup video, narrating live. |
 | Judge interrupts | Answer from `judge_qa.md`; drop the Nomex beat (2:05) first if short on time. |

@@ -1,7 +1,7 @@
 {
   "note": "LOTO metrics. v1 = 21 SIBAL points from 12 tests (Table 7.1). v2 = all BASS-II families (Appendix A + Tables 7.1 and 5.1). v2.1 = v2 + per-material flow shape for SIBAL fabric and PMMA slab (pre-registered, docs/model_card.md section 5b). 'on the v1 points' scores out-of-fold predictions on the same 21 points.",
-  "shipped": "logreg21",
-  "engine_version": "v2.1",
+  "shipped": "logreg",
+  "engine_version": "v2",
   "v1": {
     "chosen_model": "gpc",
     "n_points": 21,
@@ -81,8 +81,8 @@
   },
   "v2_1": {
     "model": "logreg21",
-    "shipped": true,
-    "ship_rule": "ship v2.1 only if its overall LOTO Brier (3 decimals) <= v2's",
+    "shipped": false,
+    "ship_rule": "ship v2.1 only if its overall LOTO Brier (unrounded) <= v2's",
     "n_points": 192,
     "chosen": {
       "accuracy": 0.891,

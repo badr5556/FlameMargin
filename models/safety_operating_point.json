@@ -1,5 +1,5 @@
 {
-  "model": "logreg21",
+  "model": "logreg",
   "validation": "leave-one-test-out, out-of-fold P(burn) of the shipped model",
   "n_points": 192,
   "definitions": {
@@ -21,14 +21,14 @@
   },
   "target_burn_recall": 0.95,
   "safety_threshold": {
-    "threshold": 0.6,
+    "threshold": 0.63,
     "burn_recall": 0.952,
     "missed_burns": 8,
     "n_burn": 166,
     "miss_rate": 0.048,
-    "false_safe_rate": 0.4,
-    "n_safe_calls": 20,
-    "extinguished_recall": 0.462,
+    "false_safe_rate": 0.444,
+    "n_safe_calls": 18,
+    "extinguished_recall": 0.385,
     "n_extinguished": 26
   },
   "reliability": [
@@ -46,21 +46,21 @@
     },
     {
       "bin": "0.4-0.6",
-      "n": 18,
-      "mean_predicted": 0.537,
-      "observed_burn_rate": 0.5
+      "n": 13,
+      "mean_predicted": 0.516,
+      "observed_burn_rate": 0.462
     },
     {
       "bin": "0.6-0.8",
-      "n": 26,
-      "mean_predicted": 0.698,
-      "observed_burn_rate": 0.769
+      "n": 30,
+      "mean_predicted": 0.689,
+      "observed_burn_rate": 0.767
     },
     {
       "bin": "0.8-1.0",
-      "n": 145,
-      "mean_predicted": 0.949,
-      "observed_burn_rate": 0.945
+      "n": 146,
+      "mean_predicted": 0.945,
+      "observed_burn_rate": 0.938
     }
   ],
   "readout_rule": "verdict BURN if P(burn) >= 0.5 (unchanged); the readout also flags 'may burn' when the safety threshold <= P(burn) < 0.5"
