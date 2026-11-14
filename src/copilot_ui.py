@@ -27,9 +27,10 @@ from src import copilot_tools  # noqa: E402
 from src.copilot import CopilotResult, ask, get_api_key, get_model  # noqa: E402
 
 SUGGESTED_QUESTIONS = [
-    ("🛰️ ISS nominal", "Is Nomex safe in the ISS cabin atmosphere?"),
-    ("🚀 Artemis + fans off", "Is Nomex safe in the Artemis atmosphere with fans off?"),
-    ("🌕 Lunar habitat (OOD)", "Is PMMA safe in the lunar surface habitat at 10 cm/s?"),
+    ("🧪 In the data", "Will SIBAL fabric keep burning at 17.5% O2 and 14.7 psia with 4 cm/s flow?"),
+    ("🛰️ ISS cabin", "Is SIBAL fabric flammable in the ISS cabin atmosphere?"),
+    ("🚀 Artemis + fans off", "Is SIBAL fabric safe in the Artemis atmosphere with fans off?"),
+    ("🌕 Lunar habitat (OOD)", "Is SIBAL fabric safe in the lunar surface habitat at 10 cm/s?"),
 ]
 
 

@@ -564,6 +564,11 @@ def _limits(trace: list[dict[str, Any]], extra: list[str] | None = None, verdict
         out.append("Numbers come from a placeholder mock model (synthetic, not NASA data) until the Layer 1 API is connected.")
     if any(r.get("coverage") == "partial" for r in results):
         out.append("Partial training coverage here: intervals are wider than for ISS-like conditions.")
+    if any(r.get("coverage") == "extrapolation" or r.get("ood_level") == "extrapolation" for r in results):
+        out.append("Extrapolation: the condition is far from the labelled NASA tests, so P(burn) is not supported by data there.")
+    if any(r.get("backend") == "real" for r in results):
+        out.append("Model scope: SIBAL cotton-fiberglass fabric only, ISS microgravity at 1 atm (NASA BASS-II tests); "
+                   "no flame spread-rate data, and the extraction is pending row-by-row verification.")
     if verdict:
         out.append(SAFETY_DISCLAIMER)
     return [f"- {x}" for x in out]
@@ -591,7 +596,17 @@ def _fallback_boundary_block(args: dict[str, Any], trace: list[dict[str, Any]], 
     mat = inp.get("material", "material")
     key = []
     lim, flow_at = b.get("min_o2_percent_limit"), b.get("flow_at_min_limit_cm_s")
-    if lim is not None:
+    statuses_b = {p.get("limit_status") for p in b["value"] if isinstance(p, dict)}
+    if lim is not None and "limit_status" in str(b["value"][:1]):
+        lowest = next((p for p in b["value"] if p.get("flow_velocity_cm_s") == flow_at), {})
+        if lowest.get("limit_status") == "burns_at_all_tested_o2":
+            key.append(f"- {tag}At {flow_at:g} cm/s, P(burn) is already ≥ 0.5 at the lowest modeled O2 ({lim:g}%).")
+        else:
+            key.append(f"- {tag}Lowest O2 where P(burn) ≥ 0.5 for {mat}: {lim:g}% at {flow_at:g} cm/s, {inp.get('pressure_psia', 0):g} psia.")
+        if "no_burn_in_tested_o2" in statuses_b:
+            nb = [p["flow_velocity_cm_s"] for p in b["value"] if p.get("limit_status") == "no_burn_in_tested_o2"]
+            key.append(f"- {tag}P(burn) < 0.5 across the whole modeled O2 range for flows {', '.join(f'{x:g}' for x in nb)} cm/s (low-flow quenching side).")
+    elif lim is not None:
         band = ""
         try:
             idx = [p["flow_velocity_cm_s"] for p in b["value"]].index(flow_at)
@@ -603,9 +618,14 @@ def _fallback_boundary_block(args: dict[str, Any], trace: list[dict[str, Any]], 
         return [f"{tag}{mat}: flammability boundary computed (no cabin O2 given to compare against)."], key, "unknown"
     o2 = b["at_o2_percent"]
     flows = b.get("flows_where_flammable_cm_s") or []
+    if b.get("flammable_at_some_flow") is None:
+        return [f"{tag}**No verdict for {mat} at {o2:g}% O2**: every modeled flow is outside or far from the labelled NASA data."], key, "unknown"
     if b.get("flammable_at_some_flow"):
         verdict = f"{tag}**{mat} is FLAMMABLE** at {o2:g}% O2 for modeled flows from {min(flows):g} to {max(flows):g} cm/s."
         status = "flammable"
+        nf = b.get("flows_where_not_flammable_cm_s") or []
+        if nf and "limit_status" in str(b["value"][:1]):
+            verdict += f" Predicted to self-extinguish at {', '.join(f'{x:g}' for x in nf)} cm/s."
     else:
         verdict = f"{tag}**{mat} is not flammable at any modeled flow**: {o2:g}% O2 is below its minimum limiting O2 of {lim:g}%."
         status = "nonflammable"
@@ -619,16 +639,26 @@ def _fallback_predict_block(args: dict[str, Any], trace: list[dict[str, Any]]) -
     inp = r.get("inputs_normalized", {})
     if r.get("value") is None and r.get("label") is None:
         return [f"No prediction: {r.get('ood_reason')}. Known materials: {', '.join(r.get('known_materials', []))}."], [], "unknown"
+    if r.get("label") is None:
+        return [f"No prediction at {_scenario_label(inp)}: {r.get('note') or 'outside the tested conditions'}"], [], "unknown"
     label = str(r.get("label", "?"))
-    verdict = f"**{inp.get('material')} is predicted to {label.upper()}** at {_scenario_label(inp)}."
+    if label == "uncertain":
+        verdict = (f"**UNCERTAIN for {inp.get('material')}** at {_scenario_label(inp)}: too far from the labelled NASA tests "
+                   "for a burn/extinguish verdict.")
+    else:
+        verdict = f"**{inp.get('material')} is predicted to {label.upper()}** at {_scenario_label(inp)}."
     key = []
     if r.get("burn_probability") is not None:
-        key.append(f"- Burn probability: {r['burn_probability']:g} (interval {_fmt_interval(r.get('burn_probability_interval'))})")
-    if r.get("value") is not None:
-        key.append(f"- Flame spread rate: {r['value']:g} {r.get('unit', 'mm/s')} (90% interval {_fmt_interval(r.get('interval'), ' ' + r.get('unit', 'mm/s'))})")
+        key.append(f"- Burn probability P(burn): {r['burn_probability']:g} (90% interval {_fmt_interval(r.get('burn_probability_interval'))})")
+        if r.get("ood_level") == "extrapolation":
+            key.append("- This point is far from the labelled NASA tests: a P(burn) near 0.5 here means 'no information', not '50% risk'.")
+    if r.get("value") is not None and r.get("unit") == "mm/s":
+        key.append(f"- Flame spread rate: {r['value']:g} mm/s (90% interval {_fmt_interval(r.get('interval'), ' mm/s')})")
+    elif "spread_rate_reason" in r:
+        key.append(f"- Flame spread rate: not predicted ({r['spread_rate_reason']}).")
     if r.get("limiting_o2_percent") is not None:
         key.append(f"- Limiting O2 at this flow: {r['limiting_o2_percent']:g}% (margin {r.get('o2_margin_percent_points', 0):g} percentage points)")
-    return [verdict], key, ("flammable" if label == "burn" else "nonflammable")
+    return [verdict], key, {"burn": "flammable", "extinguish": "nonflammable"}.get(label, "unknown")
 
 
 def _recommendation(status: str, ood: bool, fans_off: bool, trace: list[dict[str, Any]]) -> list[str]:
@@ -700,10 +730,13 @@ def fallback_answer(question: str, trace: list[dict[str, Any]] | None = None) ->
         else:
             for r in c.get("value", []):
                 inp = next((x for x in c.get("inputs_normalized", []) if x.get("label") == r.get("scenario")), {})
-                verdict.append(f"- {r.get('scenario')}: **{str(r.get('label', '?')).upper()}** ({_scenario_label(inp)})")
-                if r.get("value") is not None:
+                lab = str(r["label"]).upper() if r.get("label") else "NO PREDICTION (outside the tested conditions)"
+                verdict.append(f"- {r.get('scenario')}: **{lab}** ({_scenario_label(inp)})")
+                if r.get("value") is not None and r.get("unit") == "mm/s":
                     key.append(f"- {r.get('scenario')}: spread {r['value']:g} mm/s (90% interval {_fmt_interval(r.get('interval'), ' mm/s')}), burn probability {r.get('burn_probability', 0):g}")
-                statuses.append("flammable" if r.get("label") == "burn" else "nonflammable")
+                elif r.get("burn_probability") is not None:
+                    key.append(f"- {r.get('scenario')}: P(burn) {r['burn_probability']:g} (90% interval {_fmt_interval(r.get('burn_probability_interval'))})")
+                statuses.append({"burn": "flammable", "extinguish": "nonflammable"}.get(r.get("label"), "unknown"))
             for d in c.get("deltas", []):
                 names = {"spread_rate_delta_mm_s": "spread-rate change (mm/s)", "spread_rate_ratio": "spread-rate ratio", "burn_probability_delta": "burn-probability change"}
                 parts = [f"{names.get(k, k.replace('_', ' '))} {v:+g}" if k.endswith("delta") or "delta_" in k else f"{names.get(k, k)} {v:g}" for k, v in d.items() if isinstance(v, (int, float))]

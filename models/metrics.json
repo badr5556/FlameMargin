@@ -1,0 +1,171 @@
+{
+  "generated_utc": "2026-11-14",
+  "data": {
+    "points_file": "data/processed/flame_points.csv",
+    "points_sha256": "553bffc131a7cd016ff7173b89049b0e64ffce7a54044effa40114cc83b5ded5",
+    "source": "NASA/TM-20210011385, Section 7.1, Table 7.1 (BASS-II, SIBAL cotton-fiberglass fabric, ISS, 1 atm, concurrent flow)",
+    "n_points": 21,
+    "n_tests": 12,
+    "class_balance": {
+      "burn": 11,
+      "extinguished": 10
+    },
+    "row_verification": "PENDING (docs/data/verification_checklist.md)"
+  },
+  "features": [
+    "o2_pct",
+    "log10_flow",
+    "log10_flow_sq",
+    "sample_width_cm"
+  ],
+  "validation": "leave-one-test-out (LeaveOneGroupOut grouped by test_id; both points of a test held out together)",
+  "models": {
+    "baseline": {
+      "label": "Majority-class baseline",
+      "eligible": true,
+      "accuracy": 0.333,
+      "balanced_accuracy": 0.318,
+      "brier": 0.263,
+      "log_loss": 0.719,
+      "n_points": 21
+    },
+    "logreg": {
+      "label": "Logistic regression (L2, standardized)",
+      "eligible": true,
+      "accuracy": 0.619,
+      "balanced_accuracy": 0.623,
+      "brier": 0.238,
+      "log_loss": 0.769,
+      "n_points": 21
+    },
+    "gpc": {
+      "label": "Gaussian process classifier (RBF + White, standardized)",
+      "eligible": true,
+      "accuracy": 0.667,
+      "balanced_accuracy": 0.668,
+      "brier": 0.229,
+      "log_loss": 0.651,
+      "n_points": 21
+    },
+    "gpc_ard": {
+      "label": "Gaussian process classifier, ARD RBF (sensitivity only)",
+      "eligible": false,
+      "accuracy": 0.619,
+      "balanced_accuracy": 0.623,
+      "brier": 0.237,
+      "log_loss": 0.674,
+      "n_points": 21
+    }
+  },
+  "selection_rule": "lowest LOTO Brier score among eligible models; if none beats the baseline, ship logreg",
+  "chosen_model": "gpc",
+  "chosen_beats_baseline": true,
+  "selection_note": "Lowest LOTO Brier among eligible models: gpc (0.229) vs baseline (0.263).",
+  "final_model": {
+    "kernel": "3.07**2 * RBF(length_scale=0.66) + WhiteKernel(noise_level=1e-05)",
+    "logreg_coefficients_standardized": null
+  },
+  "calibration_oof": {
+    "mean_predicted_p_burn": 0.525,
+    "observed_burn_rate": 0.524,
+    "mean_p_when_burn": 0.555,
+    "mean_p_when_extinguished": 0.491,
+    "share_of_oof_predictions_within_0.4_0.6": 0.667
+  },
+  "bootstrap": {
+    "unit": "test",
+    "n_resamples": 300,
+    "single_class_resamples_redrawn": 0,
+    "interval_level": 0.9,
+    "seed": 42,
+    "share_of_replicates_with_length_scale_below_0.05": 0.37,
+    "extrapolation_rule": "where the kNN check flags an extrapolation, the API reports the interval as [0, 1]"
+  },
+  "ood": {
+    "hard_rules": "material, pressure (14.7±0.3 psia), gravity (microgravity), O2 16.4–21.0%, flow 2.0–53 cm/s, sample width 1.2–2.2 cm",
+    "knn_features": [
+      "o2_pct",
+      "log10_flow",
+      "sample_width_cm"
+    ],
+    "knn_percentile": 95.0,
+    "knn_threshold": 1.682,
+    "loto_nn_distances": [
+      0.0,
+      1.6819,
+      0.0,
+      1.1827,
+      0.2855,
+      0.2335,
+      0.7699,
+      0.5667,
+      0.2855,
+      0.2335,
+      0.2472,
+      0.2855,
+      0.6595,
+      0.2472,
+      1.9833,
+      0.0,
+      0.5848,
+      0.0,
+      1.6131,
+      0.1508,
+      0.5848
+    ]
+  },
+  "monotonicity_check": {
+    "logreg": {
+      "flow_cm_s": 10.0,
+      "sample_width_cm": 2.2,
+      "o2_range": [
+        16.4,
+        21.0
+      ],
+      "violated": false,
+      "first_drop_at_o2": null,
+      "max_drop": 0.0,
+      "p_at_o2_lo": 0.473,
+      "p_peak": 0.963,
+      "o2_at_peak": 21.0,
+      "p_at_o2_hi": 0.963
+    },
+    "gpc": {
+      "flow_cm_s": 10.0,
+      "sample_width_cm": 2.2,
+      "o2_range": [
+        16.4,
+        21.0
+      ],
+      "violated": true,
+      "first_drop_at_o2": 17.5,
+      "max_drop": 0.041,
+      "p_at_o2_lo": 0.262,
+      "p_peak": 0.798,
+      "o2_at_peak": 18.7,
+      "p_at_o2_hi": 0.5
+    },
+    "chosen": {
+      "flow_cm_s": 10.0,
+      "sample_width_cm": 2.2,
+      "o2_range": [
+        16.4,
+        21.0
+      ],
+      "violated": true,
+      "first_drop_at_o2": 17.5,
+      "max_drop": 0.041,
+      "p_at_o2_lo": 0.262,
+      "p_peak": 0.798,
+      "o2_at_peak": 18.7,
+      "p_at_o2_hi": 0.5
+    }
+  },
+  "environment": {
+    "python": "3.13.18",
+    "scikit_learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5"
+  },
+  "artifact_version": "1.0"
+}

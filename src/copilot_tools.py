@@ -10,7 +10,7 @@ Responsibilities
      Inputs outside the training envelope are NOT clamped; they are passed
      through and the result is flagged OOD.
   4. Hard OOD rule: any gravity other than microgravity is OOD, whatever the
-     model returns ("no training data at this gravity level (FM2 not yet flown)").
+     model returns (GRAVITY_OOD_REASON).
   5. Tool declarations (JSON schema) + ``dispatch(name, args)``.
 
 Every tool result is a plain JSON-serializable dict. Errors are returned as
@@ -32,7 +32,11 @@ from src import copilot_facts
 from src import copilot_mock_api
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-GRAVITY_OOD_REASON = "no training data at this gravity level (FM2 not yet flown)"
+# Same wording as src/api.py so the two layers' reasons de-duplicate.
+GRAVITY_OOD_REASON = (
+    "no training data at this gravity level (the dataset is ISS microgravity only; no long-duration fire "
+    "experiment has been done in actual lunar gravity yet, NASA FM2 is planned to be the first)"
+)
 CONTRACT_FUNCTIONS = ("predict", "flammability_boundary", "compare_scenarios", "nearest_experiments")
 
 # Physically valid input ranges (NOT the training envelope). Outside -> tool error.
@@ -93,6 +97,11 @@ PRESET_ALIASES = {
 # Materials
 # =========================================================================== #
 MATERIAL_ALIASES = {
+    # Real engine (src/api.py): SIBAL cotton-fiberglass fabric from BASS-II. Listed first so "cotton"/"fabric" resolve to it.
+    "SIBAL": [
+        "sibal", "sibal fabric", "sibal cotton-fiberglass fabric", "cotton-fiberglass", "cotton fiberglass", "cotton/fiberglass",
+        "cotton-fiberglass fabric", "cotton", "fabric", "قطن", "سيبال",
+    ],
     "PMMA": ["pmma", "acrylic", "plexiglass", "plexiglas", "perspex", "lucite", "polymethyl methacrylate", "أكريليك", "اكريليك"],
     "Nomex": ["nomex", "nomex ht90-40", "aramid", "meta-aramid", "نومكس", "نوميكس"],
     "Cotton-fiberglass": [
@@ -529,6 +538,8 @@ def _merge_ood(result: dict[str, Any], extra_reasons: list[str], gravity: str | 
         if r not in seen:
             seen.add(r)
             uniq.append(r)
+    # "material 'X' not in training data" is subsumed by the engine's longer version of the same reason.
+    uniq = [r for r in uniq if not any(o != r and o.startswith(r) for o in uniq)]
     result["ood_flag"] = bool(uniq)
     result["ood_reasons"] = uniq
     result["ood_reason"] = "; ".join(uniq) or None
@@ -633,24 +644,28 @@ def tool_flammability_boundary(args: dict[str, Any]) -> dict[str, Any]:
     flows = args.get("flow_velocities_cm_s")
     if flows:
         flows = [parse_flow_cm_s(f)[0] for f in flows]
+    # O2 comes from the explicit argument, else from the preset (the engine checks it against its data).
+    o2_arg = args.get("o2_percent")
+    if o2_arg in (None, "") and n.get("preset"):
+        o2_arg = get_mission_preset(n["preset"]).get("o2_percent")
+    o2_val = None
+    if o2_arg not in (None, ""):
+        o2_val, note = parse_o2_percent(o2_arg)
+        n["o2"] = o2_val
+        if note:
+            n["notes"].append(note)
     res = _call_api(
         "flammability_boundary",
-        {"material": n["material"] or n["material_input"], "pressure": n["pressure"], "gravity": n["gravity"], "flows": flows},
+        {"material": n["material"] or n["material_input"], "pressure": n["pressure"], "gravity": n["gravity"], "flows": flows, "o2": o2_val},
     )
     if isinstance(res.get("value"), list):
         lims = [p["o2_percent_limit"] for p in res["value"] if isinstance(p, dict) and isinstance(p.get("o2_percent_limit"), (int, float))]
         if lims:
             res["o2_limit_range_percent"] = [min(lims), max(lims)]
     # Where does the cabin O2 sit relative to the curve? Done in code so the LLM never compares numbers itself.
-    # O2 comes from the explicit argument, else from the preset.
-    o2_arg = args.get("o2_percent")
-    if o2_arg in (None, "") and n.get("preset"):
-        o2_arg = get_mission_preset(n["preset"]).get("o2_percent")
-    if o2_arg not in (None, "") and isinstance(res.get("value"), list):
-        o2, note = parse_o2_percent(o2_arg)
-        n["o2"] = o2
-        if note:
-            n["notes"].append(note)
+    # The real engine does this itself (with its own data-distance check); the mock does not.
+    if o2_val is not None and isinstance(res.get("value"), list) and "flows_where_flammable_cm_s" not in res:
+        o2 = o2_val
         pts = [p for p in res["value"] if isinstance(p, dict) and p.get("o2_percent_limit") is not None]
         res["at_o2_percent"] = o2
         res["flows_where_flammable_cm_s"] = [p.get("flow_velocity_cm_s") for p in pts if o2 > p["o2_percent_limit"]]
@@ -826,7 +841,7 @@ _GRAVITY = {
 def _material_desc() -> str:
     mats = known_materials()
     listed = f" Known: {', '.join(mats)}." if mats else ""
-    return "Material name. Aliases like 'acrylic' (PMMA) or 'cotton' (Cotton-fiberglass) are resolved automatically." + listed
+    return "Material name. Aliases (e.g. 'cotton-fiberglass', 'SIBAL fabric') are resolved automatically; any other material has no data." + listed
 
 
 def _scenario_props() -> dict[str, Any]:
@@ -847,14 +862,15 @@ def get_tool_declarations() -> list[dict[str, Any]]:
     return [
         {
             "name": "predict",
-            "description": "Model prediction for ONE condition: burn vs. extinguish (with burn probability and its interval) and flame "
-            "spread rate in mm/s with a 90% interval, plus OOD flag/reason and supporting experiment IDs. Needs a flow velocity; "
-            "if the operator gave none, use flammability_boundary instead or state your assumption.",
+            "description": "Model prediction for ONE condition: burn vs. extinguish with P(burn) (probability that a flame is "
+            "sustained) and its 90% interval, plus OOD flag/reason and the nearest NASA test IDs. No flame spread rate is "
+            "predicted (spread_rate_mm_s is null: no spread-rate data). Needs a flow velocity; if the operator gave none, use "
+            "flammability_boundary instead.",
             "parameters": {"type": "object", "properties": sp, "required": ["material"]},
         },
         {
             "name": "flammability_boundary",
-            "description": "Limiting O2 (%) vs. flow velocity for a material at a pressure: above the curve it burns. Use this when no flow "
+            "description": "Limiting O2 (%) vs. flow velocity (where P(burn) crosses 0.5): above the curve it burns. Use this when no flow "
             "is given (e.g. 'is X safe on the ISS?') or for 'fans off' questions. If o2_percent is given, the result also lists the "
             "flows at which that O2 level is flammable.",
             "parameters": {
@@ -869,7 +885,7 @@ def get_tool_declarations() -> list[dict[str, Any]]:
         },
         {
             "name": "compare_scenarios",
-            "description": "Run predict() on 2–6 scenarios and return per-scenario results plus deltas/ratios vs. the first scenario. "
+            "description": "Run predict() on 2–6 scenarios and return per-scenario results plus P(burn) deltas vs. the first scenario. "
             "Every scenario needs a flow velocity (or 'fans off'). Use this for 'compare X vs Y' questions.",
             "parameters": {
                 "type": "object",
