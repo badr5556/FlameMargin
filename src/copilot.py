@@ -157,8 +157,10 @@ def _get_client(key: str) -> Any:
 # =========================================================================== #
 # Identifiers that contain digits (O2, CO2, FM2, MOCK-BASS-II-07, NASA-STD-6001, ...) are not quantities.
 _IDENT_RE = re.compile(r"(?<![A-Za-z0-9])[A-Za-z][A-Za-z0-9_]*(?:[-_][A-Za-z0-9]+)*")
-# Experiment IDs that must appear verbatim in tool results: MOCK-BASS-II-07 style and NASA BASS-II test IDs like GMT45-T4.
-_EXPERIMENT_ID_RE = re.compile(r"\b(?:[A-Z][A-Za-z]*(?:-[A-Za-z0-9]+)*-\d+[A-Za-z0-9]*|GMT\d+-T\d+[a-z]?)\b")
+# Experiment IDs that must appear verbatim in tool results: MOCK-BASS-II-07 style, Table 7.1 IDs like GMT45-T4, and the
+# Appendix A test numbers (B6, F1, P12, M10, O13a, T5, ...). "O2" (the gas) is never read as Olson's test O2.
+_EXPERIMENT_ID_RE = re.compile(
+    r"(?<![\w-])(?:[A-Z][A-Za-z]*(?:-[A-Za-z0-9]+)*-\d+[A-Za-z0-9]*|GMT\d+-T\d+[a-z]?|[BFPMT]\d{1,2}[ab]?|O(?:1\d|[13-9])[ab]?)(?![\w-])")
 _LIST_MARKER_RE = re.compile(r"^(\s*(?:[#>*\-]\s*)*)\d+[.)](?=\s)", re.MULTILINE)
 _FRACTION_G_RE = re.compile(r"(?<![\d.])(\d+)\s*/\s*(\d+)(?=\s*g\b)")
 _NUMBER_RE = re.compile(r"(?<![\d.٫])(\d+(?:[.٫]\d+)?)(\s*(?:%|٪|percent|بالمئة))?")
@@ -627,7 +629,8 @@ def _evidence_lines(near: dict[str, Any] | None) -> list[str]:
                 f"{e['flow_velocity_cm_s']:g} cm/s" if isinstance(e.get("flow_velocity_cm_s"), (int, float)) else "",
             ] if x
         )
-        out.append(f"- {e.get('id', '?')} ({e.get('campaign', '?')}; {cond}) → {e.get('outcome', '?')}")
+        src = e.get("campaign") or (f"{e['pi']}, Table {e['pi_table']}, p. {e['source_page']}" if e.get("pi") else "?")
+        out.append(f"- {e.get('id', '?')} ({src}; {cond}) → {e.get('outcome', '?')}")
     return out or ["No nearby experiments returned."]
 
 
@@ -712,7 +715,9 @@ def _fallback_boundary_block(args: dict[str, Any], trace: list[dict[str, Any]], 
         if nf and "limit_status" in str(b["value"][:1]):
             verdict += f" Predicted to self-extinguish at {', '.join(f'{x:g}' for x in nf)} cm/s."
     else:
-        verdict = f"{tag}**{mat} is not flammable at any modeled flow**: {o2:g}% O2 is below its minimum limiting O2 of {lim:g}%."
+        why = (f"{o2:g}% O2 is below its minimum limiting O2 of {lim:g}%" if lim is not None
+               else f"P(burn) < 0.5 at {o2:g}% O2 at every modeled flow inside its data")
+        verdict = f"{tag}**{mat} is not flammable at any modeled flow**: {why}."
         status = "nonflammable"
     return [verdict], key, status
 

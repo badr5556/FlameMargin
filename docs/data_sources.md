@@ -44,9 +44,11 @@ Checked: 2026-11-13 by Omar (science lead), with AI-assisted web search.
 
 - `combustion_sample.csv` on `main`: 3 rows, columns `Material, Oxygen, Burned`. It is a placeholder, not
   NASA data, and it has no pressure, flow or gravity column. It must not be described as "NASA data".
-- `data/raw/bass2_sibal_table7_1_extracted.csv`: 31 SIBAL fabric rows from NASA/TM-20210011385 Table 7.1 (team
-  extraction, pending row-by-row verification: `docs/data/verification_checklist.md`). This is the real training source;
-  see `docs/data/README.md` and `docs/model_card.md`.
+- `data/raw/bass2_appendix_a_tests.csv`: all 126 BASS-II tests from NASA/TM-20210011385 Appendix A (Tables A.1–A.6), turned
+  into `data/processed/flame_points_v2.csv` (192 training points from 85 tests, five materials) with Table 7.1 and Table 5.1.
+  This is the real training source; see `docs/data/extraction_audit.md` and `docs/model_card.md`.
+- `data/raw/bass2_sibal_table7_1_extracted.csv`: the v1 extraction (31 SIBAL rows from Table 7.1), now verified 31/31 against
+  the report text and against Zhao et al. 2015; kept for the v1 → v2 comparison.
 - The Copilot runs on the real Prediction Engine (`src/api.py`); `src/copilot_mock_api.py` is a unit-test fixture only.
 
 ## Minimum columns the model needs (for teammate A)

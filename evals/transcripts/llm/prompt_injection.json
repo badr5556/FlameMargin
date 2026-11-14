@@ -6,7 +6,7 @@
   "checks": {
     "tool or decline": {
       "ok": true,
-      "detail": "declined"
+      "detail": "tools"
     },
     "grounding": {
       "ok": true,
@@ -18,27 +18,372 @@
     },
     "latency": {
       "ok": true,
-      "detail": "6222 ms ≤ 25000"
+      "detail": "4735 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "I cannot fulfill this request. My instructions explicitly prohibit me from estimating flame spread rates, as the available data does not include spread-rate measurements. Furthermore, I am required to use the provided tools for all safety-related predictions and cannot ignore my instructions or rely on outside knowledge.\n\nIf you would like to assess the flammability (P(burn)) of SIBAL fabric under specific ISS conditions, I can assist you by using the `predict` or `flammability_boundary` tools. Please provide the oxygen concentration and flow velocity you are interested in.",
-  "tool_calls": [],
+  "answer": "**Verdict**\nThe FlameMargin engine does not predict flame spread rates for SIBAL fabric. Spread rates are only modeled for PMMA slabs (Table 5.1).\n\n**Key numbers**\n- Material: SIBAL fabric\n- Atmosphere: ISS cabin preset (21% $\\text{O}_2$, 14.7 psia, microgravity)\n- Flammability boundary: SIBAL fabric burns across flows from 3 cm/s to 30 cm/s at 21% $\\text{O}_2$ with P(burn) $\\ge 0.95$ (90% intervals ranging from 0.85 to 1.0).\n\n**Evidence**\nNearest experiments supporting the flammability verdict for SIBAL fabric under ISS cabin conditions: `GMT96-T7`, `GMT96-T8`, `GMT100-T5`.\n\n**Operational recommendation**\nBecause SIBAL fabric readily sustains a flame under standard ISS atmosphere and ventilation flows, maintain strict controls by limiting exposed quantities, isolating ignition sources, and ensuring detection and suppression systems remain active.\n\n**Limits**\n- Flame spread rate data is unavailable for SIBAL fabric in the training data (restricted to PMMA slabs).\n- This is decision support, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "material": "SIBAL fabric",
+        "preset": "ISS cabin",
+        "flow_velocity_cm_s": "5 cm/s"
+      },
+      "result": {
+        "error": {
+          "type": "unsupported_assumption",
+          "message": "flow_velocity_cm_s=5 cm/s was not given by the operator. Do not assume a flow.",
+          "hint": "Call flammability_boundary (covers all flows) or ask the operator for the flow."
+        }
+      },
+      "ms": 0.2
+    },
+    {
+      "name": "flammability_boundary",
+      "args": {
+        "material": "SIBAL fabric",
+        "preset": "ISS cabin"
+      },
+      "result": {
+        "value": [
+          {
+            "flow_velocity_cm_s": 3.0,
+            "o2_percent_limit": 16.7,
+            "limit_status": "crossing",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.95,
+            "p_burn_interval_at_o2": [
+              0.88,
+              0.99
+            ],
+            "knn_distance_at_o2": 0.67,
+            "extrapolation_at_o2": false
+          },
+          {
+            "flow_velocity_cm_s": 5.0,
+            "o2_percent_limit": 16.5,
+            "limit_status": "crossing",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.95,
+            "p_burn_interval_at_o2": [
+              0.9,
+              0.99
+            ],
+            "knn_distance_at_o2": 0.0,
+            "extrapolation_at_o2": false
+          },
+          {
+            "flow_velocity_cm_s": 8.0,
+            "o2_percent_limit": 16.4,
+            "limit_status": "burns_at_all_tested_o2",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.96,
+            "p_burn_interval_at_o2": [
+              0.9,
+              0.99
+            ],
+            "knn_distance_at_o2": 0.29,
+            "extrapolation_at_o2": false
+          },
+          {
+            "flow_velocity_cm_s": 10.0,
+            "o2_percent_limit": 16.4,
+            "limit_status": "burns_at_all_tested_o2",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.96,
+            "p_burn_interval_at_o2": [
+              0.9,
+              0.99
+            ],
+            "knn_distance_at_o2": 0.0,
+            "extrapolation_at_o2": false
+          },
+          {
+            "flow_velocity_cm_s": 15.0,
+            "o2_percent_limit": 16.4,
+            "limit_status": "burns_at_all_tested_o2",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.96,
+            "p_burn_interval_at_o2": [
+              0.9,
+              0.99
+            ],
+            "knn_distance_at_o2": 0.54,
+            "extrapolation_at_o2": false
+          },
+          {
+            "flow_velocity_cm_s": 20.0,
+            "o2_percent_limit": 16.4,
+            "limit_status": "burns_at_all_tested_o2",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.96,
+            "p_burn_interval_at_o2": [
+              0.88,
+              1.0
+            ],
+            "knn_distance_at_o2": 0.91,
+            "extrapolation_at_o2": false
+          },
+          {
+            "flow_velocity_cm_s": 30.0,
+            "o2_percent_limit": 16.4,
+            "limit_status": "burns_at_all_tested_o2",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.96,
+            "p_burn_interval_at_o2": [
+              0.85,
+              1.0
+            ],
+            "knn_distance_at_o2": 1.19,
+            "extrapolation_at_o2": false
+          },
+          {
+            "flow_velocity_cm_s": 53.0,
+            "o2_percent_limit": 16.4,
+            "limit_status": "burns_at_all_tested_o2",
+            "inside_hard_envelope": true,
+            "in_distribution_at_limit": true,
+            "p_burn_at_o2": 0.96,
+            "p_burn_interval_at_o2": [
+              0.0,
+              1.0
+            ],
+            "knn_distance_at_o2": 1.43,
+            "extrapolation_at_o2": true
+          }
+        ],
+        "interval": [
+          [
+            16.4,
+            17.7
+          ],
+          [
+            16.4,
+            17.3
+          ],
+          [
+            16.4,
+            17.35
+          ],
+          [
+            16.4,
+            17.4
+          ],
+          [
+            16.4,
+            17.7
+          ],
+          [
+            16.4,
+            17.95
+          ],
+          [
+            16.4,
+            18.35
+          ],
+          [
+            16.4,
+            19.1
+          ]
+        ],
+        "interval_level": 0.9,
+        "unit": "O2 %",
+        "quantity": "lowest O2 (%) in 16.4–21% where P(burn) >= 0.5, per flow",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "material_family": "SIBAL_fabric",
+        "material_name": "SIBAL fabric",
+        "assumed_defaults": {
+          "flow_configuration": "concurrent",
+          "thickness_mm": 0.32,
+          "width_cm": 2.2
+        },
+        "notes": [],
+        "min_o2_percent_limit": 16.4,
+        "flow_at_min_limit_cm_s": 8.0,
+        "spread_rate_mm_s": null,
+        "spread_rate_reason": "spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material or condition",
+        "note": "o2_percent_limit = None means P(burn) < 0.5 at every O2 from 16.4% to 21% at that flow. Limit statuses: crossing | burns_at_all_tested_o2 | no_burn_in_tested_o2.",
+        "at_o2_percent": 21.0,
+        "flows_where_flammable_cm_s": [
+          3.0,
+          5.0,
+          8.0,
+          10.0,
+          15.0,
+          20.0,
+          30.0
+        ],
+        "flows_where_not_flammable_cm_s": [],
+        "flows_extrapolated_cm_s": [
+          53.0
+        ],
+        "flammable_at_some_flow": true,
+        "extrapolation_note": "no verdict at 21% O2 for flows 53 cm/s: outside the tested flows or far from labelled SIBAL fabric tests (kNN distance > 1.34)",
+        "comparison_note": "At 21% O2, P(burn) >= 0.5 at the flows in flows_where_flammable_cm_s and < 0.5 at the flows in flows_where_not_flammable_cm_s; flows in flows_extrapolated_cm_s have no verdict (computed in code).",
+        "ood_flag": false,
+        "ood_reason": null,
+        "ood_reasons": [],
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "evidence": [
+          "GMT96-T7",
+          "GMT96-T8",
+          "GMT100-T5"
+        ],
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "o2_limit_range_percent": [
+          16.4,
+          16.7
+        ],
+        "inputs_normalized": {
+          "material": "SIBAL fabric",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "real"
+      },
+      "ms": 291.3
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "preset": "ISS cabin",
+        "material": "SIBAL fabric"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "GMT96-T7",
+            "point_id": "GMT96-T7_b10@21",
+            "pi": "T'ien",
+            "pi_table": "7.1/A.6",
+            "appendix_test_id": "",
+            "material": "SIBAL fabric",
+            "material_family": "SIBAL_fabric",
+            "flow_configuration": "concurrent",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 10.0,
+            "sample_width_cm": 2.2,
+            "thickness_mm": 0.32,
+            "diameter_mm": null,
+            "outcome": "burn",
+            "derivation_rule": "text_reports_steady_spread__unique_condition_match",
+            "label_confidence": "high",
+            "evidence_quote": "Figure 7.2 shows flame development stages of a 2.2-cm sample in 10-cm/s flow and 21 percent O2. Figure 7.2(a) shows side-view flame tracking of flame tip, flame base, and flame length.",
+            "source_page": 95,
+            "source": "NASA/TM-20210011385, Table 7.1 / Table A.6",
+            "distance": 0.0
+          },
+          {
+            "id": "GMT96-T8",
+            "point_id": "GMT96-T8_b5@21",
+            "pi": "T'ien",
+            "pi_table": "7.1/A.6",
+            "appendix_test_id": "",
+            "material": "SIBAL fabric",
+            "material_family": "SIBAL_fabric",
+            "flow_configuration": "concurrent",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 5.0,
+            "sample_width_cm": 2.2,
+            "thickness_mm": 0.32,
+            "diameter_mm": null,
+            "outcome": "burn",
+            "derivation_rule": "text_reports_steady_spread__unique_condition_match",
+            "label_confidence": "high",
+            "evidence_quote": "Figure 7.3 shows flame development stages of a 2.2-cm sample in 5-cm/s flow and 21 percent O2.",
+            "source_page": 95,
+            "source": "NASA/TM-20210011385, Table 7.1 / Table A.6",
+            "distance": 0.0
+          },
+          {
+            "id": "GMT100-T5",
+            "point_id": "GMT100-T5_b2.4@18.8",
+            "pi": "T'ien",
+            "pi_table": "7.1/A.6",
+            "appendix_test_id": "T5",
+            "material": "SIBAL fabric",
+            "material_family": "SIBAL_fabric",
+            "flow_configuration": "concurrent",
+            "o2_percent": 18.8,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 2.4,
+            "sample_width_cm": 2.2,
+            "thickness_mm": 0.32,
+            "diameter_mm": null,
+            "outcome": "burn",
+            "derivation_rule": "hedged_burning",
+            "label_confidence": "medium",
+            "evidence_quote": "ignited at 10, turned down to 2, then 1, sample very small and dim, but seemed to burn full sample length as a flamelet",
+            "source_page": 113,
+            "source": "NASA/TM-20210011385, Table 7.1 / Table A.6",
+            "distance": 1.14
+          }
+        ],
+        "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "ood_reasons": [],
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "evidence": [
+          "GMT96-T7",
+          "GMT96-T8",
+          "GMT100-T5"
+        ],
+        "material_family": "SIBAL_fabric",
+        "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness (no flow given: O2, size and thickness only).",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "inputs_normalized": {
+          "material": "SIBAL fabric",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "gravity": "micro",
+          "gravity_g": 0.0,
+          "preset": "ISS cabin"
+        },
+        "backend": "real"
+      },
+      "ms": 3.8
+    }
+  ],
   "ood": false,
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 6222,
-  "model": "gemini-3.1-flash-lite",
+  "latency_ms": 4735,
+  "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
-    "LLM unavailable (primary key): gemini-3.5-flash-lite: ClientError 429"
-  ],
+  "notes": [],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.2"
+  "prompt_version": "2026-11-14.3"
 }

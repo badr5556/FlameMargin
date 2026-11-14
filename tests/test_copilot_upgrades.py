@@ -268,3 +268,24 @@ def test_silent_default_gets_an_assumption_line():
     assert copilot._first_line_plain(out2).startswith(copilot.OOD_PREFIX) and "**Assumption:**" in out2
     assert copilot.enforce_assumption_line("Is SIBAL safe on the ISS?", "**Verdict**\nx", trace)[1] is False
     assert copilot.enforce_assumption_line("Is it safe?", "Which material do you mean?", trace)[1] is False
+
+
+# --------------------------------------------------------------------------- #
+# v2: Appendix A test IDs are grounded too
+# --------------------------------------------------------------------------- #
+def test_appendix_test_ids_must_come_from_tool_results():
+    r = copilot_tools.dispatch("predict", {"material": "Nomex", "o2_percent": 21.0, "pressure_psia": 14.7, "flow_velocity_cm_s": 10})
+    assert set(r["evidence"]) == {"F1", "F2", "F3"}
+    assert copilot.verify_grounding("Evidence: F1, F2 and F3 did not sustain a flame.", [r]).ok
+    assert copilot.verify_grounding("Evidence: F9 did not sustain a flame.", [r]).unknown_ids == ["F9"]
+    assert not copilot.verify_grounding("At 21% O2", [r]).unknown_ids  # O2 the gas is not a test ID
+
+
+def test_atmosphere_outside_every_material_is_ood_even_without_material():
+    r = copilot_tools.dispatch("predict", {"o2_percent": 40, "pressure_psia": 5})
+    assert r["ood_flag"] and r["value"] is None and "known_materials" in r
+    assert any("pressure 5 psia" in x for x in r["ood_reasons"]) or "pressure" in r["ood_reason"]
+    r2 = copilot_tools.dispatch("flammability_boundary", {"o2_percent": 40, "pressure_psia": 5})
+    assert r2["ood_flag"]
+    ok = copilot_tools.dispatch("predict", {"o2_percent": 18, "pressure_psia": 14.7, "flow_velocity_cm_s": 5})
+    assert "error" in ok  # inside the data of some material: the material is still required

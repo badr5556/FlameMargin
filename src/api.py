@@ -336,11 +336,9 @@ def hard_rule_reasons(material: Any = "SIBAL fabric", o2_percent: float | None =
     fam = r["material_family"]
     if fam is None:
         reasons.append(f"material '{material}' not in training data (BASS-II materials in the data: {', '.join(MATERIALS)})")
-    if pressure_psia is not None:
-        x = _range_reason("pressure", float(pressure_psia), PRESSURE_RANGE, " psia", "every material (1 atm ± 0.3 psia)")
-        if x:
-            reasons.append(x.replace("outside the tested range for every material (1 atm ± 0.3 psia)",
-                                     f"outside training range {PRESSURE_RANGE[0]:g}–{PRESSURE_RANGE[1]:g} psia (1 atm ± 0.3 psia)"))
+    if pressure_psia is not None and not (PRESSURE_RANGE[0] <= float(pressure_psia) <= PRESSURE_RANGE[1]):
+        reasons.append(f"pressure {float(pressure_psia):g} psia outside training range {PRESSURE_RANGE[0]:g}–{PRESSURE_RANGE[1]:g} psia "
+                       "(1 atm ± 0.3 psia, every BASS-II test)")
     if gravity_label(gravity) != "micro":
         reasons.append(GRAVITY_OOD_REASON)
     if fam is None:

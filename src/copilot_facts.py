@@ -15,7 +15,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-FACTS_VERSION = "2026-11-14.1"
+FACTS_VERSION = "2026-11-14.2"
 VERIFIED_ON = "primary source abstract/PDF, checked 2026-11-14"
 
 FACTS: dict[str, dict[str, Any]] = {
@@ -44,6 +44,31 @@ FACTS: dict[str, dict[str, Any]] = {
         "url": None,
         "claim_id": "C2b",
         "keywords": ["pmma", "rod", "opposed", "17%", "18%", "lower o2", "lower oxygen", "bass"],
+        "verified": True,
+    },
+    "bass2_rod_minimum_o2": {
+        "fact": "BASS-II concurrent-flow PMMA rods had a minimum flammable O2 of 13.6%; opposed-flow rods 16.3%.",
+        "source": "Olson et al., ICES-2019-101; cross-checked in NASA/TM-20210011385 pp. 52, 68",
+        "url": "https://ttu-ir.tdl.org/bitstreams/2024efac-4733-4352-826e-8eaaa6954038/download",
+        "claim_id": "C2c",
+        "keywords": ["pmma", "rod", "minimum", "limiting", "13.6", "16.3", "lowest o2", "concurrent", "opposed", "limit"],
+        "verified": True,
+    },
+    "ug_vs_1g_pmma_limits": {
+        "fact": "µg limits were 1-2% O2 lower than 1 g limits; 1 g PMMA limits are 17% downward and 15.4% upward.",
+        "source": "Olson et al., ICES-2019-101",
+        "url": "https://ttu-ir.tdl.org/bitstreams/2024efac-4733-4352-826e-8eaaa6954038/download",
+        "claim_id": "C2d",
+        "keywords": ["1 g", "earth", "normal gravity", "downward", "upward", "15.4", "lower", "limit", "pmma", "why", "different"],
+        "verified": True,
+    },
+    "nomex_bass2_not_sustained": {
+        "fact": "In BASS-II on the ISS, Nomex III samples ignited only briefly and did not sustain a flame in concurrent flow at "
+        "21-22.2% O2 (tests F1, F2, F3; calibrated O2 22.2%, 21% and 21.7% at 9.5, 15 and 8 cm/s).",
+        "source": "NASA/TM-20210011385, Table A.2 (p. 105) and Section 3.1.1 (p. 46)",
+        "url": "https://ntrs.nasa.gov/citations/20210011385",
+        "claim_id": "D3",
+        "keywords": ["nomex", "aramid", "fire barrier", "nomex iii", "نومكس"],
         "verified": True,
     },
     "sibal_quenching_flow": {

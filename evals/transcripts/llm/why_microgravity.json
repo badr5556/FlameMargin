@@ -26,14 +26,14 @@
     },
     "latency": {
       "ok": true,
-      "detail": "4798 ms ≤ 25000"
+      "detail": "2071 ms ≤ 25000"
     },
     "stayed in LLM mode": {
       "ok": true,
       "detail": "llm"
     }
   },
-  "answer": "**Answer**\n\nFire in microgravity is different from fire on Earth primarily because of the absence of buoyant flow. Without gravity-driven buoyancy to pull cooler, denser air downward and force hot combustion products upward, a flame in still air becomes spherical (round) rather than taking on the familiar teardrop shape seen on Earth (Source: NASA SVS 31394, NASA Studies Fire in Microgravity). \n\n*(Source pending team verification)*\n\n**Sources**\n- NASA SVS 31394 (NASA Studies Fire in Microgravity)",
+  "answer": "**Answer**\n\nFire in microgravity behaves differently from fire on Earth primarily because of the absence of natural buoyancy-driven convection. \n\nOn Earth, hot combustion gases expand, become less dense, and rise, drawing fresh oxygen into the base of the flame. This gives typical Earth flames their familiar, elongated teardrop shape and creates a steady supply of oxidizer driven by gravity. \n\nWithout gravity, there is no buoyant flow. In still air or low-ventilation microgravity environments, a flame tends to become spherical (round) rather than teardrop-shaped. Without active ventilation to supply fresh oxygen, a flame in microgravity relies solely on molecular diffusion, which is much slower, causing the flame to suffocate in its own combustion products and extinguish much more easily than on Earth.\n\n**Sources**\n- NASA SVS 31394 (NASA Studies Fire in Microgravity) (source pending team verification)",
   "tool_calls": [
     {
       "name": "get_background_fact",
@@ -44,13 +44,15 @@
         "matches": [
           {
             "topic": "microgravity_flame_shape",
-            "fact": "Without gravity there is no buoyant flow, so a candle flame in still air becomes round instead of the teardrop shape seen on Earth.",
+            "fact": "Without gravity there is no buoyant flow, so a candle flame in still air becomes round instead of teardrop-shaped.",
             "source": "NASA SVS 31394 (NASA Studies Fire in Microgravity)",
+            "url": "https://svs.gsfc.nasa.gov/31394",
             "claim_id": "C1",
-            "verified": false
+            "verified": false,
+            "verified_by": "pending (search-extract pre-check only)"
           }
         ],
-        "facts_version": "2026-11-13.2",
+        "facts_version": "2026-11-14.2",
         "usage_note": "Background context only. Never use as a substitute for model predictions. Cite the source."
       },
       "ms": 0.0
@@ -60,14 +62,11 @@
   "ood_reasons": [],
   "grounding_ok": true,
   "mode": "llm",
-  "latency_ms": 4798,
+  "latency_ms": 2071,
   "model": "gemini-3.5-flash-lite",
   "backend": "real",
   "ungrounded": [],
-  "notes": [
-    "gemini-3.5-flash-lite: ClientError 429 (retrying)",
-    "gemini-3.5-flash-lite: ClientError 429 (retrying)"
-  ],
+  "notes": [],
   "claims_consistent": true,
-  "prompt_version": "2026-11-14.2"
+  "prompt_version": "2026-11-14.3"
 }

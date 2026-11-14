@@ -1,5 +1,15 @@
 # FlameMargin BASS-II Data Package
 
+> **v2 (2026-11-14): the full BASS-II test catalog.** All 126 tests of NASA/TM-20210011385 Appendix A (Tables A.1–A.6) are
+> transcribed in `data/raw/bass2_appendix_a_tests.csv` and turned into 215 traceable points (192 for training, 5 materials) in
+> `data/processed/flame_points_v2.csv`. Start here:
+> - [`extraction_audit.md`](extraction_audit.md): how the tables were read, counts, every uncertain row, the labelling rules and exclusions
+> - [`data_dictionary_v2.md`](data_dictionary_v2.md): every column of the catalog and the points
+> - [`double_check_v2.md`](double_check_v2.md): independent 20% re-check with a second extractor (26/26 rows pass)
+> - Table 7.1: the 31 v1 rows below match the report text (31/31) and Zhao et al. 2015 (31/31); the v1 checklist is closed.
+>
+> The v1 description below is kept for the before/after comparison.
+
 Prepared by the IGNISPHERE data team (Data & ML Lead: Adel Elwan) and integrated into the repo layout below.
 
 ## What this package contains

@@ -1,40 +1,41 @@
 # Judge Q&A: the 15 hardest questions
 
-Short, honest answers. Claim IDs refer to `docs/science/claims_sheet.md`; numbers come from `models/metrics.json`,
+Short, honest answers. Claim IDs refer to `docs/science/claims_sheet.md`; numbers come from `models/metrics_v2.json`,
 `docs/model_card.md` and `evals/results.md`. Rule: if the true answer is "we don't know", say that first.
 
 ### 1. How much data did you train on?
-31 SIBAL cotton-fiberglass fabric tests from NASA/TM-20210011385 Table 7.1 (BASS-II, ISS, 1 atm). Each test ramps the
-flow at fixed oxygen, so four written rules turn the 12 tests with a definitive outcome into **21 observations: 11 burn,
-10 extinguished**. The other 19 rows (8 reused samples, 11 without a reported outcome) are shown on the map in grey but not used.
+All 126 BASS-II tests in NASA/TM-20210011385 Appendix A (Tables A.1–A.6), plus the PI summary tables 7.1 and 5.1 (ISS, 1 atm).
+Written rules turn the crew's observations into **192 training points from 85 tests: 166 burn, 26 extinguished**, for five
+materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex). Every point carries a verbatim quote and its page. 23 more
+points (reused samples, spherical sections, NASA-flagged O2) are shown on the map but not used. [D1]
 
 ### 2. Are the numbers in your demo real model outputs?
-Yes. Every number comes from `src/api.py`, the model trained on those 21 points, and code checks that every number in a
+Yes. Every number comes from `src/api.py`, the model trained on those 192 points, and code checks that every number in a
 Copilot answer exists in a tool result. The old placeholder engine is now only a unit-test fixture.
 
 ### 3. How good is the model?
-Leave-one-test-out (both points of a test held out together): Brier **0.229** for the Gaussian process vs **0.263** for a
-majority-class baseline; balanced accuracy 0.668 vs 0.318; log-loss 0.651 vs 0.719. That is a modest gain, and we say so:
-two-thirds of its out-of-fold predictions are between 0.4 and 0.6. It's a proof of pipeline on real NASA data, not a
-flight-qualification tool.
+Leave-one-test-out (all points of a test held out together): Brier **0.087** for the logistic regression vs **0.118** for the
+baseline; log-loss 0.306 vs 0.401; AUC 0.82. On SIBAL's own 21 v1 points it is worse than v1 (0.269 vs 0.229), and we say so:
+its flow terms are shared by all materials. It's a proof of pipeline on real NASA data, not a flight-qualification tool.
 
-### 4. Why is the baseline's accuracy only 0.333, below a coin flip?
-Leave-one-out artefact: when you hold out a test, the training majority shifts against that test's own points. That's why
-we pick models by Brier and log-loss, where the baseline sits near a coin flip. It's explained in the model card.
+### 4. Why is accuracy 0.89 for the model and 0.865 for the baseline?
+Because 86% of the points are burns, so "always burn" is already 0.865 accurate. That's why we pick models by Brier and
+log-loss and also report AUC (0.82 vs 0.06). It's explained in the model card.
 
-### 5. Your ISS preset says "extrapolation". Isn't 21% oxygen normal?
-It is normal for the ISS, but in the extraction none of the 21% O2 tests reports a definitive outcome; the highest labelled
-oxygen is 18.7%. So the distance check flags 21% as far from labelled data and the interval becomes 0 to 1. We'd rather
-say "no information" than borrow confidence. If the PDF shows outcomes for those rows, adding them fixes it.
+### 5. Is the ISS cabin (21% oxygen) covered?
+Now yes, for four of the five materials. The report says two SIBAL tests at 21% O2 reached steady spread (GMT96-T7 and -T8,
+p. 95), and PMMA films and slabs were tested at 21–22.2%. PMMA rods were tested only up to 20.8%, so ISS air is out of
+distribution for rods. In v1, with 31 rows, ISS was an extrapolation.
 
 ### 6. What happens outside your data?
-Hard rules first: material other than SIBAL, pressure outside 14.7 ± 0.3 psia, gravity other than microgravity, O2 outside
-16.4–21%, flow outside 2–53 cm/s. Any of them → **no number**, with a reason for each. Then a nearest-neighbour distance
+Hard rules first: a material not in the five, pressure outside 14.7 ± 0.3 psia, gravity other than microgravity, a flow
+configuration never tested for that material, or O2 / flow / thickness / size outside that material's tested ranges. Any of
+them → **no number**, with a reason for each. Then a nearest-neighbour distance
 check flags extrapolations inside those ranges. In the Copilot, code forces the warning onto the first line.
 
 ### 7. So Artemis is out of distribution?
-Yes, on both pressure (8.2 psia) and oxygen (34%). [C4] That's our key honest finding: NASA's microgravity data in this
-dataset don't reach the Exploration Atmosphere, which matches the 2026 NESC finding that material flammability is the most
+Yes, for every material, on both pressure (8.2 psia) and oxygen (34%). [C4] That's our key honest finding: none of the 126
+BASS-II tests reaches the Exploration Atmosphere, which matches the 2026 NESC finding that material flammability is the most
 critical hurdle there. [C6]
 
 ### 8. What about the Moon?
@@ -53,25 +54,27 @@ browser session gets 15 LLM questions, then the fallback. Final eval run: LLM 13
 the guard blocking a citation the model took from its prompt instead of a tool).
 
 ### 11. Does your model respect physics?
-Partly, and we report where it doesn't: P(burn) should not fall as oxygen rises at fixed flow. The shipped model has a small
-dip near 17.5% and falls back toward 0.5 above 18.7%, because a Gaussian process reverts to its prior far from data. The
-logistic model is monotone but scored worse. It's in the model card and tested.
+On oxygen, yes: P(burn) never falls as oxygen rises at fixed flow (0 of 18 checked curves). Where it doesn't: it cannot bend
+into SIBAL's low-flow quenching branch (it says 0.78 at 18.7% O2 and 2.2 cm/s, where GMT45-T4 quenched). It's in the model
+card and tested.
 
-### 12. Why do you not predict flame spread rate?
-The extraction has no spread-rate values, so we don't. The regression dataset is an empty schema on purpose.
+### 12. Do you predict flame spread rate?
+Only for PMMA slabs: Table 5.1 gives 39 measured spread rates from 18 tests. A simple log-linear model beats a baseline
+(leave-one-test-out RMSE 0.175 vs 0.269 log10 units). Other materials have spread rates only in figures, which we don't digitize.
 
 ### 13. Where do your science facts come from?
 Every claim has an ID, an exact wording, a primary source and a status in the claims sheet. Ten are verified against the
 primary abstract or PDF and one was corrected because it was too strong (C10); four science claims are still pending and the
-Copilot says so when it cites them. Our own data claim (D1) stays pending until the 31-row check is done.
+Copilot says so when it cites them. Our own data claim (D1) is verified: all 126 rows checked against the PDF, a 20%
+re-check with a second extractor passed 26/26, and the SIBAL rows match Zhao et al. 2015 for 31/31.
 
 ### 14. Did you use AI to build this?
 Yes, disclosed in the README: the team designed the system and its safety rules, extracted the data and verified the sources;
 AI assistants helped implement, test and draft documentation; Gemini is the runtime LLM and never produces numbers itself.
 
 ### 15. What would you do with three more months?
-1. Finish the 31-row verification and add the other BASS-II tables (PMMA, more velocities). 2. Bound the GP length scale and
-re-validate. 3. Add pressure as a feature once data at other pressures exist. 4. Add FM2 lunar data when it exists. [C10]
+1. Give each material its own flow terms (SIBAL's quenching branch) and re-validate. 2. Read the spread-rate figures with
+the PIs' raw data instead of digitizing them. 3. Add pressure as a feature once data at other pressures exist. 4. Add FM2 lunar data when it exists. [C10]
 5. Ask a NASA fire-safety engineer to review the outputs.
 
 ---
@@ -79,8 +82,8 @@ re-validate. 3. Add pressure as a feature once data at other pressures exist. 4.
 ## Our known weaknesses (say them before a judge does)
 | Weakness | How we handle it |
 |---|---|
-| 21 points, one material, one pressure | Leave-one-test-out metrics next to a baseline; hard OOD rules; nearest NASA tests shown with every answer |
-| Extraction not yet verified row by row | 31-row checklist for two teammates; claim D1 stays PENDING until done |
-| ISS 21% O2 has no labelled outcome | Flagged as extrapolation with a [0, 1] interval and label "uncertain" |
-| GP intervals often touch 0.5 (37% of bootstrap fits collapse) | Reported in the model card; bounded length scale is the next step |
+| 192 points, five materials, one pressure | Leave-one-test-out metrics next to a baseline; per-material OOD rules; nearest NASA tests (with quote and page) shown with every answer |
+| One-sided labels: PMMA film all burns, Nomex 3 non-sustained tests | Said in every answer for those materials; the model only repeats those tests |
+| v2 is worse than v1 on SIBAL's own points (0.269 vs 0.229) | Reported in the model card and README; per-material flow terms are the next step |
+| 55 of 192 points are medium-confidence | Labelled per point; a high-confidence-only run is reported (Brier 0.116 vs 0.109) |
 | No fans-off flow value | Not invented; slider labelled "Fans OFF / near-quiescent" with verified context only (C3, C8b) |

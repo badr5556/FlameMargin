@@ -1,0 +1,319 @@
+{
+  "id": "nomex_iss",
+  "question": "Does Nomex sustain a flame at 21% O2, 14.7 psia and 10 cm/s?",
+  "behavior": "Nomex is in the data only through 3 BASS-II tests (F1, F2, F3, Table A.2), none of which sustained a flame; the answer must cite them.",
+  "passed": true,
+  "checks": {
+    "tool called": {
+      "ok": true,
+      "detail": "2 calls"
+    },
+    "evidence tool": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "not OOD": {
+      "ok": true,
+      "detail": "in-distribution"
+    },
+    "grounding": {
+      "ok": true,
+      "detail": "ok"
+    },
+    "claims consistent": {
+      "ok": true,
+      "detail": ""
+    },
+    "content": {
+      "ok": true,
+      "detail": "F1 | F2 | F3"
+    },
+    "latency": {
+      "ok": true,
+      "detail": "276 ms ≤ 3000"
+    }
+  },
+  "answer": "**Verdict**\n**Nomex is predicted to EXTINGUISH** at 21% O2, 14.7 psia, 10 cm/s flow, µg.\n\n**Key numbers**\n- Burn probability P(burn): 0.02 (90% interval 0.01–0.03)\n- Flame spread rate: not predicted (spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material).\n\n**Evidence**\n- F3 (Ferkul, Table A.2, p. 105; Nomex, 21.7% O2, 14.7 psia, 8 cm/s) → extinguish\n- F2 (Ferkul, Table A.2, p. 105; Nomex, 21% O2, 14.7 psia, 15 cm/s) → extinguish\n- F1 (Ferkul, Table A.2, p. 105; Nomex, 22.2% O2, 14.7 psia, 9.5 cm/s) → extinguish\n\n**Operational recommendation**\n- Predicted to self-extinguish under these conditions; margin shrinks if O2 rises or pressure drops, so re-check after any atmosphere change.\n\n**Limits**\n- Model scope: the five BASS-II materials (SIBAL fabric, PMMA film, PMMA slab, PMMA rod, Nomex), ISS microgravity at 1 atm only (NASA/TM-20210011385); spread rate only for PMMA slabs (Table 5.1).\n- Decision support only, not a replacement for NASA-STD-6001 material testing.",
+  "tool_calls": [
+    {
+      "name": "predict",
+      "args": {
+        "o2_percent": "21%",
+        "pressure_psia": "14.7 psia",
+        "material": "Nomex",
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "label": "extinguish",
+        "burn_probability": 0.02,
+        "burn_probability_interval": [
+          0.01,
+          0.03
+        ],
+        "interval_level": 0.9,
+        "value": 0.02,
+        "interval": [
+          0.01,
+          0.03
+        ],
+        "unit": "probability",
+        "interval_note": "90% bootstrap interval over NASA tests",
+        "bootstrap_interval_raw": [
+          0.01,
+          0.03
+        ],
+        "quantity": "P(burn): probability that a flame is sustained",
+        "spread_rate_mm_s": null,
+        "spread_rate_reason": "spread rate is only modelled for PMMA slabs (Table 5.1); none is predicted for this material",
+        "ood_flag": false,
+        "ood_reason": null,
+        "ood_reasons": [],
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "knn_distance": 0.47,
+        "knn_threshold": 1.34,
+        "material_family": "Nomex",
+        "material_name": "Nomex",
+        "material_data": {
+          "n_points": 3,
+          "n_tests": 3,
+          "n_burn": 0,
+          "n_extinguished": 3
+        },
+        "notes": [
+          "every labelled Nomex point in the data is non-sustained: the model cannot locate a boundary for this material, only repeat what its tests showed"
+        ],
+        "evidence": [
+          "F3",
+          "F2",
+          "F1"
+        ],
+        "nearest_experiments": [
+          {
+            "id": "F3",
+            "point_id": "F3_x8@21.7",
+            "pi": "Ferkul",
+            "pi_table": "A.2",
+            "appendix_test_id": "F3",
+            "material": "Nomex",
+            "material_family": "Nomex",
+            "flow_configuration": "concurrent",
+            "o2_percent": 21.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 8.0,
+            "sample_width_cm": null,
+            "thickness_mm": null,
+            "diameter_mm": null,
+            "outcome": "extinguish",
+            "derivation_rule": "no_sustained_ignition",
+            "label_confidence": "high",
+            "evidence_quote": "Brief ignition flash, no sustained flame",
+            "source_page": 105,
+            "source": "NASA/TM-20210011385, Table A.2",
+            "distance": 0.47
+          },
+          {
+            "id": "F2",
+            "point_id": "F2_x15@21",
+            "pi": "Ferkul",
+            "pi_table": "A.2",
+            "appendix_test_id": "F2",
+            "material": "Nomex",
+            "material_family": "Nomex",
+            "flow_configuration": "concurrent",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 15.0,
+            "sample_width_cm": null,
+            "thickness_mm": null,
+            "diameter_mm": null,
+            "outcome": "extinguish",
+            "derivation_rule": "no_sustained_ignition",
+            "label_confidence": "high",
+            "evidence_quote": "Tried to ignite, flame would not sustain",
+            "source_page": 105,
+            "source": "NASA/TM-20210011385, Table A.2",
+            "distance": 0.54
+          },
+          {
+            "id": "F1",
+            "point_id": "F1_x9.5@22.2",
+            "pi": "Ferkul",
+            "pi_table": "A.2",
+            "appendix_test_id": "F1",
+            "material": "Nomex",
+            "material_family": "Nomex",
+            "flow_configuration": "concurrent",
+            "o2_percent": 22.2,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 9.5,
+            "sample_width_cm": null,
+            "thickness_mm": null,
+            "diameter_mm": null,
+            "outcome": "extinguish",
+            "derivation_rule": "no_sustained_ignition",
+            "label_confidence": "high",
+            "evidence_quote": "Ignited briefly but did not spread at all and extinguished while the igniter was still on",
+            "source_page": 105,
+            "source": "NASA/TM-20210011385, Table A.2",
+            "distance": 0.63
+          }
+        ],
+        "model": "Logistic regression (L2, o2 x material interaction)",
+        "inputs": {
+          "material": "Nomex",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "sample_width_cm": null,
+          "thickness_mm": null,
+          "diameter_mm": null,
+          "flow_configuration": null,
+          "material_name": "Nomex",
+          "material_family": "Nomex",
+          "assumed_defaults": {
+            "flow_configuration": "concurrent"
+          }
+        },
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "real"
+      },
+      "ms": 271.4
+    },
+    {
+      "name": "nearest_experiments",
+      "args": {
+        "o2_percent": "21%",
+        "pressure_psia": "14.7 psia",
+        "material": "Nomex",
+        "k": 3,
+        "flow_velocity_cm_s": "10 cm/s"
+      },
+      "result": {
+        "value": [
+          {
+            "id": "F3",
+            "point_id": "F3_x8@21.7",
+            "pi": "Ferkul",
+            "pi_table": "A.2",
+            "appendix_test_id": "F3",
+            "material": "Nomex",
+            "material_family": "Nomex",
+            "flow_configuration": "concurrent",
+            "o2_percent": 21.7,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 8.0,
+            "sample_width_cm": null,
+            "thickness_mm": null,
+            "diameter_mm": null,
+            "outcome": "extinguish",
+            "derivation_rule": "no_sustained_ignition",
+            "label_confidence": "high",
+            "evidence_quote": "Brief ignition flash, no sustained flame",
+            "source_page": 105,
+            "source": "NASA/TM-20210011385, Table A.2",
+            "distance": 0.47
+          },
+          {
+            "id": "F2",
+            "point_id": "F2_x15@21",
+            "pi": "Ferkul",
+            "pi_table": "A.2",
+            "appendix_test_id": "F2",
+            "material": "Nomex",
+            "material_family": "Nomex",
+            "flow_configuration": "concurrent",
+            "o2_percent": 21.0,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 15.0,
+            "sample_width_cm": null,
+            "thickness_mm": null,
+            "diameter_mm": null,
+            "outcome": "extinguish",
+            "derivation_rule": "no_sustained_ignition",
+            "label_confidence": "high",
+            "evidence_quote": "Tried to ignite, flame would not sustain",
+            "source_page": 105,
+            "source": "NASA/TM-20210011385, Table A.2",
+            "distance": 0.54
+          },
+          {
+            "id": "F1",
+            "point_id": "F1_x9.5@22.2",
+            "pi": "Ferkul",
+            "pi_table": "A.2",
+            "appendix_test_id": "F1",
+            "material": "Nomex",
+            "material_family": "Nomex",
+            "flow_configuration": "concurrent",
+            "o2_percent": 22.2,
+            "pressure_psia": 14.7,
+            "flow_velocity_cm_s": 9.5,
+            "sample_width_cm": null,
+            "thickness_mm": null,
+            "diameter_mm": null,
+            "outcome": "extinguish",
+            "derivation_rule": "no_sustained_ignition",
+            "label_confidence": "high",
+            "evidence_quote": "Ignited briefly but did not spread at all and extinguished while the igniter was still on",
+            "source_page": 105,
+            "source": "NASA/TM-20210011385, Table A.2",
+            "distance": 0.63
+          }
+        ],
+        "interval": null,
+        "unit": "standardized distance",
+        "label": null,
+        "burn_probability": null,
+        "burn_probability_interval": null,
+        "ood_flag": false,
+        "ood_reason": null,
+        "ood_reasons": [],
+        "ood_level": "in_distribution",
+        "coverage": "in_distribution",
+        "hard_rule_reasons": [],
+        "evidence": [
+          "F3",
+          "F2",
+          "F1"
+        ],
+        "material_family": "Nomex",
+        "note": "Nearest labelled tests of the same material in standardized O2, log10 flow, size and thickness.",
+        "source": "FlameMargin Prediction Engine v2: model trained on 192 points from 85 NASA BASS-II tests (NASA/TM-20210011385, Appendix A Tables A.1-A.6, Table 7.1, Table 5.1)",
+        "inputs_normalized": {
+          "material": "Nomex",
+          "o2_percent": 21.0,
+          "pressure_psia": 14.7,
+          "pressure_kpa": 101.4,
+          "flow_velocity_cm_s": 10.0,
+          "gravity": "micro",
+          "gravity_g": 0.0
+        },
+        "backend": "real"
+      },
+      "ms": 2.7
+    }
+  ],
+  "ood": false,
+  "ood_reasons": [],
+  "grounding_ok": true,
+  "mode": "fallback",
+  "latency_ms": 276,
+  "model": null,
+  "backend": "real",
+  "ungrounded": [],
+  "notes": [],
+  "claims_consistent": true,
+  "prompt_version": "2026-11-14.3"
+}

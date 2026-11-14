@@ -645,10 +645,39 @@ def _finish(result: dict[str, Any], n: dict[str, Any], extra: list[str]) -> dict
     return result
 
 
+def _atmosphere_ood_without_material(args: dict[str, Any]) -> dict[str, Any] | None:
+    """No material given: if the atmosphere alone (O2, pressure, gravity) is outside the data of EVERY material,
+    answer OOD-first with no number instead of a 'material is required' error. Otherwise None."""
+    if str(args.get("material") or "").strip():
+        return None
+    try:
+        a, preset = _apply_preset(dict(args))
+        o2 = parse_o2_percent(a.get("o2_percent"))[0] if a.get("o2_percent") not in (None, "") else None
+        pressure = parse_pressure_psia(a.get("pressure_psia"))[0]
+        gravity, gravity_g = parse_gravity(a.get("gravity"))
+    except ToolInputError:
+        return None
+    reasons = _envelope_reasons(o2, pressure, None)
+    if not reasons and gravity in (None, "micro"):
+        return None
+    known = known_materials()
+    n = {"material": None, "material_input": None, "preset": preset, "o2": o2, "pressure": pressure, "flow": None,
+         "gravity": gravity, "gravity_g": gravity_g, "notes": []}
+    res = {"value": None, "interval": None, "evidence": [], "label": None, "burn_probability": None,
+           "burn_probability_interval": None, "ood_flag": True, "ood_reason": "; ".join(reasons) or None,
+           "known_materials": known,
+           "note": "No material was given, but this atmosphere is outside the NASA data for every material in the model "
+                   f"({', '.join(known)}): no prediction is possible for any of them. Do not estimate one."}
+    return _finish(res, n, [])
+
+
 # =========================================================================== #
 # Tools
 # =========================================================================== #
 def tool_predict(args: dict[str, Any]) -> dict[str, Any]:
+    early = _atmosphere_ood_without_material(args)
+    if early is not None:
+        return early
     n = _normalize_scenario(args, need_flow=True)
     known = known_materials()
     if n["material"] is None and known:
@@ -661,6 +690,9 @@ def tool_predict(args: dict[str, Any]) -> dict[str, Any]:
 
 
 def tool_flammability_boundary(args: dict[str, Any]) -> dict[str, Any]:
+    early = _atmosphere_ood_without_material(args)
+    if early is not None:
+        return early
     n = _normalize_scenario(args, need_flow=False, need_o2=False)
     known = known_materials()
     if n["material"] is None and known:

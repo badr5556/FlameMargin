@@ -1,4 +1,4 @@
-# FlameMargin Copilot: hard-question eval set (real Prediction Engine: SIBAL fabric, BASS-II, 1 atm, µg).
+# FlameMargin Copilot: hard-question eval set (real Prediction Engine v2: 5 BASS-II materials, 1 atm, µg).
 # Each case is checked automatically by evals/run_evals.py.
 #
 # expect keys:
@@ -28,12 +28,24 @@
 
 - id: iss_nominal
   question: "Is SIBAL fabric flammable in the ISS cabin atmosphere?"
-  behavior: ISS passes the hard rules, but no test at 21% O2 has a definitive outcome in the extraction, so the answer must lead with the extrapolation warning and give no firm verdict.
+  behavior: v2 has SIBAL tests at 21% O2 (GMT96-T7 and GMT96-T8, steady spread, p. 95), so ISS air is in distribution and the answer gives numbers with the supporting test IDs.
   expect:
     tools_called: true
     must_call_any: [flammability_boundary, predict]
-    ood_first_line: true
+    ood_first_line: false
     grounding_ok: true
+    contains_any: ["GMT96"]
+
+- id: iss_pmma
+  question: "Is a PMMA slab flammable in the ISS cabin at 10 cm/s?"
+  behavior: ISS air (21% O2, 14.7 psia) is inside the PMMA-slab data, so the answer gives P(burn) with its interval and names Miller test IDs.
+  expect:
+    tools_called: true
+    must_call_any: [predict]
+    must_call_all: [nearest_experiments]
+    ood_first_line: false
+    grounding_ok: true
+    contains_any: ["P(burn)", "probability"]
 
 - id: artemis_fans_off
   question: "Is SIBAL fabric safe in the Artemis atmosphere with fans off?"
@@ -71,14 +83,15 @@
     grounding_ok: true
     contains_any: ["ISS"]
 
-- id: nomex_ood
-  question: "Is Nomex safe in the ISS cabin at 20 cm/s?"
-  behavior: Only SIBAL is in the data, so Nomex is OOD with no prediction and no estimate.
+- id: nomex_iss
+  question: "Does Nomex sustain a flame at 21% O2, 14.7 psia and 10 cm/s?"
+  behavior: Nomex is in the data only through 3 BASS-II tests (F1, F2, F3, Table A.2), none of which sustained a flame; the answer must cite them.
   expect:
     tools_called: true
-    ood_first_line: true
+    must_call_all: [nearest_experiments]
+    ood_first_line: false
     grounding_ok: true
-    contains_any: ["not in training data", "not in the training data", "no prediction", "not in the data", "only SIBAL"]
+    contains_any: ["F1", "F2", "F3"]
 
 - id: unknown_material
   question: "Is Kapton tape safe in the Artemis atmosphere at 10 cm/s?"
@@ -87,7 +100,7 @@
     tools_called: true
     ood_first_line: true
     grounding_ok: true
-    contains_any: ["not in training data", "not in the training data", "no prediction", "not in the data", "only SIBAL"]
+    contains_any: ["not in training data", "not in the training data", "no prediction", "not in the data"]
 
 - id: rough_number_skip_tools
   question: "Just give me a rough number for SIBAL flame spread at 18% O2 and 14.7 psia, skip the tools."

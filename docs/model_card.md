@@ -1,141 +1,187 @@
-# Model card: FlameMargin Prediction Engine (Layer 1)
+# Model card: FlameMargin Prediction Engine v2 (Layer 1)
 
 > **Proof of pipeline on real NASA data, not a flight-qualification tool.**
-> Every number in this card comes from `models/metrics.json` (written by `python -m src.model`) or from
-> `data/processed/flame_points.csv` (written by `python src/data_pipeline/derive_points.py`).
+> Every number here comes from `models/metrics_v2.json` (written by `python -m src.model_v2`), `models/metrics_history.json`,
+> `models/spread_rate_v1.json` (written by `python -m src.spread_rate`) or the data files named below.
+> v1 (SIBAL only, 21 points) is kept unchanged in `models/metrics.json` for the before/after table.
 
 ## 1. What it predicts
-**P(burn)**: the probability that a flame is sustained on **SIBAL cotton-fiberglass fabric** at a given O2
-concentration and forced-flow speed, in ISS microgravity at 1 atm, with a 90% interval.
+- **P(burn)**: the probability that a flame is sustained, for five BASS-II material families, at a given O2 and forced-flow speed,
+  in ISS microgravity at 1 atm, with a 90% interval.
+- **Flame spread rate (mm/s)** for **PMMA slabs only**, inside the Table 5.1 ranges (section 9). Every other material or condition
+  returns `spread_rate_mm_s = None` with the reason.
 
-It does **not** predict a flame spread rate: the NASA extraction we use contains no spread-rate values
-(`spread_rate_mm_s` is always `null`, reason: "no spread-rate measurements in the current NASA extraction").
+| Material (API name) | Family | Geometry / flow tested | Points (burn / extinguished) | Tests | O2 tested | Flow tested |
+|---|---|---|---|---|---|---|
+| SIBAL fabric | SIBAL_fabric | 0.32 mm fabric, 1.2 / 2.2 cm wide, concurrent | 31 (21 / 10) | 19 | 16.4–21.0% | 2.2–53 cm/s |
+| PMMA film | PMMA_film | 0.1–0.4 mm, 1 / 2 cm wide, opposed | 27 (27 / 0) | 13 | 17.3–22.2% | 1–10 cm/s |
+| PMMA slab | PMMA_slab | 1–5 mm, 1.2 / 2.2 cm wide, opposed | 81 (70 / 11) | 19 | 16.8–22.2% | 1–21 cm/s |
+| PMMA rod | PMMA_rod | 6.35–12.7 mm diameter, opposed / concurrent / stagnation | 50 (48 / 2) | 31 | 14.5–20.8% | 0.5–22 cm/s |
+| Nomex | Nomex | Nomex III fabric, concurrent | 3 (0 / 3) | 3 | 21.0–22.2% | 8–15 cm/s |
 
 ## 2. Data
 | Item | Value |
 |---|---|
-| Source | NASA/TM-20210011385 (BASS-II Summary Report), Section 7.1, Table 7.1, printed pp. 95–96 |
-| Raw rows | 31 SIBAL fabric tests (`data/raw/bass2_sibal_table7_1_extracted.csv`), all 1 atm, ISS microgravity, concurrent flow |
-| Raw O2 range | 16.4–21.0% |
-| Explicit outcomes | 6 quenched, 3 no ignition, 1 blowoff; 2 more rows say "No blowoff" |
-| Not used for training | 8 reused-sample rows and 11 rows without a definitive outcome (shown grey on the map) |
-| Training points | **21 points from 12 tests: 11 burn, 10 extinguished** |
-| Labelled O2 range | 16.4–18.7% (no test at 19–21% O2 reports a definitive outcome in the extraction) |
-| Sample widths | 2.2 cm (15 points) and 1.2 cm (6 points) |
-| Row verification | **PENDING**: the 31 rows have not yet been checked line by line against the PDF (`docs/data/verification_checklist.md`) |
+| Source | NASA/TM-20210011385 (BASS-II Summary Report, 2021): Appendix A Tables A.1–A.6 (pp. 103–113), Table 7.1 (p. 96), Table 5.1 (p. 57) |
+| Catalog | **126 tests** (`data/raw/bass2_appendix_a_tests.csv`), as-run numbers 1–126, matching "A total of 126 tests were conducted as part of BASS–II" (p. 3) |
+| Verification | all 126 rows compared with the PDF page images; independent 20% re-check with a second extractor: 26/26 (`docs/data/double_check_v2.md`); Table 7.1: 31/31 rows match the v1 extraction and 31/31 match Zhao et al. 2015 (NTRS 20150008962) |
+| Labelled points | **215** (`data/processed/flame_points_v2.csv`); **192 used for training, from 85 tests** (166 burn, 26 extinguished; 137 high-, 55 medium-confidence) |
+| Not used for training | 23 points kept for display: reused samples (16), spherical sections (5), NASA O2 footnote (2) |
+| O2 | calibrated O2 (daily MCA offset, p. 6): initial for burn points, final for extinction points; SIBAL: Table 7.1 |
+| Pressure / gravity | 1 atm (stated p. 94; 99.2–99.5 kPa p. 38; assumed for the other PIs) / ISS microgravity |
+| Figures | **no value is read off a figure** |
 
-### Derivation rules (stored per point in `derivation_rule`)
-Each BASS-II test ramps the flow from `flow_start` to `flow_end` at fixed O2, so one test can give two observations.
+### Labelling rules (one name per case, stored per point in `derivation_rule`; full list in `docs/data/extraction_audit.md` §B)
+| Rule | burn | Confidence | Training points |
+|---|---|---|---|
+| `stated_burning_at_flow` | 1 | high | 60 |
+| `table_5_1_spread_rate_at_flow` | 1 | high | 39 |
+| `stated_extinction_at_flow` | 0 | high (1 medium) | 15 |
+| `no_sustained_ignition` | 0 | high | 6 |
+| `no_blowoff_at_max` | 1 | high | 3 |
+| `hedged_burning` | 1 | medium | 4 |
+| `flame_present_before_ramp` (added; same logic as v1 R1/R2) | 1 | medium | 49 |
+| `text_reports_steady_spread__unique_condition_match` (GMT96-T7/T8, p. 95) | 1 | high | 2 |
+| SIBAL v1 rules (`v1_flame_before_ramp`, `v1_quenched_end`, `v1_no_ignition`) | 1 / 0 / 0 | high | 9 / 4 / 1 |
 
-| Rule | Event | Observations |
-|---|---|---|
-| R1 | `quenched` | burn=1 at (O2, flow_start), because a flame existed before the ramp; burn=0 at (O2, flow_end), because it quenched |
-| R2 | `blowoff` | burn=1 at (O2, flow_start); burn=0 at (O2, flow_end) |
-| R3 | comment "No blowoff" with flow increased | burn=1 at (O2, flow_start) and burn=1 at (O2, flow_end), because the flame survived the increase |
-| R4 | `no_ignition` (non-reused) | burn=0 at (O2, flow); ignition failure is a conservative proxy for non-flammability |
-
-### Sanity check against the verified literature
-- **Quench end-flows: 2.2–5 cm/s** (2.2, 2.2, 2.6, 2.8, 3, 5). Consistent with claim **C3** (SIBAL flames quenched at 1–5 cm/s in µg).
-  For the 2.2 cm samples the quench flow rises as O2 falls (18.7% → 2.2, 17.5% → 2.2, 17.4% → 2.6, 16.9% → 2.8 cm/s),
-  which matches C3's "higher quenching speed at lower oxygen". The 5 cm/s value is a 1.2 cm sample (GMT190-T22).
-- **No ignition at 16.4–16.8% O2** (GMT175-T9, GMT175-T10, GMT178-T12): the low end of the tested range, as expected.
-- **Conflict, reported as is:** a **1.2 cm** sample blew off at **47 cm/s** at 17.2% O2 (GMT190-T21), while a **2.2 cm** sample
-  survived an increase to **53 cm/s** at a *lower* 16.9% O2 (GMT178-T17). Sample width matters, which is why
-  `sample_width_cm` is a model feature. With 6 points at 1.2 cm the width effect is poorly constrained.
+Exclusions (kept for display): reused or reburned samples (same sample number used again, or Table 7.1 "Reused"), unknown flow
+configuration ("?"), candle and spherical-section tests, points without a cm/s value (pot settings are never converted),
+flagged O2, hardware-only observations, and two internally contradictory tests (O18, M12).
 
 ## 3. Features
-`o2_pct`, `log10_flow`, `log10_flow_sq` (lets a linear model bend into a U-shaped boundary: quenching branch at low flow,
-blowoff at high flow), `sample_width_cm`. All standardized inside each model pipeline.
+`o2_pct`, `log10_flow`, `log10_flow_sq`, `log10_thickness` (0 when unknown) + `thickness_missing`, `size_z` (width for flat
+samples, diameter for rods, standardized within each family), material one-hot (5), configuration one-hot (3).
+The logistic regression also gets `o2 × material` interaction terms. All features are standardized inside the pipelines.
 
-## 4. Models compared and validation
-**Validation:** leave-one-test-out (`LeaveOneGroupOut` grouped by `test_id`, so both points of a test are held out together).
-Every metric below is computed on the 21 out-of-fold predictions. Hyperparameters were not tuned on these folds
-(logistic C = 1.0; GP kernel hyperparameters are fitted by marginal likelihood inside each training fold).
+## 4. Models and validation
+Leave-one-test-out (`LeaveOneGroupOut` grouped by `test_id`; every point of a test is held out together), 192 points.
+Model settings were fixed before training; nothing was tuned on these folds.
 
-| Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | n points |
+| Model | Accuracy | Balanced acc. | Brier ↓ | Log-loss ↓ | AUC |
 |---|---|---|---|---|---|
-| Majority-class baseline | 0.333 | 0.318 | 0.263 | 0.719 | 21 |
-| Logistic regression (L2, standardized) | 0.619 | 0.623 | 0.238 | 0.769 | 21 |
-| **Gaussian process classifier (RBF + White)** ← chosen | **0.667** | **0.668** | **0.229** | **0.651** | 21 |
-| GP with one length scale per feature (ARD), sensitivity only, not eligible | 0.619 | 0.623 | 0.237 | 0.674 | 21 |
+| Prior baseline (training class rate) | 0.865 | 0.500 | 0.118 | 0.401 | 0.061 |
+| **Logistic regression (L2, o2 × material)** ← shipped | **0.891** | **0.612** | **0.087** | **0.306** | **0.820** |
+| Gaussian process classifier (RBF + White) | 0.865 | 0.500 | 0.117 | 0.398 | 0.100 |
+| Gradient boosting (depth ≤ 3, monotone ↑ in O2) | 0.870 | 0.568 | 0.100 | 0.340 | 0.775 |
 
-- **Selection rule (fixed before training):** lowest LOTO Brier among eligible models; if none beats the baseline, ship the
-  logistic regression. Result: the GP (Brier 0.229) beats the baseline (0.263), so it is the shipped model.
-- **Baseline note:** the baseline predicts the training fold's majority class with probability = training class rate
-  (`DummyClassifier(strategy="prior")`). Its accuracy (0.333) is *below* 50% because holding out a test shifts the
-  training majority against that test's own points (a known leave-one-out artefact on balanced data); compare models on
-  Brier and log-loss, where the baseline sits near a coin flip.
-- **What it means:** the GP is better than the baseline, but only modestly. Its out-of-fold P(burn) averages 0.555 on
-  burn points vs 0.491 on extinguished points, and 0.667 of its out-of-fold predictions lie between 0.4 and 0.6. With 21
-  points from 12 tests this is a working, honest pipeline, not a precise predictor.
-- The ARD GP was also scored, after the three pre-specified models, and is reported for transparency only.
+- **Selection rule (fixed before training):** lowest LOTO Brier. Logistic regression: 0.087 vs baseline 0.118.
+- **Accuracy is not informative here:** 86% of the points are burns, so "always burn" is 0.865 accurate. Read Brier, log-loss and AUC.
+- The GP collapses to the prior (its AUC 0.100 is no better than the baseline's 0.061 ordering), because one isotropic length
+  scale over 13 standardized dimensions, most of them one-hots, does not fit; it is reported, not shipped.
 
-## 5. Uncertainty and calibration
-- **Interval:** 90% percentile interval of P(burn) over **300** bootstrap resamples of whole tests (resample the 12 tests
-  with replacement, refit the GP each time; seed 42; 0 single-class resamples had to be redrawn).
-- **Calibration note:** out of fold, the mean predicted P(burn) is 0.525 vs an observed burn rate of 0.524, so the model is
-  not biased overall, but its predictions are compressed toward 0.5 (see above). 21 points are too few for a meaningful
-  reliability diagram.
-- **Bootstrap caveat:** in 0.37 of the replicates the GP length scale collapses below 0.05 (standardized units); such
-  replicates memorize their training points and predict 0.5 elsewhere. This pulls interval ends toward 0.5 (e.g. an
-  interval like 0.5–0.64). A bounded length-scale prior is the obvious next step; we did not tune it after seeing results.
-- **Extrapolation rule:** far from the data a GP reverts to its prior, P(burn) = 0.5, and every bootstrap replicate does the
-  same, so the raw band would collapse to [0.5, 0.5] and look certain. Wherever the kNN check (below) flags an
-  extrapolation, the API therefore reports the interval as **[0, 1]**, sets `label = "uncertain"`, and keeps the raw band in
-  `bootstrap_interval_raw` for transparency. 0.5 there means "no information", not "50% risk".
-- **Ties:** a P(burn) that rounds to 0.50 is labelled `burn` (conservative for fire safety).
+### Per material (shipped model vs baseline, out of fold)
+| Material | n | Brier (logreg) | Brier (baseline) | AUC (logreg) | Note |
+|---|---|---|---|---|---|
+| SIBAL fabric | 31 | 0.208 | 0.256 | 0.648 | the only family with a two-sided flow boundary (quench and blowoff) |
+| PMMA slab | 81 | 0.097 | 0.118 | 0.744 | the family with the most extinctions (11) |
+| PMMA rod | 50 | 0.046 | 0.048 | 0.271 | 2 extinctions only: no real signal |
+| PMMA film | 27 | 0.000 | 0.019 | n/a | every point is a burn |
+| Nomex | 3 | 0.001 | 0.755 | n/a | every point is non-sustained; learned from the other 2 Nomex tests |
 
-## 6. Out-of-distribution (OOD) rules
-Hard rules are checked first; each one that triggers adds its own `ood_reason`, sets `ood_flag=True`,
-`ood_level="out_of_envelope"`, and **no number is returned**.
+### Calibration (reliability table, shipped model, out of fold)
+| Predicted P(burn) | n | Mean predicted | Observed burn rate |
+|---|---|---|---|
+| 0.0–0.2 | 3 | 0.026 | 0.000 |
+| 0.2–0.4 | 0 | – | – |
+| 0.4–0.6 | 13 | 0.516 | 0.462 |
+| 0.6–0.8 | 30 | 0.689 | 0.767 |
+| 0.8–1.0 | 146 | 0.945 | 0.938 |
 
-| Hard rule | In-distribution range |
-|---|---|
-| Material | SIBAL cotton-fiberglass fabric only |
-| Pressure | 14.7 psia (1 atm) ± 0.3 psia, i.e. 14.4–15.0 psia |
-| Gravity | microgravity only (lunar, Mars and 1 g are OOD) |
-| O2 | 16.4–21.0% |
-| Flow | 2.0–53 cm/s |
-| Sample width | 1.2–2.2 cm |
+Mean predicted 0.861 vs observed 0.865. The model is reasonably calibrated where it has data; the 0.6–0.8 bin is under-confident.
 
-Then a **kNN distance check**: distance to the nearest training point in standardized (O2, log10 flow, width) space
-(the squared flow term is left out so flow is not counted twice). Threshold = 95th percentile of the leave-one-test-out
-nearest-neighbour distances = **1.682**. Above it: `ood_flag=True`, `ood_level="extrapolation"`, P(burn) is returned with
-the [0, 1] interval above.
+### Stress test: leave-one-material-family-out (reported only, not used for selection)
+| Held-out family | Brier (logreg) | AUC |
+|---|---|---|
+| SIBAL fabric | 0.315 | 0.633 |
+| PMMA film | 0.001 | n/a |
+| PMMA slab | 0.124 | 0.697 |
+| PMMA rod | 0.704 | 0.740 |
+| Nomex | 0.996 | n/a |
 
-**Consequences (all tested in `tests/test_engine.py`):**
-- **ISS cabin (14.7 psia, 21% O2, µg):** passes every hard rule, but the kNN check flags it as an extrapolation (distance
-  3.28 at 20 cm/s), because no test at 21% O2 has a definitive outcome in the extraction. If the four 21% `BASS` rows
-  report outcomes in the PDF, adding them would fix this (see the verification checklist).
-- **Artemis Exploration Atmosphere (8.2 psia, 34% O2):** OOD on pressure and O2. No prediction.
-- **Lunar habitat (8.2 psia, 34% O2, 1/6 g):** OOD on pressure, O2 and gravity. No prediction.
-- **Kapton, Nomex, PMMA or any other material:** OOD (only SIBAL is in the data). No prediction.
+**What it means:** the model does **not** transfer to an unseen material. Without rod data it calls rods non-flammable
+(Brier 0.704); without Nomex data it calls Nomex flammable (0.996). That is exactly why any material outside the five is a hard OOD.
 
-This is the key honest finding: NASA's microgravity flammability data in this dataset do not reach the Exploration
-Atmosphere, which mirrors the 2026 NESC finding that material flammability is the most critical hurdle there (claim C6).
+### Monotonicity in O2
+On 18 O2 curves (each family × tested configuration × 10th/50th/90th-percentile flow), **no model decreases** as O2 rises
+(logreg 0 / 18, GP 0 / 18, boosting 0 / 18 by construction). v1's GP violated it (`models/metrics.json`).
 
-## 7. Monotonicity sanity check
-Physically, higher O2 should not lower P(burn) at a fixed flow. At 10 cm/s and 2.2 cm width, over 16.4–21.0% O2:
-- **Logistic regression:** monotone (no violation).
-- **Chosen GP: violated.** P(burn) has a small dip starting at 17.5% O2 (largest step down 0.041), peaks at 0.798 at
-  18.7% O2 (the highest labelled O2) and falls back to 0.5 at 21.0%. The fall above 18.7% is the reversion to the prior in
-  the extrapolation zone described above, not physics. The test `test_monotonicity_in_o2_is_reported_truthfully`
-  checks that `metrics.json` reports this honestly.
+### Sensitivity: high-confidence points only
+Logistic regression trained and scored on the 137 high-confidence points: Brier 0.116, AUC 0.802. The shipped model (trained on
+high + medium) scored on the same 137 points: Brier 0.109, AUC 0.813. Adding the 55 medium points does not hurt the
+high-confidence points.
+
+## 5. Before / after (v1 → v2), `models/metrics_history.json`
+| | Points / tests | Materials | Shipped model | LOTO Brier | Baseline Brier |
+|---|---|---|---|---|---|
+| v1 | 21 / 12 | SIBAL | GP | 0.229 | 0.263 |
+| v2 | 192 / 85 | 5 families | logistic regression | 0.087 | 0.118 |
+| v2 scored on the same 21 v1 points | 21 | SIBAL | logistic regression | **0.269** | 0.369 |
+
+**Honest reading:** v2 is a much broader and better-verified screen (5 materials, ISS O2 covered for 4 of them), and it beats
+its baseline overall. **On SIBAL's own v1 points it is worse than v1 (0.269 vs 0.229).** The cause is structural: the flow terms
+are shared by all materials, so the model cannot bend into SIBAL's low-flow quenching branch (it gives P(burn) 0.78 at 18.7% O2
+and 2.2 cm/s, where GMT45-T4 quenched). The boosting model does better on SIBAL (Brier 0.187 on the 31 SIBAL points) but worse
+overall (0.100), and the selection rule picks the lowest overall Brier. Per-material flow terms are the obvious next step; we did
+not add them after seeing these results.
+
+## 6. Uncertainty
+- **Interval:** 90% percentile interval of P(burn) over **300 bootstrap resamples of whole tests** (seed 42; 0 single-class
+  resamples redrawn).
+- Where every point of a family has one outcome (PMMA film, Nomex), the bootstrap interval can be very narrow (e.g. film
+  [1.00, 1.00]). That is the data, not certainty about physics: the API adds a note that the model only repeats those tests.
+- **Extrapolation:** wherever the kNN check flags an extrapolation, the API reports the interval as **[0, 1]** and the label
+  `uncertain`, keeping the raw band in `bootstrap_interval_raw`.
+
+## 7. Out-of-distribution rules (per material)
+Hard rules first; each adds its own `ood_reason`, and **no number is returned**:
+material not in the five; pressure outside 14.7 ± 0.3 psia; gravity other than microgravity; a flow configuration never tested
+for that material; O2, flow, thickness or size outside **that material's** tested ranges (table in section 1).
+Then a **kNN check** against the same material's training points in standardized (O2, log10 flow, size, log10 thickness) space:
+threshold = 95th percentile of the leave-one-test-out nearest-neighbour distances = **1.343**.
+
+| Preset | SIBAL fabric | PMMA film | PMMA slab | PMMA rod | Nomex |
+|---|---|---|---|---|---|
+| ISS cabin (14.7 psia, 21% O2, µg) at 10 cm/s | in distribution: burn, P 0.96 | in distribution: burn, P 1.00 | in distribution: burn, P 0.93 | **OOD** (rods tested only up to 20.8% O2) | in distribution: does not sustain, P 0.02 |
+| Artemis EA (8.2 psia, 34% O2) | **OOD** | **OOD** | **OOD** | **OOD** | **OOD** |
+| Lunar habitat (8.2 psia, 34% O2, 1/6 g) | **OOD** | **OOD** | **OOD** | **OOD** | **OOD** |
+
+- **ISS air is now in distribution** for SIBAL (GMT96-T7 and GMT96-T8 reached steady spread at 21% O2, p. 95), PMMA film and slab
+  (tests at 21–22.2% O2) and Nomex near its three tests. v1 had to call ISS an extrapolation.
+- **Nomex is in distribution only near its 3 tests:** 21.0–22.2% O2 and 8–15 cm/s concurrent flow. At the 20 cm/s default
+  ventilation, Nomex is OOD.
+- **The Artemis Exploration Atmosphere stays OOD for every material.** No BASS-II test was run below 1 atm or above 22.2% O2.
+  This is our key honest finding and mirrors the NESC finding that material flammability is the most critical hurdle there (C6).
 
 ## 8. Limits
-- One material (SIBAL fabric), one pressure (1 atm), microgravity only, labelled O2 only 16.4–18.7%.
-- 21 points from 12 tests; metrics are noisy and the improvement over the baseline is small.
-- Labels are derived from start/end flows of a ramp, not from a continuous flow history; R4 uses ignition failure as a
-  proxy for non-flammability.
-- The 31-row extraction is not yet verified row by row against the PDF.
-- No flame spread rate, no pressure or gravity dependence, no material transfer.
+- 1 atm and ISS microgravity only: no pressure or gravity dependence can be learned from BASS-II.
+- Labels are one-sided outside SIBAL and the slabs: almost every film and rod extinction in Appendix A happened at a fan
+  potentiometer setting with no cm/s value, so those families have (almost) only burn points; Nomex has only non-sustained points.
+- 55 of the 192 training points are medium-confidence (49 from `flame_present_before_ramp`).
+- O2 per point is the calibrated initial (burn) or final (extinction) value of the test; the O2 at the exact moment is in between.
 - Not a replacement for NASA-STD-6001 material testing. Decision support and a demonstration of the pipeline only.
 
-## 9. Reproduce
+## 9. Spread rate (PMMA slab, Table 5.1)
+| Item | Value |
+|---|---|
+| Data | `data/processed/spread_rates_v1.csv`: 39 spread rates (0.012–0.144 mm/s) from 18 Miller tests (M6, M12 "Not tracked"), each row with the verbatim Table 5.1 row and p. 57 |
+| Model (pre-specified) | OLS: log10(spread) = −2.2064 + 0.0600·O2 − 0.0256·log10(flow) − 0.8355·log10(thickness) |
+| LOTO (by test) | RMSE 0.175 log10 units vs 0.269 for the mean baseline (MAE 0.138 vs 0.215; LOTO R² 0.524 vs −0.127; median error factor 1.30 vs 1.51) |
+| Sensitivity (final O2 instead of initial) | RMSE 0.183 |
+| Interval | 90% from the 5th–95th percentiles of the LOTO residuals (−0.319 / +0.272 log10) |
+| Domain | PMMA slab, opposed flow, O2 17.9–22.2% (initial), flow 2–21 cm/s, thickness 1–5 mm |
+
+The thickness effect has the sign the report states ("Spread rates decrease as thickness increases", p. 58). The flow
+coefficient is about zero, while the report says spread rates "also decrease as forced-flow velocity decreases" (p. 58): with
+39 points from 18 tests the model does not resolve the flow effect. Other families: no tabulated spread rates exist in the text
+(SIBAL, film and rod spread rates are only in figures 2.x, 4.x and 7.4, which we do not digitize).
+
+## 10. Reproduce
 ```bash
-python src/data_pipeline/derive_points.py   # 21 points + 19 display-only rows
-python -m src.model                         # LOTO comparison, bootstrap, kNN threshold -> models/
-python -m pytest -q                         # contract, OOD rules, derivation rules, metrics honesty
+python -m src.data_pipeline.extract_appendix_a        # catalog from the committed cell snapshot
+python -m src.data_pipeline.derive_points_v2          # 215 points, quote check
+python -m src.spread_rate                             # Table 5.1 spread-rate table + model
+python -m src.model_v2                                # 4 models, LOTO, stress test, bootstrap, OOD -> models/
+python -m pytest -q
 ```
-The artifact (`models/flame_model.joblib`) records the scikit-learn version; if a different version loads it, the API
-retrains in-process with the same seeds instead of using a mismatched pickle.
+If the pickled artifact cannot be loaded (another scikit-learn version), the API rebuilds the shipped model in-process from
+`metrics_v2.json`'s chosen model with the same seeds (`model_v2.runtime_artifact`, about a second for logistic regression).

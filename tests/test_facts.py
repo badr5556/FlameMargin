@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT))
 from src import copilot_facts  # noqa: E402
 
 SHEET = (ROOT / "docs" / "science" / "claims_sheet.md").read_text(encoding="utf-8")
-VERIFIED_IDS = {"C2", "C2b", "C3", "C4", "C5", "C6", "C7", "C8", "C8b", "C10", "C11"}
+VERIFIED_IDS = {"C2", "C2b", "C2c", "C2d", "C3", "C4", "C5", "C6", "C7", "C8", "C8b", "C10", "C11", "D3"}
 
 
 @pytest.mark.parametrize("topic", list(copilot_facts.FACTS))
@@ -22,7 +22,7 @@ def test_fact_has_source_and_boolean_verified(topic):
     f = copilot_facts.FACTS[topic]
     assert f["source"].strip()
     assert isinstance(f["verified"], bool)
-    assert re.fullmatch(r"C\d+b?", f["claim_id"])
+    assert re.fullmatch(r"[CD]\d+[a-d]?", f["claim_id"])
     assert f"| {f['claim_id']} |" in SHEET
 
 
@@ -48,7 +48,7 @@ def test_verified_fact_wording_is_the_sheet_wording():
 
 def test_new_facts_present():
     ids = {f["claim_id"] for f in copilot_facts.FACTS.values()}
-    assert {"C2b", "C7", "C8b"} <= ids
+    assert {"C2b", "C2c", "C2d", "C7", "C8b", "D3"} <= ids
 
 
 def test_removed_wording_is_gone():

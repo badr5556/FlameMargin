@@ -1,14 +1,19 @@
 # Verification checklist: 31 extracted rows vs. NASA/TM-20210011385 Table 7.1
 
-**Status: NOT YET VERIFIED.** Until every row below is ticked by two people, claim D1 ("our model is trained on SIBAL fabric tests from NASA/TM-20210011385 Table 7.1") stays *PENDING row-by-row verification*.
+> **Status 2026-11-14: DONE.** All 31 rows were compared programmatically with the Table 7.1 text of NASA/TM-20210011385 (p. 96):
+> width, flow start/end, O2 and comment match for 31/31 rows (`tests/test_catalog_v2.py::test_table_7_1_v1_rows_verified_31_of_31`).
+> They also match the appendix table of Zhao, T'ien, Ferkul, Olson 2015 (NTRS 20150008962) for 31/31 rows
+> (`src/data_pipeline/crosscheck_zhao2015.py`). The manual checklist below is kept as the original plan.
+
+*Original plan (superseded by the programmatic check above; claim D1 is now VERIFIED in `docs/science/claims_sheet.md`):*
 
 ## How to check (about 20 minutes for two people)
-1. Open NASA/TM-20210011385 (BASS-II Summary Report), Section 7.1, Table 7.1, printed pp. 95–96 (about PDF pp. 97–98).
+1. Open NASA/TM-20210011385 (BASS-II Summary Report), Section 7.1, Table 7.1, printed p. 96 (PDF p. 104).
 2. Person A reads each row aloud from the PDF; person B compares it with the row here: test ID, sample width, O2 %, start and end flow, and the comment.
 3. If everything matches, put ✅ and both initials in *checked by*. If anything differs, put ❌, write the PDF value next to it, and open an issue. **Do not edit `data/raw/` by hand**: a corrected extraction must be committed as a new raw file with a note.
 4. When all 31 rows are ✅, change D1 in `docs/science/claims_sheet.md` to VERIFIED and update the model card.
 
-Also worth checking while the table is open: whether the four 21% O2 `BASS` rows (GMT96-T7, GMT96-T8, GMT131-T10, GMT222-T11) report an outcome anywhere in Section 7.1. If they do, adding them would give the model labelled data at the ISS O2 level (today the highest labelled O2 is 18.7%).
+Also worth checking while the table is open: whether the four 21% O2 `BASS` rows (GMT96-T7, GMT96-T8, GMT131-T10, GMT222-T11) report an outcome anywhere in Section 7.1. If they do, adding them would give the model labelled data at the ISS O2 level (v1: the highest labelled O2 was 18.7%; v2 found the answer on p. 95: GMT96-T7 and GMT96-T8 reached steady spread).
 
 Label column: the extraction's `conservative_event_label`, with the table comment in brackets. Rows marked † are used for training (via `src/data_pipeline/derive_points.py`); the others are display-only.
 
