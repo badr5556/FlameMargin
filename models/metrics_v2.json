@@ -3,7 +3,7 @@
   "engine_version": "v2",
   "data": {
     "points_file": "data/processed/flame_points_v2.csv",
-    "points_sha256": "9062d0a4f055341037495018ffe4aa9f28102ba91e4ed59b4956b77a896c6b71",
+    "points_sha256": "6cb15b94ee4b5ae776bc7e8763d358053cebc6633165c0d385005232f4ac9ba4",
     "source": "NASA/TM-20210011385: Appendix A Tables A.1-A.6 (all BASS-II tests), Table 7.1 (SIBAL), Table 5.1 (Miller)",
     "n_points": 192,
     "n_tests": 85,

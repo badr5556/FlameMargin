@@ -442,15 +442,22 @@ def match_table71_to_a6(t71: pd.DataFrame, cat: pd.DataFrame) -> dict[str, str]:
     return out
 
 
-STEADY_SPREAD_TEXT = [  # p. 95, Figs. 7.2 / 7.3 discussion
+STEADY_SPREAD_TEXT = [  # p. 95, Figs. 7.2 / 7.3 discussion: contiguous spans from the condition to the steady-spread words
     {"width": 2.2, "flow": 10.0, "o2": 21.0,
-     "quote": "Figure 7.2 shows flame development stages of a 2.2-cm sample in 10-cm/s flow and 21 percent O2."
-              " Figure 7.2(a) shows side-view flame tracking of flame tip, flame base, and flame length.",
-     "quote2": "the flame reached a limiting constant length and a steady spread rate relative to the laboratory"},
+     "start": "Figure 7.2 shows flame development stages of a 2.2-cm sample in 10-cm/s flow and 21 percent O2.",
+     "end": "a steady spread rate relative to the laboratory"},
     {"width": 2.2, "flow": 5.0, "o2": 21.0,
-     "quote": "Figure 7.3 shows flame development stages of a 2.2-cm sample in 5-cm/s flow and 21 percent O2.",
-     "quote2": "Steady spread time lasts for about 21 s"},
+     "start": "Figure 7.3 shows flame development stages of a 2.2-cm sample in 5-cm/s flow and 21 percent O2.",
+     "end": "Steady spread time lasts for about 21 s"},
 ]
+
+
+def steady_spread_quote(c: dict[str, Any]) -> str:
+    """Exact substring of p. 95 from the condition sentence to the steady-spread words."""
+    text = page_text(95)
+    i = text.index(c["start"])
+    j = text.index(c["end"], i) + len(c["end"])
+    return text[i:j]
 
 
 def sibal_points(t71: pd.DataFrame, cat: pd.DataFrame) -> list[Point]:
@@ -501,7 +508,7 @@ def sibal_points(t71: pd.DataFrame, cat: pd.DataFrame) -> list[Point]:
         elif comment == "BASS":
             for c in STEADY_SPREAD_TEXT:
                 if (c["width"], c["flow"], c["o2"]) == (float(r["sample_width_cm"]), f0, o2) and f0 == f1:
-                    P(f0, 1, "high", "text_reports_steady_spread__unique_condition_match", c["quote"], 95)
+                    P(f0, 1, "high", "text_reports_steady_spread__unique_condition_match", steady_spread_quote(c), 95)
         else:  # no outcome in Table 7.1: use the A.6 sentence, if any
             burn = stated_burning_hits(obs)
             hedge = hedged_burning_hits(obs)

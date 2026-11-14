@@ -105,7 +105,8 @@ text (p. 96): width, start/end flow, O2 and comment match for **31/31** rows (`t
 ## B. Labelled observation points (`data/processed/flame_points_v2.csv`)
 
 Built by `python -m src.data_pipeline.derive_points_v2` from the catalog, Table 7.1 (p. 96) and Table 5.1 (p. 57).
-**215 points from 103 tests; 192 used for training, from 85 tests** (137 high-, 55 medium-confidence). Every
+**215 points from 103 tests; 192 used for training, from 85 tests** (137 high-, 55 medium-confidence). A seeded 20% re-check
+of the points against the source text passed 43/43 ([`points_recheck_v2.md`](points_recheck_v2.md)). Every
 `evidence_quote` is an exact substring of the test's observation text or of the normalized page text
 (`test_every_quote_is_an_exact_substring_of_its_source`).
 

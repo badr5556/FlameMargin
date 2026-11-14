@@ -6,6 +6,7 @@
 > - [`extraction_audit.md`](extraction_audit.md): how the tables were read, counts, every uncertain row, the labelling rules and exclusions
 > - [`data_dictionary_v2.md`](data_dictionary_v2.md): every column of the catalog and the points
 > - [`double_check_v2.md`](double_check_v2.md): independent 20% re-check with a second extractor (26/26 rows pass)
+> - [`points_recheck_v2.md`](points_recheck_v2.md): 20% re-check of the labelled points against the source text (43/43 pass)
 > - Table 7.1: the 31 v1 rows below match the report text (31/31) and Zhao et al. 2015 (31/31); the v1 checklist is closed.
 >
 > The v1 description below is kept for the before/after comparison.
