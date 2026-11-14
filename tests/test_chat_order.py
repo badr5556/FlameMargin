@@ -78,3 +78,18 @@ def test_suggested_question_takes_the_same_path(monkeypatch):
     assert order[-1] == "INPUT", order
     assert [m.split(":", 1)[0] for m in order[:-1]] == ["user", "assistant", "user", "assistant"], order
     assert order[2].startswith("user:Is SIBAL fabric safe in the lunar")
+
+
+def test_greeting_example_buttons_ask_through_the_same_path(monkeypatch):
+    from src.copilot import SMALLTALK_EXAMPLES
+
+    at = _app(monkeypatch)
+    at.chat_input[0].set_value("hi").run()
+    order = _order(at)
+    assert [m.split(":", 1)[0] for m in order] == ["user", "assistant", "INPUT"], order
+    ex = SMALLTALK_EXAMPLES["en"][0]
+    next(b for b in at.button if b.label == ex).click().run()
+    assert not at.exception
+    order = _order(at)
+    assert order[-1] == "INPUT" and order[2] == "user:" + ex[:40], order
+    assert len(order) == 5

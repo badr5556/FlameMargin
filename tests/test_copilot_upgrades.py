@@ -198,7 +198,7 @@ def test_ui_enforces_the_session_budget(monkeypatch):
             return [Ctx_with(self) for _ in range(n if isinstance(n, int) else len(n))]
 
         def __getattr__(self, name):
-            return lambda *a, **k: Ctx() if name in ("chat_message", "spinner", "expander") else None
+            return lambda *a, **k: Ctx() if name in ("chat_message", "spinner", "expander", "container") else None
 
         def chat_input(self, *a, **k):
             return self.q

@@ -58,7 +58,7 @@ class CopilotResult:
     ood: bool = False
     ood_reasons: list[str] = field(default_factory=list)
     grounding_ok: bool = True
-    mode: str = "fallback"  # "llm" | "fallback"
+    mode: str = "fallback"  # "llm" | "fallback" | "smalltalk" (greeting / off-topic: no tools, no numbers)
     latency_ms: int = 0
     model: str | None = None
     backend: str = ""
@@ -66,6 +66,7 @@ class CopilotResult:
     notes: list[str] = field(default_factory=list)
     claims_consistent: bool = True
     prompt_version: str = PROMPT_VERSION
+    suggestions: list[str] = field(default_factory=list)  # clickable example questions (small-talk replies)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -906,6 +907,77 @@ def enforce_assumption_line(question: str, answer: str, trace: list[dict[str, An
 
 
 # =========================================================================== #
+# Small talk / off-topic (both modes, before any tool or LLM call)
+# =========================================================================== #
+_GREETING_RE = re.compile(
+    r"^\W*(hi+|hello|hey+|hiya|yo|good (morning|afternoon|evening)|thanks?( you)?|thx|ok(ay)?|cool|great|bye|"
+    r"how are you|who are you|what can you do|what are you|what('?s| is) (this|flame ?margin)|help)\b|"
+    r"مرحبا|أهلا|اهلا|هاي|السلام عليكم|سلام|صباح الخير|مساء الخير|ازيك|إزيك|ازايك|عامل ايه|شكرا|شكراً|متشكر|"
+    r"انت مين|إنت مين|أنت مين|بتعمل ايه|تقدر تعمل ايه",
+    re.IGNORECASE,
+)
+# Anything that touches the Copilot's domain is a real question and goes to the normal path.
+_DOMAIN_RE = re.compile(
+    r"burn|flam|fire|flame|combust|ignit|extingu|quench|blow-?off|smoke|spread|oxygen|\bo2\b|o₂|pressure|psi|kpa|\batm\b|"
+    r"ventilat|\bflow|\bfans?\b|cabin|spacecraft|space ?station|habitat|\biss\b|artemis|orion|lunar|moon|mars|gravity|"
+    r"\bµg\b|nasa|bass|material|fabric|sibal|pmma|nomex|kapton|teflon|plastic|textile|\bsafe|danger|risk|hazard|"
+    r"astronaut|crew|predict|model|data|test|experiment|\bmap\b|boundary|probability|number|estimate|rough|\brate\b|"
+    r"how (fast|likely|long|much)|chance|percent|"
+    r"حريق|حرق|يحترق|تحترق|يولع|يولّع|ولع|اشتعال|لهب|نار|أكسجين|اكسجين|ضغط|تهوية|مروح|هواء|قماش|مادة|ماده|خامة|"
+    r"محطة|فضاء|جاذبية|القمر|المريخ|آمن|امان|أمان|خطر|ناسا|تجرب|بيانات",
+    re.IGNORECASE,
+)
+SMALLTALK_EXAMPLES = {
+    "en": [
+        "Is SIBAL fabric flammable in the ISS cabin atmosphere?",
+        "Is SIBAL fabric safe in the Artemis atmosphere with fans off?",
+        "Why is fire in microgravity different from fire on Earth?",
+    ],
+    "ar": [
+        "هل قماش SIBAL قابل للاشتعال في جو محطة الفضاء؟",
+        "هل Nomex بيكمل يولّع في جو محطة الفضاء؟",
+        "ليه النار في الجاذبية الصغرى مختلفة عن الأرض؟",
+    ],
+}
+_SMALLTALK_TEXT = {
+    ("en", "greeting"): "Hi! I'm the FlameMargin Fire Safety Copilot.",
+    ("en", "off_topic"): "That's outside what I can help with.",
+    ("ar", "greeting"): "أهلاً! أنا مساعد السلامة من الحريق في FlameMargin.",
+    ("ar", "off_topic"): "السؤال ده خارج اللي أقدر أساعد فيه.",
+}
+_SMALLTALK_BODY = {
+    "en": ("I tell you whether a material is likely to keep burning in a spacecraft cabin, using a model trained on NASA's "
+           "BASS-II microgravity fire tests, and I say clearly when NASA's data do not cover your conditions. "
+           "Ask about a material, an atmosphere (oxygen, pressure), the airflow or a mission. Try one of these:"),
+    "ar": ("بقولك إذا كانت مادة معينة هتفضل تولّع جوه كابينة مركبة فضائية، باستخدام نموذج متدرّب على تجارب الحريق "
+           "BASS-II بتاعة NASA في الجاذبية الصغرى، وبقولك بوضوح لما بيانات NASA ما تغطيش الظروف اللي بتسأل عنها. "
+           "اسأل عن مادة، أو جو الكابينة (الأكسجين والضغط)، أو سرعة الهواء، أو مهمة. جرّب سؤال من دول:"),
+}
+
+
+def small_talk_kind(question: str) -> str | None:
+    """'greeting' or 'off_topic' when the message has nothing the tools can answer; None for a real question.
+
+    A greeting mixed with a real question ("hi, will SIBAL burn at 18% O2?") is a real question."""
+    q = (question or "").strip()
+    bare = re.sub(r"flame ?margin|copilot", " ", q, flags=re.IGNORECASE)  # the product's own name is not a domain word
+    if not q or re.search(r"\d", q) or _DOMAIN_RE.search(bare) or _WHY_RE.search(bare):
+        return None
+    it = parse_intent(q)
+    if it["material"] or it["presets"] or it["o2"] or it["pressure"] or it["flow"] or it["gravity"] or it["fans_off"]:
+        return None
+    return "greeting" if _GREETING_RE.search(q) else "off_topic"
+
+
+def small_talk_answer(question: str, kind: str) -> tuple[str, list[str]]:
+    """Short reply in the user's language: what the Copilot does + 3 example questions. No numbers, no tools."""
+    lang = "ar" if re.search(r"[\u0600-\u06FF]", question) else "en"
+    ex = SMALLTALK_EXAMPLES[lang]
+    text = f"{_SMALLTALK_TEXT[(lang, kind)]} {_SMALLTALK_BODY[lang]}\n\n" + "\n".join(f"- {q}" for q in ex)
+    return text, list(ex)
+
+
+# =========================================================================== #
 # Public API
 # =========================================================================== #
 def _finalize(answer: str, trace: list[dict[str, Any]], notes: list[str], question: str = "") -> tuple[str, bool, list[str]]:
@@ -933,6 +1005,15 @@ def ask(question: str, history: list[dict[str, Any]] | None = None, *, force_fal
         notes.append("src/api.py could not be imported: prediction tools return engine_unavailable")
     if not question:
         return CopilotResult(answer="Ask a question about material flammability (e.g. 'Will SIBAL fabric burn at 17.5% O2, 14.7 psia and 4 cm/s?').", backend=backend, notes=notes)
+    kind = small_talk_kind(question)
+    llm_possible = not (force_fallback or os.environ.get("COPILOT_FORCE_FALLBACK") == "1") and bool(get_api_key())
+    if kind == "off_topic" and history and llm_possible:
+        kind = None  # may be a follow-up ("are you sure?") that only makes sense with the conversation: let the LLM see it
+    if kind:
+        text, examples = small_talk_answer(question, kind)
+        return CopilotResult(answer=text, mode="smalltalk", backend=backend, suggestions=examples,
+                             latency_ms=round((time.perf_counter() - t0) * 1000),
+                             notes=notes + [f"small-talk intent ({kind}): no tools called, no LLM call"])
 
     key = None if (force_fallback or os.environ.get("COPILOT_FORCE_FALLBACK") == "1") else get_api_key()
     if key:

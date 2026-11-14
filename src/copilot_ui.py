@@ -36,6 +36,8 @@ SUGGESTED_QUESTIONS = [
 
 
 def _badges(res: dict[str, Any]) -> str:
+    if res.get("mode") == "smalltalk":
+        return "💬 `Small talk: no tools called, no numbers`"
     mode = "🤖 `LLM" + (f" · {res.get('model')}`" if res.get("model") else "`") if res.get("mode") == "llm" else "🧮 `Fallback (deterministic)`"
     ood = "⚠️ `Out of distribution`" if res.get("ood") else "🟢 `In distribution`"
     grounding = "✅ `All numbers grounded`" if res.get("grounding_ok") else "❌ `LLM draft failed grounding → tool outputs shown`"
@@ -65,12 +67,18 @@ def _render_trace(res: dict[str, Any]) -> None:
         st.caption(f"Prompt version {res.get('prompt_version', '?')}")
 
 
-def _render_assistant(msg: dict[str, Any]) -> None:
+def _render_assistant(msg: dict[str, Any], suggestion_key: str | None = None, pending_key: str | None = None) -> None:
     st.markdown(msg["content"])
     res = msg.get("result")
     if res:
         st.caption(_badges(res))
-        _render_trace(res)
+        if res.get("suggestions") and suggestion_key and pending_key:
+            # Clickable example questions: they go through the same pending-question path as the suggestion buttons.
+            for j, q in enumerate(res["suggestions"]):
+                if st.button(q, key=f"{suggestion_key}_{j}"):
+                    st.session_state[pending_key] = q
+        if res.get("mode") != "smalltalk":
+            _render_trace(res)
 
 
 def render_copilot_chat(key_prefix: str = "copilot") -> None:
@@ -106,8 +114,8 @@ def render_copilot_chat(key_prefix: str = "copilot") -> None:
     # created BEFORE the input, and new turns are written into it, so the input always stays below the last message.
     chat_box = st.container()
     with chat_box:
-        for msg in history:
-            _render_message(msg)
+        for i, msg in enumerate(history):
+            _render_message(msg, f"{key_prefix}_ex{i}", pending_key)
 
     typed = st.chat_input("Ask about a material, atmosphere, flow or mission…", key=f"{key_prefix}_input")
     question = typed or st.session_state.pop(pending_key, None)
@@ -125,12 +133,14 @@ def render_copilot_chat(key_prefix: str = "copilot") -> None:
                 msg = _answer(question, prior, has_key, offline_key, used_key, limit)
             _render_assistant(msg)
     history.append(msg)
+    if (msg.get("result") or {}).get("suggestions"):
+        st.rerun()  # re-render so the example-question buttons of this reply are live
 
 
-def _render_message(msg: dict[str, Any]) -> None:
+def _render_message(msg: dict[str, Any], suggestion_key: str | None = None, pending_key: str | None = None) -> None:
     with st.chat_message(msg["role"]):
         if msg["role"] == "assistant":
-            _render_assistant(msg)
+            _render_assistant(msg, suggestion_key, pending_key)
         else:
             st.markdown(msg["content"])
 
@@ -141,7 +151,7 @@ def _answer(question: str, prior: list[dict[str, Any]], has_key: bool, offline_k
     over_budget = wants_llm and st.session_state[used_key] >= limit
     try:
         res: CopilotResult = ask(question, history=prior, force_fallback=not wants_llm or over_budget)
-        if wants_llm and not over_budget:
+        if wants_llm and not over_budget and res.mode != "smalltalk":  # small talk never calls the LLM
             st.session_state[used_key] += 1
         if over_budget:
             res.notes.append(f"per-session LLM budget reached ({limit} questions): deterministic fallback")
