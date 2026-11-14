@@ -105,7 +105,7 @@ def _hull(x: np.ndarray, y: np.ndarray) -> tuple[list[float], list[float]]:
     return [p[0] for p in ring], [p[1] for p in ring]
 
 
-def build_evidence_gap_figure(height: int = 560) -> go.Figure:
+def build_evidence_gap_figure(height: int = 640) -> go.Figure:
     pts = test_points()
     fig = go.Figure()
 
@@ -152,8 +152,8 @@ def build_evidence_gap_figure(height: int = 560) -> go.Figure:
     ann = dict(showarrow=True, arrowcolor="#ffe14d", font=dict(color="#ffe14d", size=13), bgcolor="rgba(0,0,0,0.6)")
     fig.add_annotation(x=ISS["pressure_psia"], y=ISS["o2_percent"], text="ISS cabin", ax=-60, ay=-40, **ann)
     fig.add_annotation(x=EA["pressure_psia"], y=EA["o2_percent"], text="Artemis EA", ax=70, ay=-34, **ann)
-    fig.add_annotation(x=EA["pressure_psia"] - 0.35, y=EA["o2_percent"] + 0.9, text="Lunar habitat · 1/6 g: also outside µg data",
-                       ax=-40, ay=-56, **ann)
+    fig.add_annotation(x=EA["pressure_psia"] - 0.45, y=EA["o2_percent"] + 0.6, text="Lunar habitat · 1/6 g:<br>also outside µg data",
+                       ax=-30, ay=-30, align="left", **ann)
     fig.add_annotation(x=EA["pressure_psia"] - 1.3, y=C5_O2, text="max O2, no burning-rate increase (C5)", showarrow=False,
                        xanchor="left", yanchor="top", yshift=-4, font=dict(color="#e66767", size=12))
     fig.add_annotation(x=14.55, y=12.4, text="every NASA test", showarrow=False, font=dict(color="#f0efec", size=12),
@@ -178,7 +178,8 @@ def coverage_summary() -> dict[str, Any]:
 def render_evidence_tab(st: Any) -> None:
     s = coverage_summary()
     st.markdown("#### Where NASA's microgravity fire data are, and where the next missions will fly")
-    st.plotly_chart(build_evidence_gap_figure(), use_container_width=True, key="evidence_gap")
+    st.plotly_chart(build_evidence_gap_figure(), use_container_width=True, key="evidence_gap",
+                    config={"displayModeBar": False})  # the toolbar covered the top labels on phones
     st.markdown(f"**{CAPTION}**")
     st.caption(CAPTION_DETAIL)
     c1, c2, c3 = st.columns(3)

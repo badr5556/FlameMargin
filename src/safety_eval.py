@@ -99,7 +99,7 @@ def reliability_figure(rows: list[dict[str, Any]], model: str):
                              line=dict(color="#c3c2b7", dash="dot", width=2), hoverinfo="skip"))
     fig.add_trace(go.Scatter(
         x=[x["mean_predicted"] for x in r], y=[x["observed_burn_rate"] for x in r], mode="lines+markers+text",
-        name=f"Shipped model ({MODEL_NAMES.get(model, model)}), leave-one-test-out (marker size ~ n)", line=dict(color="#3987e5", width=2),
+        name=f"{MODEL_NAMES.get(model, model).capitalize()}, leave-one-test-out", line=dict(color="#3987e5", width=2),
         marker=dict(size=[8 + 2.2 * np.sqrt(x["n"]) for x in r], color="#3987e5", line=dict(color="#0e1117", width=2)),
         text=[f"n={x['n']}" for x in r], textposition=["top right" if x["mean_predicted"] < 0.2 else "top left" for x in r], textfont=dict(color="#f0efec", size=12),
         customdata=[[x["bin"], x["n"]] for x in r],

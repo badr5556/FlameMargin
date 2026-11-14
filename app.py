@@ -209,7 +209,8 @@ def _render_safety_section() -> None:
         f"({v['n_safe_calls']} of {sf['n_points']} points), and only {v['extinguished_recall']:.0%} of NASA extinctions are called."
     )
     st.markdown("### Reliability (calibration)")
-    st.plotly_chart(reliability_figure(sf["reliability"], sf["model"]), use_container_width=True, key="reliability")
+    st.plotly_chart(reliability_figure(sf["reliability"], sf["model"]), use_container_width=True, key="reliability",
+                    config={"displayModeBar": False})
     st.caption("Out-of-fold P(burn) binned by 0.2; marker size and label = number of points in the bin. Points on the dotted "
                "diagonal are perfectly calibrated. The 0.2–0.4 bin is empty; the 0.6–0.8 bin is under-confident.")
 
