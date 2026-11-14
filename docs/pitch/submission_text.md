@@ -21,7 +21,7 @@ flammability is the most critical hurdle in that environment [C6].
 - **Prediction Engine:** P(burn) with a 90% bootstrap interval for five materials at a given O2 and forced-flow speed, plus the
   three nearest real NASA tests (test ID, the crew's words and the report page). Trained on 192 observations (166 burn,
   26 extinguished) from 85 BASS-II tests, derived with written rules; every point carries a verbatim quote and its page.
-  Leave-one-test-out validation: Brier 0.087 vs 0.118 for a baseline. A flame spread rate for PMMA slabs (Table 5.1).
+  Leave-one-test-out validation: AUC 0.80; Brier 0.087 vs 0.118 for a baseline (a Brier skill of +26%). A flame spread rate for PMMA slabs (Table 5.1).
   Per-material out-of-distribution rules (material, pressure, gravity, configuration, O2, flow, size) return no number; a
   distance check flags extrapolations.
 - **Flammability Map:** P(burn) over O2 × airflow (log scale) with the 0.5 boundary, the data envelope, extrapolation zones and
@@ -44,13 +44,14 @@ both where margins are thin and where the data simply run out.
   cross-checked against Zhao et al. 2015 (31/31); rows without an outcome kept for display only.
 - Copilot: Google Gemini via the `google-genai` SDK with manual function calling over 6 tools; grounding, claim-consistency,
   input and OOD guards in code; backup key and per-session budget for the public link.
-- Testing: 271 unit tests; a 15-question adversarial eval (final run: LLM 15/15, deterministic fallback 15/15).
+- Testing: 329 unit tests; a 15-question adversarial eval (final run: LLM 14/15, deterministic fallback 15/15; the LLM miss was the
+  grounding guard withholding an ungrounded draft).
 - Science: every claim has an ID, exact wording, primary source and verification status in our claims sheet.
 
 ## Challenges
 - **Small, messy data:** 126 tests written as crew notes; many extinctions were logged as fan settings with no airflow value, so we only used what was stated in cm/s. We validated by leaving out whole tests.
 - **Labels from flow ramps:** each test changes the flow at fixed O2, so we wrote explicit rules for what each event means.
-- **Honesty under pressure:** v2 is worse than v1 on SIBAL's own early points, and PMMA rods were never tested at ISS oxygen; we show both.
+- **Honesty under pressure:** the engine is still worse than v1 on SIBAL's own early points (a pre-registered fix only narrowed it), and PMMA rods were never tested at ISS oxygen; we show both.
 - **LLM reliability:** rules are enforced in code, with an offline path that passes every eval.
 
 ## What's next

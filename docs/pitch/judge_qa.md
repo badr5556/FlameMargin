@@ -79,6 +79,28 @@ the PIs' raw data instead of digitizing them. 3. Add pressure as a feature once 
 
 ---
 
+### 16. Your own map shows NASA "extinguished" points inside the orange zone. Doesn't your model contradict NASA?
+On some points, yes, and we show them instead of hiding them. Of the 26 extinguished NASA points, the final model gives only 7 a
+P(burn) below 0.5 (6 when each test is held out), and 3 of those 7 are the Nomex tests it simply repeats. Of the other 19,
+10 sit just above the line (P 0.5–0.65), among them 6 SIBAL quenches at 2.2–5 cm/s: the low-flow quench edge is where the
+model is weakest. A few PMMA slab extinctions at 19–21.6% O2 get P(burn) above 0.75: oxygen, flow and thickness alone do not
+explain them. (Recompute: `api.get_engine()` scored on its own training points.) We pre-registered one physics-motivated fix before fitting it (v2.1:
+per-material flow terms for SIBAL and PMMA slab), with a ship rule written in advance. It tied v2 on Brier (0.087) and shipped
+by that rule, but it moved none of those points below 0.5, and we report that (model card section 5b). The model is a
+conservative screen: at the 0.5 line it misses 1 of 166 NASA burns, and the price is that it rarely says "won't burn".
+
+### 17. Isn't your accuracy high only because 86% of the points are burns?
+Yes, accuracy alone would be meaningless: "always burn" scores 0.865. That's why we never headline accuracy. The header shows
+leave-one-test-out AUC 0.80 (ranking burns above extinctions on tests the model never saw) and a Brier skill of +26% over that
+"always the burn rate" baseline (1 − 0.087 / 0.118, computed from `models/metrics_v2.json`). We also report balanced accuracy
+(0.612), log-loss, per-material scores, a reliability plot, and the safety operating point: burn recall 0.994 at the 0.5 line.
+
+### 18. Nomex scores almost perfectly. Isn't that just memorised?
+Yes, and we say so. Nomex has only 3 tests (F1, F2, F3), all non-sustained, so the model can only repeat them: its tiny Brier
+(0.001) is not evidence of skill. That's why Nomex is in distribution only near those 3 tests (21–22.2% O2, 8–15 cm/s
+concurrent), every Nomex answer carries the note that all its tests failed to sustain a flame, and the leave-one-material-out
+stress test shows the honest picture: without Nomex data the model calls Nomex flammable (Brier 0.996). [D3]
+
 ## Our known weaknesses (say them before a judge does)
 | Weakness | How we handle it |
 |---|---|
